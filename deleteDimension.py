@@ -78,7 +78,8 @@ class DeletionRect(DimensioningRectPrototype):
 moduleGlobals = {}
 class DeleteDimension:
     def Activated(self):
-        moduleGlobals.update(get_FreeCAD_drawing_variables())
+        if not get_FreeCAD_drawing_variables(moduleGlobals):
+            return
         if not moduleGlobals.has_key('deletionRect') or not moduleGlobals['deletionRect'].cleanedUp :
             debugPrint(4, 'creating snapHint ellipse')
             snapHint = QtGui.QGraphicsEllipseItem(0, 0, 16, 16)

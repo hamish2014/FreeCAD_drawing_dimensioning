@@ -10,15 +10,27 @@ def debugPrint( level, msg ):
         App.Console.PrintMessage(msg + '\n')
 debugPrint.level = 2
 
-def get_FreeCAD_drawing_variables():
+
+notDrawingPage_title = "Current Window not showing a Drawing Page"
+notDrawingPage_msg =  "Drawing Dimensioning tools are for page objects generated using the Drawing workbench. Aborting operation."
+def get_FreeCAD_drawing_variables( moduleGlobals ):
     '''
     Get the FreeCAD window, graphicsScene, drawing page object (...) and returns a dictionary of them
     '''
     mw = QtGui.qApp.activeWindow()
     MdiArea = [c for c in mw.children() if isinstance(c,QtGui.QMdiArea)][0]
-    subWinMW = MdiArea.activeSubWindow().children()[3]
+    
+    try:
+        subWinMW = MdiArea.activeSubWindow().children()[3]
+    except AttributeError:
+        QtGui.QMessageBox.information( QtGui.qApp.activeWindow(), notDrawingPage_title, notDrawingPage_msg  )
+        return False
     page = App.ActiveDocument.getObject( subWinMW.objectName() )
-    graphicsView = [ c for c in subWinMW.children() if isinstance(c,QtGui.QGraphicsView)][0]
+    try:
+        graphicsView = [ c for c in subWinMW.children() if isinstance(c,QtGui.QGraphicsView)][0]
+    except IndexError:
+        QtGui.QMessageBox.information( QtGui.qApp.activeWindow(), notDrawingPage_title, notDrawingPage_msg  )
+        return False
     graphicsScene = graphicsView.scene()
     pageRect = graphicsScene.items()[0] #hope this index does not change!
     width = pageRect.boundingRect().width()
@@ -30,7 +42,11 @@ def get_FreeCAD_drawing_variables():
         VRT_scale = width / 297.0
     VRT_ox = -1 / VRT_scale
     VRT_oy = -1 / VRT_scale
-    return locals()
+    #finally updating moduleGlobals
+    data = locals()
+    del data['moduleGlobals']
+    moduleGlobals.update(data)
+    return True
 
 class DimensioningRectPrototype(QtGui.QGraphicsRectItem):
 

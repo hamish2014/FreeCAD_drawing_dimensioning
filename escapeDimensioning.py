@@ -1,15 +1,14 @@
 import os, FreeCADGui
 import FreeCAD as App
 from PySide import QtGui
-from dimensioning import __dir__
+from dimensioning import __dir__, get_FreeCAD_drawing_variables
 
 class EscapeDimensioning:
     def Activated(self):
-        mw = QtGui.qApp.activeWindow()
-        MdiArea = [c for c in mw.children() if isinstance(c,QtGui.QMdiArea)][0]
-        subWinMW = MdiArea.activeSubWindow().children()[3]
-        page = App.ActiveDocument.getObject( subWinMW.objectName() )
-        page.touch()
+        vars = {}
+        if not get_FreeCAD_drawing_variables(vars):
+            return
+        vars['page'].touch()
         App.ActiveDocument.recompute()
         
     def GetResources(self): 

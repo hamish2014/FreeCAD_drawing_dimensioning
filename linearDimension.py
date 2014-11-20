@@ -138,7 +138,8 @@ moduleGlobals = {}
 class linearDimension:
     "this class will create a line after the user clicked 2 points on the screen"
     def Activated(self):
-        moduleGlobals.update(get_FreeCAD_drawing_variables())        
+        if not get_FreeCAD_drawing_variables(moduleGlobals):
+            return #an error has occurred ...
         if not moduleGlobals.has_key('dimensioningRect') or not moduleGlobals['dimensioningRect'].cleanedUp: 
             # then initialize graphicsScene Objects, otherwise dont recreate objects. 
             # initializing dimPreview is particularly troublesome, as in FreeCAD 0.15 this is unstable and occasionally causes FreeCAD to crash.

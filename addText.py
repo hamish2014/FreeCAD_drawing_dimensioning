@@ -130,7 +130,8 @@ dialogUi.setupUi(dialog)
 
 class AddText:
     def Activated(self):
-        moduleGlobals.update(get_FreeCAD_drawing_variables()) #needs to be done before dialog show, else Qt active is dialog and not freecas
+        if not get_FreeCAD_drawing_variables(moduleGlobals):#needs to be done before dialog show, else Qt active is dialog and not freecads
+            return
         dialog.show()
         
     def GetResources(self): 
