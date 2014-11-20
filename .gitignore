@@ -1,3 +1,4 @@
 *~
 *.pyc
-crudeDebugger_output/output
+crudeDebugger_output*
+crudeDebugger_output/*
