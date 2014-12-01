@@ -6,7 +6,7 @@ class DimensioningWorkbench (Workbench):
     MenuText = "Drawing Dimensioning"
     def Initialize(self):
         import importlib
-        DEBUG=True
+        DEBUG=False
         if DEBUG:
             from dimensioning import __dir__, debugPrint
             import crudeDebugger, os
