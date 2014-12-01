@@ -12,12 +12,11 @@ dialog.show()
 
 '''
 
-
-import os, FreeCADGui
-import FreeCAD as App
-from PySide import QtGui, QtCore, QtSvg
+from dimensioning import *
+from dimensioning import __dir__ # not imported with * directive
+from drawingSelectionLib import generateSelectionGraphicsItems
 import addTextDialog
-from dimensioning import debugPrint, __dir__, get_FreeCAD_drawing_variables, DimensioningRectPrototype
+
 
 
 class PlaceTextRect( DimensioningRectPrototype ):
@@ -75,11 +74,9 @@ class PlaceTextRect( DimensioningRectPrototype ):
             x = ( pos.x() - self.VRT_ox )/ self.VRT_scale
             y = ( pos.y() - self.VRT_oy )/ self.VRT_scale
             debugPrint(3, 'mousePressEvent: x %f, y %f' % (x, y))
-            viewName = 'dimText001'
             XML = self.textSVG(x,y,False)
             debugPrint(3, 'XML %s' % XML)
-            while hasattr(App.ActiveDocument, viewName):
-                viewName = 'dimText%03i' % ( int(viewName[-3:]) + 1 )
+            viewName = findUnusedObjectName('dimText')
             debugPrint(2, 'creating text %s' % viewName)
             App.ActiveDocument.addObject('Drawing::FeatureView',viewName)
             App.ActiveDocument.getObject(viewName).ViewResult = XML                    

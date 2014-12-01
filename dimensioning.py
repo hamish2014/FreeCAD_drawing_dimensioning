@@ -2,6 +2,7 @@ import numpy
 import FreeCAD as App
 import FreeCADGui, Part, os
 from PySide import QtGui, QtCore, QtSvg
+import drawingSelectionLib
 
 __dir__ = os.path.dirname(__file__)
 
@@ -10,6 +11,13 @@ def debugPrint( level, msg ):
         App.Console.PrintMessage(msg + '\n')
 debugPrint.level = 2
 
+def findUnusedObjectName(base, counterStart=1, fmt='%03i'):
+    i = counterStart
+    objName = '%s%s' % (base, fmt%i)
+    while hasattr(App.ActiveDocument, objName):
+        i = i + 1
+        objName = '%s%s' % (base, fmt%i)
+    return objName
 
 notDrawingPage_title = "Current Window not showing a Drawing Page"
 notDrawingPage_msg =  "Drawing Dimensioning tools are for page objects generated using the Drawing workbench. Aborting operation."
@@ -42,10 +50,16 @@ def get_FreeCAD_drawing_variables( moduleGlobals ):
         VRT_scale = width / 297.0
     VRT_ox = -1 / VRT_scale
     VRT_oy = -1 / VRT_scale
-    #finally updating moduleGlobals
+
+    # updating moduleGlobals
     data = locals()
     del data['moduleGlobals']
     moduleGlobals.update(data)
+
+    transform = QtGui.QTransform()
+    transform.translate(VRT_ox, VRT_oy)
+    transform.scale(VRT_scale, VRT_scale)
+    drawingSelectionLib.Transform_selectionGraphicsItems = transform
     return True
 
 class DimensioningRectPrototype(QtGui.QGraphicsRectItem):
@@ -71,23 +85,9 @@ class DimensioningRectPrototype(QtGui.QGraphicsRectItem):
         debugPrint(4,'cleanUP: items removed from scene, now recomputing')
         self.drawingPage.touch()
         App.ActiveDocument.recompute()
-        
-
-    def findSnapPoint(self, x, y, tol=2 ):
-        D = ( x - self.snapX)**2 + (y - self.snapY)**2
-        debugPrint(4, 'findSnapPoint minD/VRT_scale**2 : %f' % (D.min()/self.VRT_scale**2))
-        if D.min()/self.VRT_scale**2  <= tol**2:
-            ind = numpy.argmin(D)
-            return self.snapX[ind], self.snapY[ind]
-        else:
-            return None
-        
+                
     def keyPressEvent(self, event):
         #if len(event.text()) == 1:
         #   debugPrint(2, 'key pressed: event.text %s (ord %i)' % (event.text(), ord(event.text())))
         if event.text() == chr(27): #escape key
             self.cleanUp()
-            
-
-class DimAndTextSelectRect(DimensioningRectPrototype):
-    pass

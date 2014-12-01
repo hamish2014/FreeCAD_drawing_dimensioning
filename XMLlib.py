@@ -11,7 +11,6 @@ Library to parse XML codes such as those used for the FreeCAD view result, as to
 
 import numpy
 from numpy import sin, cos, dot
-import Svg_tools
 
 def findOffset( text, subtext, p_start ):
     p = text.find(subtext, p_start)
@@ -96,6 +95,13 @@ class SvgXMLTreeNode:
             p = self.header.find('=', p+1)
         #print(self.parms)
 
+    def rootNode(self):
+        if self.parent==None:
+            return self
+        else:
+            return self.parent.rootNode()
+        
+
     def prettify(self, indent='', indentIncrease='  '):
         if len(self.children) == 0:
             return indent + self.header + self.footer
@@ -137,115 +143,8 @@ class SvgXMLTreeNode:
             sx_child = 1.0
         return sx * sx_child
             
-
-    def calculate_local_snap_points(self):
-        '''
-        SVG reference http://www.w3.org/TR/SVG/paths.html
-        '''
-
-        if hasattr(self, 'LSP_linearDimensioning'):
-            return
-        self.LSP_linearDimensioning = [] #LSP local snap points
-        self.LSP_circularDimensioning = []
-        self.LSP_textAnchors = []
-        if self.tag == 'path':
-            #print(self.XML)
-            dParmsXML = self.parms['d']
-            #<spacing corrections>
-            i = 0
-            while i < len(dParmsXML)-1:
-                if dParmsXML[i] in 'MLACQ,' and dParmsXML[i+1] in '-.0123456789':
-                    dParmsXML = dParmsXML[:i+1] + ' ' + dParmsXML[i+1:]
-                i = i + 1
-            #</spacing corrections>
-            parms = dParmsXML.replace(',',' ').strip().split()
-            j = 0
-            fitData = []
-            while j < len(parms):
-                #print(parms[j:])
-                if parms[j] == 'M' or parms[j] == 'L':
-                    self.LSP_linearDimensioning.append( self.applyTransforms( float(parms[j+1]), float(parms[j+2]) ))
-                    fitData.append( [[ float(parms[j+1]), float(parms[j+2])]] )
-                    j = j + 3
-                elif parms[j] == 'A':
-                    # The arc command begins with the x and y radius and ends with the ending point of the arc. 
-                    # Between these are three other values: x axis rotation, large arc flag and sweep flag.
-                    rX, rY, xRotation, largeArc, sweep, endX, endY = map(float, parms[j+1:j+1+7])
-                    self.LSP_linearDimensioning.append( self.applyTransforms( endX, endY ))
-                    if rX == rY: #then circle
-                        pass # no idea how to find the centre of this circle.
-                    j = j + 8
-                elif parms[j] == 'C': #cubic Bézier curve 
-                    #Draws a cubic Bézier curve from the current point to (x,y) using 
-                    # (x1,y1) as the control point at the beginning of the curve and (x2,y2) as the control point at the end of the curve.
-                    x1, y1, x2, y2, x, y = map(float, parms[j+1:j+1+6])
-                    self.LSP_linearDimensioning.append( self.applyTransforms( x, y) )
-                    fitData = fitData + [ [ [x1, y1], [x2, y2], [x, y] ] ]
-                    j = j + 7
-                elif parms[j] == 'Q': # quadratic Bézier curveto
-                    # Draws a quadratic Bézier curve from the current point to (x,y) using (x1,y1) as the control point. 
-                    #Q (uppercase) indicates that absolute coordinates will follow; 
-                    #q (lowercase) indicates that relative coordinates will follow. 
-                    #Multiple sets of coordinates may be specified to draw a polybézier. 
-                    #At the end of the command, the new current point becomes the final (x,y) coordinate pair used in the polybézier.
-                    x1, y1, x, y = map(float, parms[j+1:j+1+6])
-                    self.LSP_linearDimensioning.append( self.applyTransforms( x, y) )
-                    fitData = fitData + [ [ [x1, y1], [x, y] ] ]
-                    j = j + 5
-                else:
-                    raise RuntimeError, 'unable to parse path "%s" with d parms %s' % (self.XML[self.pStart:self.pEnd], parms)
-            if len(fitData) > 0: 
-                cx, cy, r, r_error = Svg_tools.fitCircle_to_path(fitData)
-                if r_error < 10**-4:
-                    parent = self
-                    while parent.parent <> None:
-                        parent = parent.parent
-                    self.parms['cx'] = cx
-                    self.parms['cy'] = cy
-                    self.parms['r'] = r * parent.scaling()
-                    self.LSP_linearDimensioning.append(   self.applyTransforms( cx, cy ))
-                    self.LSP_circularDimensioning.append( self.applyTransforms( cx, cy ))
-        elif self.tag == 'circle':
-            cx = float( self.parms['cx'] )
-            cy = float( self.parms['cy'] )
-            r =  float( self.parms['r'] )
-            self.LSP_linearDimensioning.append(   self.applyTransforms( cx, cy ))
-            self.LSP_circularDimensioning.append( self.applyTransforms( cx, cy ))
-        elif self.tag == 'text':
-            x = float( self.parms['x'] )
-            y = float( self.parms['y'] )
-            self.LSP_textAnchors.append( self.applyTransforms( x, y ) )
-
     def getAllElements(self):
         return [self] + sum([c.getAllElements() for c in self.children],[])
-
-    def linearDimensioningSnapPoints(self):
-        self.calculate_local_snap_points()
-        allPoints = self.LSP_linearDimensioning + sum([c.linearDimensioningSnapPoints() for c in self.children], [])
-        uniquePoints = []
-        for p in allPoints:
-            if not p in uniquePoints:
-                uniquePoints.append(p)
-        return uniquePoints
-
-    def circularDimensioningSnapPoints(self):
-        self.calculate_local_snap_points()
-        allPoints = self.LSP_circularDimensioning + sum([c.circularDimensioningSnapPoints() for c in self.children], [])
-        uniquePoints = []
-        for p in allPoints:
-            if not p in uniquePoints:
-                uniquePoints.append(p)
-        return uniquePoints
-
-    def textAnchorSnapPoints(self):
-        self.calculate_local_snap_points()
-        allPoints = self.LSP_textAnchors + sum([c.textAnchorSnapPoints() for c in self.children], [])
-        uniquePoints = []
-        for p in allPoints:
-            if not p in uniquePoints:
-                uniquePoints.append(p)
-        return uniquePoints
-
 
 if __name__ == "__main__":
     print('Testing XMLlib')
@@ -271,35 +170,7 @@ if __name__ == "__main__":
 </svg>'''
     print('parsing')
     print(XML)
-
+    print('')
+    print('result:')
     svg = SvgXMLTreeNode(XML,0)
     print(svg)
-
-    import sys
-    from PySide import QtGui, QtCore, QtSvg
-    app = QtGui.QApplication(sys.argv)
-    width = 640
-    height = 480
-
-    graphicsScene = QtGui.QGraphicsScene(0,0,width,height)
-    graphicsScene.addText("XMLlib.py test.")
-    orthoViews = []
-    def addOrthoView( XML ):
-        o1 = QtSvg.QGraphicsSvgItem()
-        o1Renderer = QtSvg.QSvgRenderer()
-        o1Renderer.load( QtCore.QByteArray( XML ))
-        o1.setSharedRenderer( o1Renderer )
-        graphicsScene.addItem( o1 )
-        orthoViews.append([o1, o1Renderer, XML]) #protect o1 and o1Renderer against garbage collector
-    addOrthoView(XML)
-    view = QtGui.QGraphicsView(graphicsScene)
-    view.show()
-
-    for x,y in svg.linearDimensioningSnapPoints():
-        graphicsScene.addEllipse( x-5, y-5, 10, 10, QtGui.QPen(QtGui.QColor(0,255,0)), QtGui.QBrush(QtGui.QColor(0,155,0))) 
-    for x,y in svg.circularDimensioningSnapPoints():
-        graphicsScene.addEllipse( x-6, y-6, 12, 12, QtGui.QPen(QtGui.QColor(255,0,0)), QtGui.QBrush(QtGui.QColor(127,0,0))) 
-    for x,y in svg.textAnchorSnapPoints():
-        graphicsScene.addEllipse( x-4, y-4, 8, 8, QtGui.QPen(QtGui.QColor(0,0,255)), QtGui.QBrush(QtGui.QColor(0,0,127))) 
-
-    sys.exit(app.exec_())

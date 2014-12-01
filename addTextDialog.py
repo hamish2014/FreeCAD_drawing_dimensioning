@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'addTextDialog.ui'
 #
-# Created: Wed Oct 29 11:28:43 2014
+# Created: Fri Nov 28 14:57:28 2014
 #      by: pyside-uic 0.2.15 running on PySide 1.2.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ class Ui_Dialog(object):
         sizePolicy.setHeightForWidth(self.textSizeSpinBox.sizePolicy().hasHeightForWidth())
         self.textSizeSpinBox.setSizePolicy(sizePolicy)
         self.textSizeSpinBox.setMinimum(2)
-        self.textSizeSpinBox.setProperty("value", 6)
+        self.textSizeSpinBox.setProperty("value", 4)
         self.textSizeSpinBox.setObjectName("textSizeSpinBox")
         self.gridLayout.addWidget(self.textSizeSpinBox, 1, 2, 1, 1)
         self.textLineEdit = QtGui.QLineEdit(Dialog)
@@ -66,6 +66,6 @@ class Ui_Dialog(object):
         self.label.setText(QtGui.QApplication.translate("Dialog", "Text:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("Dialog", "Font-size", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("Dialog", "Color", None, QtGui.QApplication.UnicodeUTF8))
-        self.colorLineEdit.setText(QtGui.QApplication.translate("Dialog", "rgb(0,0,0)", None, QtGui.QApplication.UnicodeUTF8))
+        self.colorLineEdit.setText(QtGui.QApplication.translate("Dialog", "rgb(255,0,0)", None, QtGui.QApplication.UnicodeUTF8))
         self.placeButton.setText(QtGui.QApplication.translate("Dialog", "Place Text", None, QtGui.QApplication.UnicodeUTF8))
 

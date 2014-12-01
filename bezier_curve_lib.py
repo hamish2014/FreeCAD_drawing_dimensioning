@@ -54,7 +54,6 @@ def fitCircle(X, Y):
 
 def fitCircle_to_path(P, points_per_segment=6):
 
-    assert len(P[0]) == 1 #i.e. move command
     X = []
     Y = []
     T = linspace(0,1,points_per_segment)
@@ -65,24 +64,15 @@ def fitCircle_to_path(P, points_per_segment=6):
 
     for C in P:
         #print(C)
-        if len(C) == 1: #then pen position update
-            p3 = C[0]
-            continue
-        if len(C) == 3: #then cubic Bezier
-            p0 = p3
-            p1 = C[0]
-            p2 = C[1]
-            p3 = C[2]
+        if len(C) == 4: #then cubic Bezier
+            p0, p1, p2, p3 = C
             X = X + ( t0*p0[0] + t1*p1[0] + t2*p2[0] + t3*p3[0] ).tolist()
             Y = Y + ( t0*p0[1] + t1*p1[1] + t2*p2[1] + t3*p3[1] ).tolist()
-        if len(C) == 2: #then quadratic Bezier plot, https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Quadratic_B.C3.A9zier_curves
+        if len(C) == 3: #then quadratic Bezier plot, https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Quadratic_B.C3.A9zier_curves
             #\mathbf{B}(t) = (1 - t)^{2}\mathbf{P}_0 + 2(1 - t)t\mathbf{P}_1 + t^{2}\mathbf{P}_2 \mbox{ , } t \in [0,1]. 
-            p0 = p3
-            p1 = C[0]
-            p2 = C[1]
+            p0, p1, p2 = C
             X = X + ( (1-T)**2*p0[0] + 2*(1-T)*T**p1[0] + T**2*p2[0] ).tolist()
             Y = Y + ( (1-T)**2*p0[1] + 2*(1-T)*T**p1[1] + T**2*p2[1] ).tolist()
-            p3 = p2 #move pen; (pens location stored in p3)
     if len(X) > 3:
         return fitCircle(array(X), array(Y))
     else:

@@ -3,6 +3,7 @@ library for constructing dimension SVGs
 '''
 
 from dimensionSvgConstructor import *
+from drawingSelectionLib import  generateSelectionGraphicsItems
 
 print('Testing dimensionSvgConstructor.py')
 import sys
@@ -33,18 +34,23 @@ class DimensioningRect(QtGui.QGraphicsRectItem):
             fontSize= 16, strokeWidth=1.0, arrowL1=10, arrowL2=4, arrowW=6,
             centerPointDia = 4
             )
-        self.radius = 6
+
+    def selectCircle( self, event, referer, elementXML, elementParms, elementViewObject ):
+        if self.action_ind <> 0:
+            return
+        self.point1 = elementParms['x'], elementParms['y']
+        print('point1 set to x=%3.1f y=%3.1f' % self.point1)
+        self.radius = elementParms['r']
+        self.action_ind = 1
 
     def mousePressEvent( self, event ):
+        if self.action_ind == 0:
+            return
         if event.button() == QtCore.Qt.MouseButton.LeftButton:
             #print( 'current action: %s' % self.actions[self.action_ind] )
             pos = event.scenePos()
             x, y = pos.x(), pos.y()
-            if self.action_ind == 0:
-                self.point1 = x, y
-                print('point1 set to x=%3.1f y=%3.1f' % (x,y))
-                self.action_ind = self.action_ind + 1
-            elif self.action_ind == 1:
+            if self.action_ind == 1:
                 self.point2 = x, y
                 print('point2 set to x=%3.1f y=%3.1f' % (x,y))
                 self.action_ind = self.action_ind + 1
@@ -75,9 +81,7 @@ class DimensioningRect(QtGui.QGraphicsRectItem):
         pos = event.scenePos()
         x, y = pos.x(), pos.y()
         XML = None
-        if self.action_ind == 0:
-            XML = circularDimensionSVG( x, y, self.radius, **self.dim_svg_KWs )
-        elif self.action_ind == 1:
+        if self.action_ind == 1:
             XML = circularDimensionSVG( self.point1[0], self.point1[1], self.radius, x, y, **self.dim_svg_KWs )
         elif  self.action_ind == 2:
             XML = circularDimensionSVG( self.point1[0], self.point1[1], self.radius,
@@ -111,6 +115,36 @@ dimensioningRect = DimensioningRect(0,0,width,height)
 dimensioningRect.setAcceptHoverEvents(True)
 dimensioningRect.setFlag( QtGui.QGraphicsItem.GraphicsItemFlag.ItemIsFocusable, True )
 graphicsScene.addItem(dimensioningRect)
+
+#creating points to dimension.
+circlesXML = []
+rand = numpy.random.rand
+for i in range(24):
+    circlesXML.append( '<circle id="circ%03i" cx ="%f" cy ="%f" r ="%s" />' % (i, (0.1+0.8*rand())*width , (0.1+0.8*rand())*height, 6 + 64*rand()  ))
+XML = '''<svg id="Ortho_0_1" width="%i" height="%i">  <g stroke-width="0.2" >
+%s
+</g> </svg>''' % (width, height, '\n'.join(circlesXML) )
+class dummyViewObject:
+    def __init__(self, XML):
+        self.ViewResult = XML
+viewObject = dummyViewObject( XML )
+    
+
+maskPen = QtGui.QPen( QtGui.QColor(255,0,0, 125) )
+maskPen.setWidth(3.0)
+hoverPen = QtGui.QPen( QtGui.QColor(255,0,0) )
+hoverPen.setWidth(3.0)
+
+selectGraphicsItems = generateSelectionGraphicsItems( [viewObject], dimensioningRect.selectCircle , doCircles=True,
+                                                      maskPen=maskPen  , 
+                                                      maskBrush=QtGui.QBrush(), 
+                                                      maskHoverPen= hoverPen )
+
+graphicsScene.addItem(dimensioningRect)    
+for g in selectGraphicsItems:
+    graphicsScene.addItem(g)
+
+
 
 view = QtGui.QGraphicsView(graphicsScene)
 #view.scale(2, 2)

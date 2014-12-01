@@ -23,26 +23,27 @@ class DimensioningRect(QtGui.QGraphicsRectItem):
         super(DimensioningRect, self).__init__(*args)
         svgRenderer = QtSvg.QSvgRenderer()
         self.action_ind = 0
-        self.actions = ['selectPoint1','selectPoint2','placeDimensionBaseLine','placeDimensionText']
+        self.actions = ['selectLine1','selectLine2','placeDimensionBaseLine','placeDimensionText']
         self.dimPreview = QtSvg.QGraphicsSvgItem()
         self.dimSVGRenderer = QtSvg.QSvgRenderer()
         self.dimSVGRenderer.load( QtCore.QByteArray( '''<svg width="%i" height="%i"></svg>''' % (args[2],args[3])))
         self.dimPreview.setSharedRenderer( self.dimSVGRenderer )
+        self.dimPreview.setZValue(100)
         graphicsScene.addItem( self.dimPreview )
         self.dim_svg_KWs = dict(
             svgTag='svg', svgParms='width="%i" height="%i"' % (args[2],args[3]),
             fontSize= 16, strokeWidth=1.0, arrowL1=10, arrowL2=4, arrowW=6,
-            scale= 1.0, gap_datum_points = 8, dimension_line_overshoot=4,
+            gap_datum_points = 8, dimension_line_overshoot=4,
             )
-    def selectDimensioningPoint( self, event, referer, elementXML, elementParms, elementViewObject ):
+    def selectDimensioningLine( self, event, referer, elementXML, elementParms, elementViewObject ):
         print( elementXML )
         if self.action_ind == 0: #then selectPoint1
-            self.point1 = elementParms['x'], elementParms['y']
+            self.line1 = elementParms['x1'], elementParms['y1'], elementParms['x2'], elementParms['y2'] 
             self.action_ind = self.action_ind + 1
             referer.lockSelection()
             self.referer1 = referer
         elif self.action_ind == 1: #then selectPoint2
-            self.point2 = elementParms['x'], elementParms['y']
+            self.line2 = elementParms['x1'], elementParms['y1'], elementParms['x2'], elementParms['y2'] 
             self.action_ind = self.action_ind + 1
             referer.lockSelection()
             self.referer2 = referer
@@ -58,8 +59,7 @@ class DimensioningRect(QtGui.QGraphicsRectItem):
             elif self.action_ind == 3: # then placeDimensionText
                 self.point4 = x, y
                 self.action_ind = 0
-                XML = linearDimensionSVG( self.point1[0], self.point1[1],
-                                          self.point2[0], self.point2[1], 
+                XML = angularDimensionSVG( self.line1, self.line2,
                                           self.point3[0], self.point3[1], 
                                           x, y, **self.dim_svg_KWs )
                 if XML <> None:
@@ -78,12 +78,10 @@ class DimensioningRect(QtGui.QGraphicsRectItem):
         x, y = pos.x(), pos.y()
         XML = None
         if self.action_ind == 2: # then placeDimensionBaseLine action
-            XML = linearDimensionSVG( self.point1[0], self.point1[1],
-                                      self.point2[0], self.point2[1], x, y,
+            XML = angularDimensionSVG( self.line1, self.line2, x, y,
                                       **self.dim_svg_KWs )
         elif self.action_ind == 3: # then placeDimensionText
-            XML = linearDimensionSVG( self.point1[0], self.point1[1],
-                                      self.point2[0], self.point2[1], 
+            XML = angularDimensionSVG( self.line1, self.line2,
                                       self.point3[0], self.point3[1], 
                                       x, y, **self.dim_svg_KWs )
         if XML <> None:
@@ -111,28 +109,31 @@ dimensioningRect.setFlag( QtGui.QGraphicsItem.GraphicsItemFlag.ItemIsFocusable, 
 dimensioningRect.setZValue(-1000)
 
 #creating points to dimension.
-circlesXML = []
-noPoints = 12
-X = [ numpy.random.rand()*width*0.8 for i in range(noPoints) ]
-Y = [ numpy.random.rand()*height*0.8 for i in range(noPoints) ]
-for i in range(noPoints):
-    circlesXML.append( '<circle id="circ%03i" cx ="%f" cy ="%f" r ="6" />' % (i,X[i],Y[i]) )
+lineXML = []
+rand = numpy.random.rand
+for i in range(24):
+    x1 = numpy.random.rand()*width*0.8
+    y1 = numpy.random.rand()*height*0.8 
+    x2 = x1 + 200*(rand() - 0.5)
+    y2 = y1 + 200*(rand() - 0.5)
+    lineXML.append( '<path id= "path%03i" d=" M %f %f L %f %f " />' % (i,x1,y1,x2,y2))
 XML = '''<svg id="Ortho_0_1" width="%i" height="%i">  <g stroke-width="0.2" >
 %s
-</g> </svg>''' % (width, height, '\n'.join(circlesXML) )
+</g> </svg>''' % (width, height, '\n'.join(lineXML) )
 class dummyViewObject:
     def __init__(self, XML):
         self.ViewResult = XML
 viewObject = dummyViewObject( XML )
     
 
-hoverPen = QtGui.QPen( QtGui.QColor(255,0,0) )
-hoverPen.setWidth(3.0)
+maskPen = QtGui.QPen( QtGui.QColor(0,160,0) )
+maskPen.setWidth(5.0)
+hoverPen = QtGui.QPen( QtGui.QColor(0,0,255) )
+hoverPen.setWidth(5.0)
 
-selectGraphicsItems = generateSelectionGraphicsItems( [viewObject], dimensioningRect.selectDimensioningPoint , doCircles=True,
-                                                      maskPen= QtGui.QPen( QtGui.QColor(0,0,0) ) , 
-                                                      maskBrush=QtGui.QBrush( QtGui.QColor(0,0,255) ), 
-                                                      maskHoverPen= hoverPen )
+
+selectGraphicsItems = generateSelectionGraphicsItems( [viewObject], dimensioningRect.selectDimensioningLine, doLines=True,
+                                                      maskPen=maskPen , maskHoverPen= hoverPen )
 
 graphicsScene.addItem(dimensioningRect)    
 for g in selectGraphicsItems:
