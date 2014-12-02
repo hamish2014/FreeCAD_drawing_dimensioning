@@ -14,80 +14,26 @@ dialog.show()
 
 from dimensioning import *
 from dimensioning import __dir__ # not imported with * directive
-from drawingSelectionLib import generateSelectionGraphicsItems
+import previewDimension
 import addTextDialog
 
+dimensioning = DimensioningProcessTracker()
 
-
-class PlaceTextRect( DimensioningRectPrototype ):
-
-    def activate(self, graphicsScene, graphicsView, page, width, height, text, textFontSize, textColor,
-                 VRT_scale, VRT_ox, VRT_oy, textPreview, textSVGRenderer, **otherKWs):
-
-        self.graphicsScene = graphicsScene
-        self.graphicsView = graphicsView
-        self.drawingPage = page
-        self.drawingPageWidth = width
-        self.drawingPageHeight = height
-        self.textToPlace = text
-        self.textFontSize = textFontSize
-        self.textColor = textColor
-        self.VRT_ox = VRT_ox
-        self.VRT_oy = VRT_oy
-        self.VRT_scale = VRT_scale
-        self.textPreview = textPreview
-        self.textSVGRenderer = textSVGRenderer
-
-        self.svgHeaders='width="%(width)i" height="%(height)i" transform="translate( %(VRT_ox)f, %(VRT_oy)f) scale( %(VRT_scale)f, %(VRT_scale)f)"' % locals()
-        
-        debugPrint(3, 'adding graphicsScene Objects for aiding to dimensioning to scene')
-        graphicsScene.addItem( textPreview )
-        self.cleanUpList = [ textPreview ]
-        self.cleanedUp = False
-
-        self.setRect(0, 0, width, height)
-        graphicsScene.addItem( self )
-        self.setAcceptHoverEvents(True)
-        self.setFlag( QtGui.QGraphicsItem.GraphicsItemFlag.ItemIsFocusable, True )
-        debugPrint(3, 'PlaceTextRect.Activated')
-
-    def textSVG(self, x, y, preview):
-        svgTag = 'svg' if preview else 'g'
-        XML = '''<%s  %s >
+def textSVG( x, y, svgTag='g', svgParms=''):
+    XML = '''<%s  %s >
 <text x="%f" y="%f" fill="%s" style="font-size:%i">%s</text>
-</%s> ''' % ( svgTag, self.svgHeaders if preview else '', x, y, self.textColor, self.textFontSize, self.textToPlace, svgTag )
-        debugPrint(4, 'textSVG.XML %s' % XML)
-        return XML
+</%s> ''' % ( svgTag, svgParms, x, y, dimensioning.color, dimensioning.fontSize, dimensioning.text, svgTag )
+    debugPrint(4, 'textSVG.XML %s' % XML)
+    return XML
 
-    def hoverMoveEvent(self, event):
-        pos = event.scenePos()
-        x = ( pos.x() - self.VRT_ox )/ self.VRT_scale
-        y = ( pos.y() - self.VRT_oy )/ self.VRT_scale
-        debugPrint(4, 'hoverMoveEvent: x %f, y %f'%(x,y))
-        self.textSVGRenderer.load( QtCore.QByteArray( self.textSVG(x,y,True) ) )
-        self.textPreview.update()
-        self.textPreview.show()
+def clickEvent( x, y):
+    viewName = findUnusedObjectName('dimText')
+    XML = textSVG(x,y)
+    return viewName, XML
 
-    def mousePressEvent( self, event ):
-        if event.button() == QtCore.Qt.MouseButton.LeftButton:
-            pos = event.scenePos()
-            x = ( pos.x() - self.VRT_ox )/ self.VRT_scale
-            y = ( pos.y() - self.VRT_oy )/ self.VRT_scale
-            debugPrint(3, 'mousePressEvent: x %f, y %f' % (x, y))
-            XML = self.textSVG(x,y,False)
-            debugPrint(3, 'XML %s' % XML)
-            viewName = findUnusedObjectName('dimText')
-            debugPrint(2, 'creating text %s' % viewName)
-            App.ActiveDocument.addObject('Drawing::FeatureView',viewName)
-            App.ActiveDocument.getObject(viewName).ViewResult = XML                    
-            self.drawingPage.addObject(App.ActiveDocument.getObject(viewName))
-            self.cleanUp()
+def hoverEvent( x, y):
+    return textSVG( x, y, **dimensioning.svg_preview_KWs )
 
-        elif event.button() == QtCore.Qt.MouseButton.RightButton:
-            self.cleanUp()
-
-
-moduleGlobals = {}
 class AddTextDialogWidget( QtGui.QWidget ):
     def accept( self ):
         debugPrint(3, 'AddTextDialogWidget accept pressed')
@@ -98,27 +44,15 @@ class AddTextDialogWidget( QtGui.QWidget ):
             return
         debugPrint(2, 'Placing "%s"' % widgets['textLineEdit'].text() )
         self.hide()
-        moduleGlobals['text'] = widgets['textLineEdit'].text()
+        dimensioning.text = widgets['textLineEdit'].text()
         widgets['textLineEdit'].setText('')
-        moduleGlobals['textFontSize'] =  widgets['textSizeSpinBox'].value()
-        moduleGlobals['textColor'] = widgets['colorLineEdit'].text()
-        if not moduleGlobals.has_key('placeTextRect') or not moduleGlobals['placeTextRect'].cleanedUp: 
-            # then initialize graphicsScene Objects, otherwise dont recreate objects. 
-            # initializing dimPreview is particularly troublesome, as in FreeCAD 0.15 this is unstable and occasionally causes FreeCAD to crash.
-            debugPrint(4, 'creating text placement preview')
-            textPreview = QtSvg.QGraphicsSvgItem()
-            textSVGRenderer = QtSvg.QSvgRenderer()
-            textSVGRenderer.load( QtCore.QByteArray( '''<svg width="%i" height="%i"> </svg>''' % (moduleGlobals['width'], moduleGlobals['height']) ) )
-            textPreview.setSharedRenderer( textSVGRenderer )
-
-            debugPrint(4, 'Adding CircularDimensioningRect to graphicsScene')
-            placeTextRect = PlaceTextRect()
-
-            moduleGlobals.update(locals())
-            del moduleGlobals['self']
-            assert not moduleGlobals.has_key('moduleGlobals')
-        debugPrint(4, '7')
-        moduleGlobals['placeTextRect'].activate(**moduleGlobals)
+        dimensioning.fontSize =  widgets['textSizeSpinBox'].value()
+        dimensioning.color = widgets['colorLineEdit'].text()
+        debugPrint(4,'previewDimension.initializePreview')
+        previewDimension.initializePreview(
+            dimensioning.drawingVars,
+            clickEvent, 
+            hoverEvent )
 
 
 dialog = AddTextDialogWidget()
@@ -127,8 +61,8 @@ dialogUi.setupUi(dialog)
 
 class AddText:
     def Activated(self):
-        if not get_FreeCAD_drawing_variables(moduleGlobals):#needs to be done before dialog show, else Qt active is dialog and not freecads
-            return
+        V = getDrawingPageGUIVars() #needs to be done before dialog show, else Qt active is dialog and not freecads
+        dimensioning.activate( V )
         dialog.show()
         
     def GetResources(self): 

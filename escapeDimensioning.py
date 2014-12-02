@@ -1,14 +1,11 @@
-import os, FreeCADGui
-import FreeCAD as App
-from PySide import QtGui
-from dimensioning import __dir__, get_FreeCAD_drawing_variables
+
+from dimensioning import *
+from dimensioning import __dir__ # not imported with * directive
 
 class EscapeDimensioning:
     def Activated(self):
-        vars = {}
-        if not get_FreeCAD_drawing_variables(vars):
-            return
-        vars['page'].touch()
+        V = getDrawingPageGUIVars()
+        V.page.touch()
         App.ActiveDocument.recompute()
         
     def GetResources(self): 

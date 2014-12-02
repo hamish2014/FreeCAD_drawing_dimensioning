@@ -3,7 +3,7 @@ class DimensioningWorkbench (Workbench):
     import os
     from dimensioning import __dir__
     Icon = os.path.join( __dir__ , 'linearDimension.svg' )
-    MenuText = "Drawing Dimensioning"
+    MenuText = 'Drawing Dimensioning'
     def Initialize(self):
         import importlib
         DEBUG=False
@@ -16,7 +16,7 @@ class DimensioningWorkbench (Workbench):
             else:
                 crudeDebugger.printingDebugging( os.path.join(__dir__, module + '.py') )
                 importlib.import_module(  module + '_crudeDebugging')
-        commandslist = ["linearDimension", "circularDimension", "angularDimension", "addTextDimensioning", "deleteDimension", "escapeDimensioning"]
-        self.appendToolbar("Drawing Dimensioning", commandslist)
+        commandslist = ['linearDimension', 'circularDimension', 'angularDimension', 'addTextDimensioning', 'deleteDimension', 'escapeDimensioning']
+        self.appendToolbar('Drawing Dimensioning', commandslist)
 
 Gui.addWorkbench(DimensioningWorkbench())

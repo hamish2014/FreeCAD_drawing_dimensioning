@@ -21,7 +21,8 @@ def findUnusedObjectName(base, counterStart=1, fmt='%03i'):
 
 notDrawingPage_title = "Current Window not showing a Drawing Page"
 notDrawingPage_msg =  "Drawing Dimensioning tools are for page objects generated using the Drawing workbench. Aborting operation."
-def get_FreeCAD_drawing_variables( moduleGlobals ):
+
+def getDrawingPageGUIVars():
     '''
     Get the FreeCAD window, graphicsScene, drawing page object (...) and returns a dictionary of them
     '''
@@ -32,13 +33,13 @@ def get_FreeCAD_drawing_variables( moduleGlobals ):
         subWinMW = MdiArea.activeSubWindow().children()[3]
     except AttributeError:
         QtGui.QMessageBox.information( QtGui.qApp.activeWindow(), notDrawingPage_title, notDrawingPage_msg  )
-        return False
+        raise ValueError, notDrawingPage_title 
     page = App.ActiveDocument.getObject( subWinMW.objectName() )
     try:
         graphicsView = [ c for c in subWinMW.children() if isinstance(c,QtGui.QGraphicsView)][0]
     except IndexError:
         QtGui.QMessageBox.information( QtGui.qApp.activeWindow(), notDrawingPage_title, notDrawingPage_msg  )
-        return False
+        raise ValueError, notDrawingPage_title 
     graphicsScene = graphicsView.scene()
     pageRect = graphicsScene.items()[0] #hope this index does not change!
     width = pageRect.boundingRect().width()
@@ -51,43 +52,25 @@ def get_FreeCAD_drawing_variables( moduleGlobals ):
     VRT_ox = -1 / VRT_scale
     VRT_oy = -1 / VRT_scale
 
-    # updating moduleGlobals
-    data = locals()
-    del data['moduleGlobals']
-    moduleGlobals.update(data)
-
     transform = QtGui.QTransform()
     transform.translate(VRT_ox, VRT_oy)
     transform.scale(VRT_scale, VRT_scale)
-    drawingSelectionLib.Transform_selectionGraphicsItems = transform
-    return True
 
-class DimensioningRectPrototype(QtGui.QGraphicsRectItem):
+    return DrawingPageGUIVars(locals())
 
-    def activate(self, graphicsScene, graphicsView, page, VRT_scale, VRT_ox, VRT_oy, **otherKWs):
-        self.graphicsScene = graphicsScene
-        self.graphicsView = graphicsView
-        self.drawingPage = page
-        self.VRT_ox = VRT_ox
-        self.VRT_oy = VRT_oy
-        self.VRT_scale = VRT_scale
-        graphicsScene.addItem( self )
-        self.cleanUpList = []
-        self.cleanedUp = False
-        #cleanedUp flag required as to monitor for external App.ActiveDocument.recompute() call, which would result in the items in cleanUpList and self being deleted.
+class DrawingPageGUIVars:
+    "for codding convience, wrt v.transform instead of v['transform']"
+    def __init__(self, data):
+        self.__dict__.update(data)
 
-    def cleanUp(self):
-        for item in self.cleanUpList:
-            self.graphicsScene.removeItem(item)
-        self.graphicsScene.removeItem(self)
-        self.cleanedUp = True 
-        #to do add code to keep graphicsView from reseting
-        debugPrint(4,'cleanUP: items removed from scene, now recomputing')
-        self.drawingPage.touch()
-        App.ActiveDocument.recompute()
-                
-    def keyPressEvent(self, event):
-        #if len(event.text()) == 1:
-        #   debugPrint(2, 'key pressed: event.text %s (ord %i)' % (event.text(), ord(event.text())))
-        if event.text() == chr(27): #escape key
-            self.cleanUp()
+class DimensioningProcessTracker:
+    def activate( self, drawingVars):
+        V = drawingVars #short hand
+        self.drawingVars = V
+        self.stage = 0
+        self.svg_preview_KWs = {
+            'svgTag' : 'svg',
+            'svgParms' : 'width="%(width)i" height="%(height)i" transform="translate( %(VRT_ox)f, %(VRT_oy)f) scale( %(VRT_scale)f, %(VRT_scale)f)"' % V.__dict__
+            }
+
+

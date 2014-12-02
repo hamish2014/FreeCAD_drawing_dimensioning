@@ -14,7 +14,6 @@ defaultMaskPen =      QtGui.QPen( QtGui.QColor(0,255,0,100) )
 defaultMaskPen.setWidth(0.5)
 defaultMaskHoverPen = QtGui.QPen( QtGui.QColor(0,255,0,255) )
 defaultMaskHoverPen.setWidth(1.0)
-Transform_selectionGraphicsItems = QtGui.QTransform() 
 
 class CircleSelectionGraphicsItem(QtGui.QGraphicsEllipseItem):
     def mousePressEvent( self, event ):
@@ -38,9 +37,14 @@ class LineSelectionGraphicsItem( QtGui.QGraphicsLineItem, CircleSelectionGraphic
     def setBrush(self, Brush):
         pass #this function should not been inherrited from CircleSelectionGraphicsItem
 
-def generateSelectionGraphicsItems( viewObjects, onClickFun, doPoints=False, doTextItems=False, doLines=False, doCircles=False, doFittedCircles=False, 
+
+graphicItems = [] #storing selection graphics items here as to protect against the garbage collector
+
+def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sceneToAddTo=None, clearPreviousSelectionItems=True,
+                                    doPoints=False, doTextItems=False, doLines=False, doCircles=False, doFittedCircles=False, 
                                     pointWid=1.0 , maskPen=defaultMaskPen , maskBrush=defaultMaskBrush, maskHoverPen=defaultMaskHoverPen ):
-    graphicItems = []
+    if clearPreviousSelectionItems:
+        del graphicItems[:] #may cause problems, if conflict results with FreeCAD recompute function
     def postProcessGraphicsItem(gi, elementParms):
         gi.setBrush( maskBrush  )
         gi.setPen(maskPen)
@@ -52,7 +56,10 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, doPoints=False, doT
         gi.elementViewObject = viewObject
         gi.setAcceptHoverEvents(True)
         gi.setCursor( QtCore.Qt.CrossCursor ) # http://qt-project.org/doc/qt-5/qt.html#CursorShape-enum
-        gi.setTransform( Transform_selectionGraphicsItems )
+        if transform <> None:
+            gi.setTransform( transform )
+        if sceneToAddTo <> None:
+            sceneToAddTo.addItem(gi)
         graphicItems.append(gi)
     pointsAlreadyAdded = []
     def addSelectionPoint( x, y ): #common code
@@ -153,6 +160,10 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, doPoints=False, doT
                         #self.fitted_circles.append( FittedCircle( element, fitData, cx, cy, r) )
     return graphicItems
     
+def hideSelectionGraphicsItems():
+    for gi in graphicItems:
+        gi.hide()
+
 
 
 if __name__ == "__main__":
@@ -200,14 +211,10 @@ if __name__ == "__main__":
             self.ViewResult = XML
     viewObject = dummyViewObject( XML )
 
-    def onClickFun( event, referer, elementXML, elementParms, elementViewObjectsvgElement ):
+    def onClickFun( event, referer, elementXML, elementParms, elementViewObject ):
         print( elementXML  )
 
-    selectGraphicsItems = generateSelectionGraphicsItems( [viewObject], onClickFun, doPoints=True, doCircles=True, doTextItems=True, doLines=True, doFittedCircles=True )
-
-    for g in selectGraphicsItems:
-        graphicsScene.addItem(g)
-
+    generateSelectionGraphicsItems( [viewObject], onClickFun, sceneToAddTo=graphicsScene, doPoints=True, doCircles=True, doTextItems=True, doLines=True, doFittedCircles=True )
 
     view = QtGui.QGraphicsView(graphicsScene)
     view.show()
