@@ -1,7 +1,7 @@
 
 from dimensioning import *
 from dimensioning import __dir__ # not imported with * directive
-import drawingSelectionLib, previewDimension
+import selectionOverlay, previewDimension
 from dimensionSvgConstructor import linearDimensionSVG
 
 dimensioning = DimensioningProcessTracker()
@@ -18,7 +18,7 @@ def selectDimensioningPoint( event, referer, elementXML, elementParms, elementVi
         debugPrint(2, 'point2 set to x=%3.1f y=%3.1f' % (x,y))
         dimensioning.stage = 2 
         dimensioning.dimScale = 1/elementXML.rootNode().scaling()
-        drawingSelectionLib.hideSelectionGraphicsItems()
+        selectionOverlay.hideSelectionGraphicsItems()
         previewDimension.initializePreview( dimensioning.drawingVars, clickFunPreview, hoverFunPreview )
 
 def clickFunPreview( x, y ):
@@ -53,7 +53,7 @@ class linearDimension:
     def Activated(self):
         V = getDrawingPageGUIVars()
         dimensioning.activate(V)
-        drawingSelectionLib.generateSelectionGraphicsItems( 
+        selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if not obj.Name.startswith('dim')], 
             selectDimensioningPoint ,
             transform = V.transform,

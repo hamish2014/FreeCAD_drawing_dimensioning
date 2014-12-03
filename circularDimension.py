@@ -1,7 +1,7 @@
 
 from dimensioning import *
 from dimensioning import __dir__ # not imported with * directive
-import drawingSelectionLib, previewDimension
+import selectionOverlay, previewDimension
 from dimensionSvgConstructor import circularDimensionSVG
 
 dimensioning = DimensioningProcessTracker()
@@ -13,7 +13,7 @@ def selectFun(  event, referer, elementXML, elementParms, elementViewObject ):
     dimensioning.radius = elementParms['r']
     dimensioning.dimScale = 1/elementXML.rootNode().scaling()
     dimensioning.stage = 1
-    drawingSelectionLib.hideSelectionGraphicsItems()
+    selectionOverlay.hideSelectionGraphicsItems()
     previewDimension.initializePreview( dimensioning.drawingVars, clickFunPreview, hoverFunPreview )
 
 def clickFunPreview( x, y ):
@@ -56,7 +56,7 @@ class circularDimension:
     def Activated(self):
         V = getDrawingPageGUIVars()
         dimensioning.activate(V)
-        drawingSelectionLib.generateSelectionGraphicsItems( 
+        selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if not obj.Name.startswith('dim')], 
             selectFun ,
             transform = V.transform,

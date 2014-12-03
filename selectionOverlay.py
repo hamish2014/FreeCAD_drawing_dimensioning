@@ -167,7 +167,7 @@ def hideSelectionGraphicsItems():
 
 
 if __name__ == "__main__":
-    print('Testing drawingSelectionLib.py')
+    print('Testing selectionOverlay.py')
     XML = '''<svg id="Ortho_0_1" width="640" height="480"
    transform="rotate(90,122.43,123.757) translate(122.43,123.757) scale(1.5,1.5)"
   >

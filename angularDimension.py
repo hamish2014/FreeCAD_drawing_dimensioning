@@ -1,7 +1,7 @@
 
 from dimensioning import *
 from dimensioning import __dir__ # not imported with * directive
-import drawingSelectionLib, previewDimension
+import selectionOverlay, previewDimension
 from dimensionSvgConstructor import angularDimensionSVG
 
 dimensioning = DimensioningProcessTracker()
@@ -17,7 +17,7 @@ def selectFun( event, referer, elementXML, elementParms, elementViewObject ):
     else: 
         dimensioning.line2 = x1,y1,x2,y2
         dimensioning.stage = 2
-        drawingSelectionLib.hideSelectionGraphicsItems()
+        selectionOverlay.hideSelectionGraphicsItems()
         previewDimension.initializePreview( dimensioning.drawingVars, clickFunPreview, hoverFunPreview )
 
 def clickFunPreview( x, y ):
@@ -50,7 +50,7 @@ class angularDimension:
     def Activated(self):
         V = getDrawingPageGUIVars()
         dimensioning.activate(V)
-        drawingSelectionLib.generateSelectionGraphicsItems( 
+        selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if not obj.Name.startswith('dim')], 
             selectFun ,
             transform = V.transform,

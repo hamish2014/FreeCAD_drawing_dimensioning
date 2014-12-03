@@ -3,7 +3,7 @@ library for constructing dimension SVGs
 '''
 
 from dimensionSvgConstructor import *
-from drawingSelectionLib import  generateSelectionGraphicsItems
+from selectionOverlay import  generateSelectionGraphicsItems
 
 print('Testing dimensionSvgConstructor.py')
 import sys

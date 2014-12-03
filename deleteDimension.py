@@ -1,7 +1,7 @@
 
 from dimensioning import *
 from dimensioning import __dir__ # not imported with * directive
-from drawingSelectionLib import generateSelectionGraphicsItems
+from selectionOverlay import generateSelectionGraphicsItems
 
 dimensioning = DimensioningProcessTracker()
 

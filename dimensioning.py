@@ -2,7 +2,6 @@ import numpy
 import FreeCAD as App
 import FreeCADGui, Part, os
 from PySide import QtGui, QtCore, QtSvg
-import drawingSelectionLib
 
 __dir__ = os.path.dirname(__file__)
 
