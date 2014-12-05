@@ -105,7 +105,7 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                 #<spacing corrections>
                 i = 0
                 while i < len(dParmsXML)-1:
-                    if dParmsXML[i] in 'MLACQ,' and dParmsXML[i+1] in '-.0123456789':
+                    if dParmsXML[i] in 'MLACQZ,' and dParmsXML[i+1] in '-.0123456789':
                         dParmsXML = dParmsXML[:i+1] + ' ' + dParmsXML[i+1:]
                     i = i + 1
                 #</spacing corrections>
@@ -116,10 +116,18 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                     if parms[j] == 'M':
                         _pen_x, _pen_y = float(parms[j+1]), float(parms[j+2])
                         pen_x, pen_y = element.applyTransforms( _pen_x, _pen_y )
-                        j = j + 3
-                    elif parms[j] == 'L':
-                        _end_x, _end_y = float(parms[j+1]), float(parms[j+2])
-                        end_x, end_y = element.applyTransforms( _end_x, _end_y )
+                        _path_start_x , _path_start_y = _pen_x, _pen_y
+                        path_start_x , path_start_y = pen_x, pen_y
+                        j = j + 3                        
+                    elif parms[j] == 'L' or parms[j] == 'Z':
+                        if  parms[j] == 'L':
+                            _end_x, _end_y = float(parms[j+1]), float(parms[j+2])
+                            end_x, end_y = element.applyTransforms( _end_x, _end_y )
+                            j = j + 3
+                        else: #parms[j] == 'Z':
+                            _end_x, _end_y = _path_start_x , _path_start_y
+                            end_x, end_y = path_start_x , path_start_y
+                            j = j + 1
                         if doPoints:
                             addSelectionPoint ( pen_x, pen_y )
                             addSelectionPoint ( end_x, end_y )
@@ -128,7 +136,6 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                             postProcessGraphicsItem(graphicsItem, {'x1':pen_x,'y1':pen_y,'x2':end_x,'y2':end_y})
                         _pen_x, _pen_y = _end_x, _end_y
                         pen_x, pen_y = end_x, end_y
-                        j = j + 3
                     elif parms[j] == 'A':
                         # The arc command begins with the x and y radius and ends with the ending point of the arc. 
                         # Between these are three other values: x axis rotation, large arc flag and sweep flag.
