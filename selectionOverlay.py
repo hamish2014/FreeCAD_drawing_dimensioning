@@ -84,7 +84,12 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                     graphicsItem.setZValue( 1.01**-r ) #smaller circles on top
                     postProcessGraphicsItem(graphicsItem, {'x':x,'y':y,'r':r})
                 if doPoints: 
-                    addSelectionPoint ( x, y, 2.0 )
+                    addSelectionPoint ( x, y, 2 ) #Circle center point
+                    addSelectionPoint ( x + r, y, 2 ) #Circle right quadrant point
+                    addSelectionPoint ( x - r, y, 2 ) #Circle left quadrant point
+                    addSelectionPoint ( x , y + r, 2 ) #Circle top quadrant point
+                    addSelectionPoint ( x , y - r, 2 ) #Circle bottom quadrant point
+
             if element.tag == 'text' and doTextItems:
                 addSelectionPoint( *element.applyTransforms( float( element.parms['x'] ), float( element.parms['y'] ) ) )
             if element.tag == 'path':
@@ -168,7 +173,7 @@ def hideSelectionGraphicsItems():
 
 if __name__ == "__main__":
     print('Testing selectionOverlay.py')
-    XML = '''<svg id="Ortho_0_1" width="640" height="480"
+    testCase1 = '''<svg id="Ortho_0_1" width="640" height="480"
    transform="rotate(90,122.43,123.757) translate(122.43,123.757) scale(1.5,1.5)"
   >
 <g   stroke="rgb(0, 0, 0)"
@@ -188,6 +193,9 @@ if __name__ == "__main__":
 </g>
 <text x="50" y="-60" fill="blue" style="font-size:8" transform="rotate(0.000000 50,-60)">256.426</text>
 </svg>'''
+    testCase2 = 
+
+    XML = testCase2
 
     app = QtGui.QApplication(sys.argv)
     width = 640
