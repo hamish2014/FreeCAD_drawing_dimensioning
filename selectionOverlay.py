@@ -62,12 +62,12 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
             sceneToAddTo.addItem(gi)
         graphicItems.append(gi)
     pointsAlreadyAdded = []
-    def addSelectionPoint( x, y ): #common code
+    def addSelectionPoint( x, y, zValue=1.0 ): #common code
         if [x,y] in pointsAlreadyAdded:
             return
         pointsAlreadyAdded.append( [x,y] )
         graphicsItem = CircleSelectionGraphicsItem( x-pointWid, y-pointWid, 2*pointWid, 2*pointWid )
-        graphicsItem.setZValue( 1 ) #point on top!
+        graphicsItem.setZValue( zValue ) #point on top!
         postProcessGraphicsItem(graphicsItem, {'x':x, 'y':y})
 
     for viewObject in viewObjects:
@@ -84,7 +84,7 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                     graphicsItem.setZValue( 1.01**-r ) #smaller circles on top
                     postProcessGraphicsItem(graphicsItem, {'x':x,'y':y,'r':r})
                 if doPoints: 
-                    addSelectionPoint ( x, y )
+                    addSelectionPoint ( x, y, 2.0 )
             if element.tag == 'text' and doTextItems:
                 addSelectionPoint( *element.applyTransforms( float( element.parms['x'] ), float( element.parms['y'] ) ) )
             if element.tag == 'path':
