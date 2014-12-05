@@ -5,8 +5,8 @@ This library provides a crude hack to get around this problem.
 Specifically, DrawingObject.ViewResults are parsed as to create QGraphicsItems to handle selection.
 '''
 from XMLlib import SvgXMLTreeNode
-import bezier_curve_lib
-import sys
+from circleLib import fitCircle_to_path, findCircularArcCentrePoint
+import sys, numpy
 from PySide import QtGui, QtCore, QtSvg
 
 defaultMaskBrush = QtGui.QBrush( QtGui.QColor(0,255,0,100) )
@@ -69,27 +69,33 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
         graphicsItem = CircleSelectionGraphicsItem( x-pointWid, y-pointWid, 2*pointWid, 2*pointWid )
         graphicsItem.setZValue( zValue ) #point on top!
         postProcessGraphicsItem(graphicsItem, {'x':x, 'y':y})
+    def addCircle( x, y, r, **extraKWs):
+        graphicsItem = CircleSelectionGraphicsItem( x-r, y-r, 2*r, 2*r )
+        graphicsItem.setZValue( 1.01**-r ) #smaller circles on top
+        KWs = {'x':x,'y':y,'r':r}
+        KWs.update(extraKWs)
+        postProcessGraphicsItem(graphicsItem, KWs)
+    def circlePoints( x, y, r ):
+        addSelectionPoint ( x, y, 2 ) #Circle center point
+        addSelectionPoint ( x + r, y, 2 ) #Circle right quadrant point
+        addSelectionPoint ( x - r, y, 2 ) #Circle left quadrant point
+        addSelectionPoint ( x , y + r, 2 ) #Circle top quadrant point
+        addSelectionPoint ( x , y - r, 2 ) #Circle bottom quadrant point
 
     for viewObject in viewObjects:
         if viewObject.ViewResult.strip() == '':
-            pass
+            continue
         XML_tree =  SvgXMLTreeNode(viewObject.ViewResult,0)
         scaling = XML_tree.scaling()
         for element in XML_tree.getAllElements():
             if element.tag == 'circle':
                 x, y = element.applyTransforms( float( element.parms['cx'] ), float( element.parms['cy'] ) )
                 r =  float( element.parms['r'] )* scaling
-                if doCircles:
-                    graphicsItem = CircleSelectionGraphicsItem( x-r, y-r, 2*r, 2*r )
-                    graphicsItem.setZValue( 1.01**-r ) #smaller circles on top
-                    postProcessGraphicsItem(graphicsItem, {'x':x,'y':y,'r':r})
+                if doCircles: 
+                    addCircle( x, y, r)
                 if doPoints: 
-                    addSelectionPoint ( x, y, 2 ) #Circle center point
-                    addSelectionPoint ( x + r, y, 2 ) #Circle right quadrant point
-                    addSelectionPoint ( x - r, y, 2 ) #Circle left quadrant point
-                    addSelectionPoint ( x , y + r, 2 ) #Circle top quadrant point
-                    addSelectionPoint ( x , y - r, 2 ) #Circle bottom quadrant point
-
+                    circlePoints( x, y, r)
+                
             if element.tag == 'text' and doTextItems:
                 addSelectionPoint( *element.applyTransforms( float( element.parms['x'] ), float( element.parms['y'] ) ) )
             if element.tag == 'path':
@@ -108,16 +114,19 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                 while j < len(parms):
                     #print(parms[j:])
                     if parms[j] == 'M':
-                        pen_x, pen_y = element.applyTransforms( float(parms[j+1]), float(parms[j+2]) )
+                        _pen_x, _pen_y = float(parms[j+1]), float(parms[j+2])
+                        pen_x, pen_y = element.applyTransforms( _pen_x, _pen_y )
                         j = j + 3
                     elif parms[j] == 'L':
-                        end_x, end_y = element.applyTransforms( float(parms[j+1]), float(parms[j+2]) )
+                        _end_x, _end_y = float(parms[j+1]), float(parms[j+2])
+                        end_x, end_y = element.applyTransforms( _end_x, _end_y )
                         if doPoints:
                             addSelectionPoint ( pen_x, pen_y )
                             addSelectionPoint ( end_x, end_y )
                         if doLines:
                             graphicsItem = LineSelectionGraphicsItem( pen_x, pen_y, end_x, end_y )
                             postProcessGraphicsItem(graphicsItem, {'x1':pen_x,'y1':pen_y,'x2':end_x,'y2':end_y})
+                        _pen_x, _pen_y = _end_x, _end_y
                         pen_x, pen_y = end_x, end_y
                         j = j + 3
                     elif parms[j] == 'A':
@@ -128,8 +137,16 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                         if doPoints:
                             addSelectionPoint ( pen_x, pen_y )
                             addSelectionPoint ( end_x, end_y )
-                        if doFittedCircles :
-                            pass #not implement yet for arcs ...
+                        if rX==rY :
+                            _c_x, _c_y = findCircularArcCentrePoint( rX, _pen_x, _pen_y, _end_x, _end_y, largeArc==1, sweep==1 ) #do in untranformed co-ordinates as to preserve sweep flag
+                            if not numpy.isnan(_c_x): #if all went well findCircularArcCentrePoint
+                                c_x, c_y = element.applyTransforms( _c_x, _c_y )
+                                r = rX * scaling
+                                if doCircles: 
+                                    addCircle( c_x, c_y, r , largeArc=largeArc, sweep=sweep)
+                                if doPoints:
+                                    circlePoints( c_x, c_y, r)
+                        _pen_x, _pen_y = _end_x, _end_y
                         pen_x, pen_y = end_x, end_y
                         j = j + 8
                     elif parms[j] == 'C' or parms[j] =='Q': #Bézier curve 
@@ -149,27 +166,26 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                         if doPoints:
                             addSelectionPoint ( pen_x, pen_y )
                             addSelectionPoint ( end_x, end_y )
-                        if doFittedCircles :
-                            fitData.append( P )
+                        fitData.append( P )
+                        _pen_x, _pen_y = _end_x, _end_y
                         pen_x, pen_y = end_x, end_y
                         j = j + 7
                     else:
                         raise RuntimeError, 'unable to parse path "%s" with d parms %s' % (element.XML[element.pStart: element.pEnd], parms)
                 if len(fitData) > 0: 
-                    x, y, r, r_error = bezier_curve_lib.fitCircle_to_path(fitData)
+                    x, y, r, r_error = fitCircle_to_path(fitData)
                     #print('fittedCircle: x, y, r, r_error', x, y, r, r_error)
                     if r_error < 10**-4:
-                        graphicsItem = CircleSelectionGraphicsItem( x-r, y-r, 2*r, 2*r )
-                        graphicsItem.setZValue( 1.01**-r ) #smaller circles on top
-                        postProcessGraphicsItem(graphicsItem, {'x':x,'y':y,'r':r, 'r_error':r_error})
-                        #self.fitted_circles.append( FittedCircle( element, fitData, cx, cy, r) )
+                        if doFittedCircles:
+                            addCircle( x, y, r , r_error=r_error )
+                        if doPoints:
+                            circlePoints( x, y, r)
+
     return graphicItems
     
 def hideSelectionGraphicsItems():
     for gi in graphicItems:
         gi.hide()
-
-
 
 if __name__ == "__main__":
     print('Testing selectionOverlay.py')
@@ -193,9 +209,34 @@ if __name__ == "__main__":
 </g>
 <text x="50" y="-60" fill="blue" style="font-size:8" transform="rotate(0.000000 50,-60)">256.426</text>
 </svg>'''
-    testCase2 = 
+    testCase2 = '''<g id="Ortho_0_0"
+   transform="rotate(180,44,35.6) translate(44,35.6) scale(4.0,4.0)"
+  >
+<g   stroke="rgb(0, 0, 0)"
+   stroke-width="0.583333"
+   stroke-linecap="butt"
+   stroke-linejoin="miter"
+   fill="none"
+   transform="scale(1,-1)"
+  >
+<path id= "1" d=" M 0 0 L -120 0 " />
+<path id= "2" d=" M 0 35 L 0 0 " />
+<path id= "3" d=" M -120 0 L -120 35 " />
+<path id= "4" d=" M -120 35 L -106 35 " />
+<path d="M-105.916 36 A6 6 0 1 0 -106 35" />
+<path id= "6" d=" M -105.916 36 L -120 36 " />
+<path id= "7" d=" M -120 36 L -120 48 " />
+<path id= "8" d=" M -120 48 L 0 48 " />
+<path id= "9" d=" M 0 48 L 0 36 " />
+<path id= "10" d=" M -14.0839 36 L 0 36 " />
+<path d="M-26 35 A6 6 0 0 0 -14.0839 36" />
+<path d="M-14 35 A6 6 0 1 0 -26 35" />
+<path id= "13" d=" M 0 35 L -14 35 " />
+<circle cx ="-60" cy ="35" r ="3" /></g>
+</g>'''
+    testCase3 = '<g id="Ortho_0_0"\n   transform="rotate(0,98.5,131.5) translate(98.5,131.5) scale(10,10)"\n  >\n<g   stroke="rgb(0, 0, 0)"\n   stroke-width="0.035"\n   stroke-linecap="butt"\n   stroke-linejoin="miter"\n   fill="none"\n   transform="scale(1,-1)"\n  >\n<path id= "1" d=" M 0 1 L 0 9 " />\n<path d="M-2.22045e-16 1 A1 1 0 0 1 1 -2.22045e-16" /><path d="M-2.22045e-16 9 A1 1 0 0 0 1 10" /><path id= "4" d=" M 1 0 L 9 0 " />\n<path id= "5" d=" M 1 10 L 9 10 " />\n<path d="M10 1 A1 1 0 0 0 9 -2.22045e-16" /><path d="M10 9 A1 1 0 0 1 9 10" /><path id= "8" d=" M 10 1 L 10 9 " />\n</g>\n</g>\n'
 
-    XML = testCase2
+    XML = testCase3
 
     app = QtGui.QApplication(sys.argv)
     width = 640
@@ -221,6 +262,7 @@ if __name__ == "__main__":
 
     def onClickFun( event, referer, elementXML, elementParms, elementViewObject ):
         print( elementXML  )
+        print( elementParms )
 
     generateSelectionGraphicsItems( [viewObject], onClickFun, sceneToAddTo=graphicsScene, doPoints=True, doCircles=True, doTextItems=True, doLines=True, doFittedCircles=True )
 

@@ -8,7 +8,6 @@ dimensioning = DimensioningProcessTracker()
         
 def selectFun( event, referer, elementXML, elementParms, elementViewObject ):
     x1,y1,x2,y2 = [ elementParms[k] for k in [ 'x1', 'y1', 'x2', 'y2' ] ]
-    debugPrint(2, str(dimensioning) )
     debugPrint(2, 'selecting line %i with x1=%3.1f y1=%3.1f, x2=%3.1f y2=%3.1f' % (dimensioning.stage, x1,y1,x2,y2) )
     referer.lockSelection()
     if dimensioning.stage == 0: #then select line1

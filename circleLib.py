@@ -78,9 +78,73 @@ def fitCircle_to_path(P, points_per_segment=6):
     else:
         return 0,0,0,10**6
 
+def findCircularArcCentrePoint(r, x_1, y_1, x_2, y_2, largeArc, sweep, debug=False ):
+    '''
+    (x_1 - x_c)**2 + (y_1 - y_c)**2 = r**2  (1)
+    (x_2 - x_c)**2 + (y_2 - y_c)**2 = r**2  (2)
+    giving 2 posible centre points from, that is where largeArc and Sweep come in
+    using geometry to solve for centre point...
+    '''
+    from numpy import arccos, arctan2, sin, cos, pi
+    # the law of cosines states c^2 = a^2 + b^2 - 2ab*cos(gamma)
+    c,a = r,r
+    b = ( ( x_2-x_1 )**2 + ( y_2-y_1 )**2 ) ** 0.5
+    cos_gamma = ( a**2 + b**2 - c**2 ) / ( 2*a*b )
+    if -1 <= cos_gamma and cos_gamma < 1:
+        gamma = arccos( cos_gamma ) #angle + pi radians = other possible centre point
+    else:
+        return numpy.nan, numpy.nan
+    if debug: print('x1,y1 : %1.2f, %1.2f' % (x_1, y_1))
+    if debug: print('x2,y2 : %1.2f, %1.2f' % (x_2, y_2))
+    if debug: print('large arc : %s' % largeArc)
+    if debug: print('sweep     : %s' % sweep ) 
+    if debug: print('x2,y2 : %1.2f, %1.2f' % (x_2, y_2))
+    if debug: print('gamma %3.1f' % (gamma/pi*180))
+    
+
+    angle_1_2 = arctan2( y_2 - y_1, x_2 - x_1)
+    # taking possible centre and testing it
+    c_x = x_1 + r*cos(angle_1_2 + gamma)
+    c_y = y_1 + r*sin(angle_1_2 + gamma)
+    if debug: print('possible c_x,c_y at %1.2f, %1.2f' % (c_x, c_y))
+    c_x_alt = x_1 + r*cos(angle_1_2 - gamma)
+    c_y_alt = y_1 + r*sin(angle_1_2 - gamma)
+    if debug: print('      or c_x,c_y at %1.2f, %1.2f' % (c_x_alt, c_y_alt))
+
+    angle_1 = arctan2( y_1 - c_y, x_1 - c_x)
+    angle_2 = arctan2( y_2 - c_y, x_2 - c_x)
+    if debug: print('  angle_1 %3.1f deg' % (angle_1 / pi * 180))
+    if debug: print('  angle_2 %3.1f deg' % (angle_2 / pi * 180))
+    if not largeArc:
+        if abs(angle_1 - angle_2) > pi:
+            if angle_1 < angle_2:
+                angle_1 = angle_1 + 2*pi
+            else:
+                angle_2 = angle_2 + 2*pi
+    else:
+        if abs(angle_1 - angle_2) < pi:
+            if angle_1 < angle_2:
+                angle_1 = angle_1 + 2*pi
+            else:
+                angle_2 = angle_2 + 2*pi
+    if debug: print('after largeArc flag correction')
+    if debug: print('  angle_1 %3.1f deg' % (angle_1 / pi * 180))
+    if debug: print('  angle_2 %3.1f deg' % (angle_2 / pi * 180))
+    if sweep:
+        correctCentre = angle_2 > angle_1
+    else:
+        correctCentre = angle_2 < angle_1
+    if correctCentre:
+        return c_x, c_y
+    else:
+        return c_x_alt,  c_y_alt 
+
+
 if __name__ == '__main__':
     from matplotlib import pyplot
-    print('Testing Bezier plot, source data from http://matplotlib.org/users/path_tutorial.html')
+    
+    print('testing circle lib')
+
     P = numpy.array( [
             (0., 0.),  # P0
             (0.2, 1.), # P1
@@ -88,6 +152,7 @@ if __name__ == '__main__':
             (0.8, 0.), # P3
             ] )
     pyplot.plot( P[:,0], P[:,1],'--k')
+    pyplot.title('Bezier plot, source data from http://matplotlib.org/users/path_tutorial.html')
 
     #B = numpy.array( [ bezier_point_cubic( P[0], P[1], P[2], P[3], t) 
     #      for t in numpy.linspace(0,1,101) ] )
