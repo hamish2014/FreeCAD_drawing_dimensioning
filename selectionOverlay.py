@@ -43,8 +43,12 @@ graphicItems = [] #storing selection graphics items here as to protect against t
 def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sceneToAddTo=None, clearPreviousSelectionItems=True,
                                     doPoints=False, doTextItems=False, doLines=False, doCircles=False, doFittedCircles=False, 
                                     pointWid=1.0 , maskPen=defaultMaskPen , maskBrush=defaultMaskBrush, maskHoverPen=defaultMaskHoverPen ):
-    if clearPreviousSelectionItems:
-        del graphicItems[:] #may cause problems, if conflict results with FreeCAD recompute function
+    if clearPreviousSelectionItems:         
+        if sceneToAddTo <> None:
+            for gi in sceneToAddTo.items():
+                if isinstance(gi, CircleSelectionGraphicsItem):
+                    sceneToAddTo.removeItem(gi)
+        del graphicItems[:]
     def postProcessGraphicsItem(gi, elementParms):
         gi.setBrush( maskBrush  )
         gi.setPen(maskPen)
