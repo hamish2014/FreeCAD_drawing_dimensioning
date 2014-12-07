@@ -66,6 +66,8 @@ class circularDimension:
             maskHoverPen=maskHoverPen, 
             maskBrush = QtGui.QBrush() #clear
             )
+        selectionOverlay.addProxyRectToRescaleGraphicsSelectionItems( V.graphicsScene, V.graphicsView, V.width, V.height)
+
     def GetResources(self): 
         return {
             'Pixmap' : os.path.join( __dir__ , 'circularDimension.svg' ) , 

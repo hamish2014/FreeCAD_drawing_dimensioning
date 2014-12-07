@@ -59,11 +59,12 @@ class linearDimension:
             transform = V.transform,
             sceneToAddTo = V.graphicsScene, 
             doPoints=True, 
-            pointWid=2.0,
+            pointWid=1.0,
             maskPen=maskPen, 
             maskHoverPen=maskHoverPen, 
             maskBrush = maskBrush
             )
+        selectionOverlay.addProxyRectToRescaleGraphicsSelectionItems( V.graphicsScene, V.graphicsView, V.width, V.height)
         
     def GetResources(self): 
         return {

@@ -8,12 +8,13 @@ from XMLlib import SvgXMLTreeNode
 from circleLib import fitCircle_to_path, findCircularArcCentrePoint
 import sys, numpy
 from PySide import QtGui, QtCore, QtSvg
+import FreeCAD
 
 defaultMaskBrush = QtGui.QBrush( QtGui.QColor(0,255,0,100) )
 defaultMaskPen =      QtGui.QPen( QtGui.QColor(0,255,0,100) )
-defaultMaskPen.setWidth(0.5)
+defaultMaskPen.setWidthF(0.5)
 defaultMaskHoverPen = QtGui.QPen( QtGui.QColor(0,255,0,255) )
-defaultMaskHoverPen.setWidth(1.0)
+defaultMaskHoverPen.setWidthF(1.0)
 
 class CircleSelectionGraphicsItem(QtGui.QGraphicsEllipseItem):
     def mousePressEvent( self, event ):
@@ -32,10 +33,36 @@ class CircleSelectionGraphicsItem(QtGui.QGraphicsEllipseItem):
     def unlockSelection( self ) :
         self.setAcceptHoverEvents(True)
         self.setPen( self.selectionMaskPen )
+    def adjustScale( self, newScale ):
+        'used to adjust SelectionGraphicsItems'
+        if not hasattr(self, '_orgPenWidth'):
+            self._orgPenWidth = self.selectionMaskPen.widthF()
+            self._orgPenWidthHover = self.selectionMaskHoverPen.widthF()
+        pen = self.pen()
+        s = newScale ** 0.7
+        pen.setWidthF( self._orgPenWidth* s )
+        self.setPen(pen)
+        self.selectionMaskHoverPen.setWidthF( self._orgPenWidthHover * s ) #selectionMaskHoverPen instance shared amongth all graphic items(?)
+        self.selectionMaskPen.setWidthF(  self._orgPenWidth * s )
+        self.adjustScaleShape(newScale)
+    def adjustScaleShape(self, newScale):
+        pass
+        
+class PointSelectionGraphicsItem(CircleSelectionGraphicsItem ):
+    def adjustScaleShape(self, newScale): #change points size on adjust scale
+        if not hasattr(self, '_orgCenter_x'):
+            rect = self.rect()
+            self._orgCenter_x = rect.center().x()
+            self._orgCenter_y = rect.center().y()
+            self._orgWidth = rect.width()
+        r = self._orgWidth *newScale
+        self.setRect( self._orgCenter_x - r , self._orgCenter_y - r , 2*r, 2*r )
+        
         
 class LineSelectionGraphicsItem( QtGui.QGraphicsLineItem, CircleSelectionGraphicsItem ):
     def setBrush(self, Brush):
         pass #this function should not been inherrited from CircleSelectionGraphicsItem
+
 
 
 graphicItems = [] #storing selection graphics items here as to protect against the garbage collector
@@ -52,14 +79,14 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
     def postProcessGraphicsItem(gi, elementParms):
         gi.setBrush( maskBrush  )
         gi.setPen(maskPen)
-        gi.selectionMaskPen = maskPen
-        gi.selectionMaskHoverPen = maskHoverPen
+        gi.selectionMaskPen = QtGui.QPen(maskPen)
+        gi.selectionMaskHoverPen = QtGui.QPen(maskHoverPen)
         gi._onClickFun = onClickFun
         gi.elementParms = elementParms
         gi.elementXML = element #should be able to get from functions name space
         gi.elementViewObject = viewObject
         gi.setAcceptHoverEvents(True)
-        gi.setCursor( QtCore.Qt.CrossCursor ) # http://qt-project.org/doc/qt-5/qt.html#CursorShape-enum
+        gi.setCursor( QtCore.Qt.CrossCursor ) # http://qt-project.org/doc/qt-5/qt.html#CursorShape-enum ; may not work for lines ...
         if transform <> None:
             gi.setTransform( transform )
         if sceneToAddTo <> None:
@@ -70,7 +97,7 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
         if [x,y] in pointsAlreadyAdded:
             return
         pointsAlreadyAdded.append( [x,y] )
-        graphicsItem = CircleSelectionGraphicsItem( x-pointWid, y-pointWid, 2*pointWid, 2*pointWid )
+        graphicsItem = PointSelectionGraphicsItem( x-pointWid, y-pointWid, 2*pointWid, 2*pointWid )
         graphicsItem.setZValue( zValue ) #point on top!
         postProcessGraphicsItem(graphicsItem, {'x':x, 'y':y})
     def addCircle( x, y, r, **extraKWs):
@@ -198,6 +225,43 @@ def hideSelectionGraphicsItems():
     for gi in graphicItems:
         gi.hide()
 
+class ResizeGraphicItemsRect(QtGui.QGraphicsRectItem):
+    '''
+    from src/Mod/Drawing/Gui/DrawingView.cpp 
+
+    void SvgView::wheelEvent(QWheelEvent *event)
+    {
+    qreal factor = std::pow(1.2, -event->delta() / 240.0);
+    scale(factor, factor);
+    event->accept();
+    }
+    so cant really do anything here, but attempting something on mouse move ...
+    '''
+    def hoverMoveEvent(self, event):
+        #FreeCAD.Console.PrintMessage('1\n')
+        currentScale = self._graphicsView.transform().m11() #since no rotation...
+        if currentScale <> self._previousScale :
+            #FreeCAD.Console.PrintMessage('adjusting Scale of graphics items\n')
+            for gi in graphicItems:
+                gi.adjustScale( 1 / currentScale  )
+            self._previousScale = currentScale
+            #FreeCAD.Console.PrintMessage('finished adjusting Scale of graphics items\n')
+
+garbageCollectionProtector = []
+
+def addProxyRectToRescaleGraphicsSelectionItems( graphicsScene, graphicsView, width, height):
+    if any([ isinstance(c,ResizeGraphicItemsRect) for c in graphicsScene.items() ]):
+        return #ResizeGraphicItemsRect already in screne, dimensioning must have been interupted.
+    rect = ResizeGraphicItemsRect()
+    rect.setRect(0, 0, width, height)
+    rect._graphicsView = graphicsView
+    rect._previousScale = 1.0 #adjustment, will happen on hoverMoveEvent
+    rect.setAcceptHoverEvents(True)
+    rect.setCursor( QtCore.Qt.ArrowCursor )
+    graphicsScene.addItem( rect )
+    rect.hoverMoveEvent( QtGui.QGraphicsSceneWheelEvent() ) # adjust scale
+    garbageCollectionProtector.append( rect )
+
 if __name__ == "__main__":
     print('Testing selectionOverlay.py')
     testCase1 = '''<svg id="Ortho_0_1" width="640" height="480"
@@ -245,7 +309,7 @@ if __name__ == "__main__":
 <path id= "13" d=" M 0 35 L -14 35 " />
 <circle cx ="-60" cy ="35" r ="3" /></g>
 </g>'''
-    testCase3 = '<g id="Ortho_0_0"\n   transform="rotate(0,98.5,131.5) translate(98.5,131.5) scale(10,10)"\n  >\n<g   stroke="rgb(0, 0, 0)"\n   stroke-width="0.035"\n   stroke-linecap="butt"\n   stroke-linejoin="miter"\n   fill="none"\n   transform="scale(1,-1)"\n  >\n<path id= "1" d=" M 0 1 L 0 9 " />\n<path d="M-2.22045e-16 1 A1 1 0 0 1 1 -2.22045e-16" /><path d="M-2.22045e-16 9 A1 1 0 0 0 1 10" /><path id= "4" d=" M 1 0 L 9 0 " />\n<path id= "5" d=" M 1 10 L 9 10 " />\n<path d="M10 1 A1 1 0 0 0 9 -2.22045e-16" /><path d="M10 9 A1 1 0 0 1 9 10" /><path id= "8" d=" M 10 1 L 10 9 " />\n</g>\n</g>\n'
+    testCase3 = '<g id="Ortho_0_0"\n   transform="rotate(0,98.5,131.5) translate(200,400) scale(30,30)"\n  >\n<g   stroke="rgb(0, 0, 0)"\n   stroke-width="0.035"\n   stroke-linecap="butt"\n   stroke-linejoin="miter"\n   fill="none"\n   transform="scale(1,-1)"\n  >\n<path id= "1" d=" M 0 1 L 0 9 " />\n<path d="M-2.22045e-16 1 A1 1 0 0 1 1 -2.22045e-16" /><path d="M-2.22045e-16 9 A1 1 0 0 0 1 10" /><path id= "4" d=" M 1 0 L 9 0 " />\n<path id= "5" d=" M 1 10 L 9 10 " />\n<path d="M10 1 A1 1 0 0 0 9 -2.22045e-16" /><path d="M10 9 A1 1 0 0 1 9 10" /><path id= "8" d=" M 10 1 L 10 9 " />\n</g>\n</g>\n'
 
     XML = testCase3
 
@@ -274,8 +338,18 @@ if __name__ == "__main__":
     def onClickFun( event, referer, elementXML, elementParms, elementViewObject ):
         print( elementXML  )
         print( elementParms )
+        referer.adjustScale( 2 )
 
-    generateSelectionGraphicsItems( [viewObject], onClickFun, sceneToAddTo=graphicsScene, doPoints=True, doCircles=True, doTextItems=True, doLines=True, doFittedCircles=True )
+
+    maskBrush = QtGui.QBrush( QtGui.QColor(0,255,0,100) )
+    maskPen =      QtGui.QPen( QtGui.QColor(0,255,0,100) )
+    maskPen.setWidth(3)
+    maskHoverPen = QtGui.QPen( QtGui.QColor(0,255,0,255) )
+    maskHoverPen.setWidthF(5)
+    generateSelectionGraphicsItems( 
+        [viewObject], onClickFun, sceneToAddTo=graphicsScene, doPoints=True, doCircles=True, doTextItems=True, doLines=True, doFittedCircles=True,
+        maskPen=maskPen , maskBrush=maskBrush, maskHoverPen=maskHoverPen, pointWid=4.0
+    )
 
     view = QtGui.QGraphicsView(graphicsScene)
     view.show()

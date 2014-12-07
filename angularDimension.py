@@ -59,6 +59,7 @@ class angularDimension:
             maskHoverPen=maskHoverPen, 
             maskBrush = QtGui.QBrush() #clear
             )
+        selectionOverlay.addProxyRectToRescaleGraphicsSelectionItems( V.graphicsScene, V.graphicsView, V.width, V.height)
         
     def GetResources(self): 
         return {

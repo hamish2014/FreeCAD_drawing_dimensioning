@@ -33,7 +33,7 @@ def printingDebugging( pythonFile, debugExt='_crudeDebugging.py'  ):
     for lineNo, line in enumerate(open(pythonFile)):
         indent = line[: len(line)-len(line.lstrip())]
         prev_bracketBalance = bracketBalance
-        bracketBalance = prev_bracketBalance + line.count('(') - line.count(')') + line.count('{') - line.count('}') 
+        bracketBalance = prev_bracketBalance + line.count('(') - line.count(')') + line.count('{') - line.count('}') + line.count('[') - line.count(']') 
         prev_bB2 = bB2
         bB2 = (prev_bB2 + line.count("'''"))%2
         if len(line.strip()) == 0:
@@ -44,7 +44,7 @@ def printingDebugging( pythonFile, debugExt='_crudeDebugging.py'  ):
                 pass
         elif insideTextblock:
             pass
-        elif any( line.lstrip().startswith(s) for s in ['elif','def','class','else','"',"'"] ):
+        elif any( line.lstrip().startswith(s) for s in ['elif','def','class','else','except','"',"'"] ):
             pass
         elif prev_bB2 <> 0:
             pass

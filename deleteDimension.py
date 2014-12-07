@@ -1,7 +1,7 @@
 
 from dimensioning import *
 from dimensioning import __dir__ # not imported with * directive
-from selectionOverlay import generateSelectionGraphicsItems
+import selectionOverlay 
 
 dimensioning = DimensioningProcessTracker()
 
@@ -22,18 +22,18 @@ class DeleteDimension:
     def Activated(self):
         V = getDrawingPageGUIVars()
         dimensioning.activate(V)
-        selectGraphicsItems = generateSelectionGraphicsItems( 
+        selectGraphicsItems = selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if obj.Name.startswith('dim')], 
             deleteDimension , 
             sceneToAddTo = V.graphicsScene, 
             transform = V.transform,
             doTextItems = True, 
-            pointWid=2.0,
+            pointWid=1.0,
             maskPen=maskPen, 
             maskHoverPen=maskHoverPen, 
             maskBrush = maskBrush
             )
-
+        selectionOverlay.addProxyRectToRescaleGraphicsSelectionItems( V.graphicsScene, V.graphicsView, V.width, V.height)
         
     def GetResources(self): 
         return {
