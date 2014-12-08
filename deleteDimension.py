@@ -8,8 +8,7 @@ dimensioning = DimensioningProcessTracker()
 def deleteDimension( event, referer, elementXML, elementParms, elementViewObject ):
     debugPrint(2, 'deleting dimension %s' % elementViewObject.Name)
     App.ActiveDocument.removeObject( elementViewObject.Name )
-    dimensioning.drawingVars.page.touch()
-    App.ActiveDocument.recompute()
+    recomputeWithOutViewReset(dimensioning.drawingVars)
 
 
 maskBrush  =   QtGui.QBrush( QtGui.QColor(160,0,0,100) )

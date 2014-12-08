@@ -53,8 +53,7 @@ class DimensionPreviewRect(QtGui.QGraphicsRectItem):
         preview.drawingVars.graphicsScene.removeItem( self )
         preview.createQtItems = False
         debugPrint(4,'cleanUP: preview.Svg removed from scene, now recomputing')
-        preview.drawingVars.page.touch()
-        App.ActiveDocument.recompute()
+        recomputeWithOutViewReset( preview.drawingVars )
 
     def keyPressEvent(self, event):
         #if len(event.text()) == 1:
