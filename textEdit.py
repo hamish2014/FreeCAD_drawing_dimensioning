@@ -83,7 +83,7 @@ class EditText:
             sceneToAddTo = V.graphicsScene, 
             transform = V.transform,
             doTextItems = True, 
-            pointWid=1.0,
+            pointWid=2.0,
             maskPen=maskPen, 
             maskHoverPen=maskHoverPen, 
             maskBrush = maskBrush

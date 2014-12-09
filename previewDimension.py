@@ -66,12 +66,14 @@ class DimensionPreviewRect(QtGui.QGraphicsRectItem):
             x, y =  preview.applyTransform( event.scenePos() )
             debugPrint(3, 'mousePressEvent: x %f, y %f' % (x, y) )
             viewName, XML = self.clickFunPreview(x,y)
-            if XML <> None:
+            if XML <> None and viewName <> None:
                 debugPrint(3, XML)
                 debugPrint(2, 'creating dimension %s' % viewName)
                 obj = App.ActiveDocument.addObject('Drawing::FeatureView',viewName)
                 obj.ViewResult = XML                    
                 preview.drawingVars.page.addObject( obj ) #App.ActiveDocument.getObject(viewName) )
+                self.cleanUp()
+            elif XML <> None and viewName == None:
                 self.cleanUp()
         else:
             event.ignore()
@@ -80,6 +82,8 @@ class DimensionPreviewRect(QtGui.QGraphicsRectItem):
         x, y =  preview.applyTransform( event.scenePos() )
         debugPrint(4, 'hoverMoveEvent: x %f, y %f' % (x, y) )
         XML = self.hoverFunPreview( x, y)
+        if isinstance(XML, unicode): 
+            XML = XML.encode('utf8')
         #debugPrint(4, XML)
         preview.SVGRenderer.load( QtCore.QByteArray( XML ) )
         preview.SVG.update()
