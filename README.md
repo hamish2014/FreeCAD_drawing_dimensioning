@@ -17,8 +17,6 @@ Features
 
 Limitations
   * No parametric updating, if the drawing is updated the dimensions need to be redone
-  * dimensions can not be moved
-  * the format of dimensions cannot be changed
   * undo and other similar features not supported
 
 
