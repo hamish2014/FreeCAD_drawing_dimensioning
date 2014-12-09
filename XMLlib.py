@@ -146,6 +146,13 @@ class SvgXMLTreeNode:
     def getAllElements(self):
         return [self] + sum([c.getAllElements() for c in self.children],[])
 
+def replaceParm( xml, parm, newText ):
+    # <text x="50" y="-60" fill="blue" style="font-size:8" >256.426</text> '''
+    keyPos = xml.find(parm)
+    p1 = xml.find('"', keyPos)
+    p2 = xml.find('"', p1+1)
+    return xml[:p1+1] + newText + xml[p2:]
+
 if __name__ == "__main__":
     print('Testing XMLlib')
     XML = '''<svg id="Ortho_0_1" width="640" height="480"

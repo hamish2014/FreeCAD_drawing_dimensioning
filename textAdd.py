@@ -1,7 +1,7 @@
 '''
 Dialog notes
-Use Qt Designer to edit the addTextDialog.ui
-Once completed $ pyside-uic addTextDialog.ui > addTextDialog.py
+Use Qt Designer to edit the textAddDialog.ui
+Once completed $ pyside-uic textAddDialog.ui > textAddDialog.py
 
 To test inside Freecad
 from addTextDialog import DialogWidget
@@ -15,7 +15,7 @@ dialog.show()
 from dimensioning import *
 from dimensioning import __dir__ # not imported with * directive
 import previewDimension
-import addTextDialog
+import textAddDialog
 
 dimensioning = DimensioningProcessTracker()
 
@@ -56,7 +56,7 @@ class AddTextDialogWidget( QtGui.QWidget ):
 
 
 dialog = AddTextDialogWidget()
-dialogUi = addTextDialog.Ui_Dialog()
+dialogUi = textAddDialog.Ui_Dialog()
 dialogUi.setupUi(dialog)
 
 class AddText:
@@ -67,10 +67,10 @@ class AddText:
         
     def GetResources(self): 
         return {
-            'Pixmap' : os.path.join( __dir__ , 'addText.svg' ) , 
+            'Pixmap' : os.path.join( __dir__ , 'textAdd.svg' ) , 
             'MenuText': 'Add text to drawing', 
             'ToolTip': 'Add text to drawing'
             } 
-FreeCADGui.addCommand('addTextDimensioning', AddText())
+FreeCADGui.addCommand('textAddDimensioning', AddText())
 
 

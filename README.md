@@ -5,8 +5,8 @@ Drawing dimensioning workbench for FreeCAD v0.15.
 Take note that this workbench is experimental and likely still contains bugs.
 
 Intended work-flow:
-  * create a drawing page and drawing of part using the drawing workbench
-  * swith the drawing dimensioning workbench to add dimensions to that drawing
+  * create a drawing page and a drawing of the part using the drawing workbench
+  * switch to the drawing dimensioning workbench to add dimensions to that drawing
 
 Features
   * linear dimensioning

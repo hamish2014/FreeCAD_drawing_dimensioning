@@ -4,8 +4,8 @@ from dimensioning import __dir__ # not imported with * directive
 
 class EscapeDimensioning:
     def Activated(self):
-        V = getDrawingPageGUIVars()
-        V.page.touch()
+        drawingVars = getDrawingPageGUIVars()
+        drawingVars.page.touch()
         App.ActiveDocument.recompute()
         
     def GetResources(self): 

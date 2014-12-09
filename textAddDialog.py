@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'addTextDialog.ui'
+# Form implementation generated from reading ui file 'textAddDialog.ui'
 #
-# Created: Fri Nov 28 14:57:28 2014
+# Created: Tue Dec  9 11:15:58 2014
 #      by: pyside-uic 0.2.15 running on PySide 1.2.1
 #
 # WARNING! All changes made in this file will be lost!
