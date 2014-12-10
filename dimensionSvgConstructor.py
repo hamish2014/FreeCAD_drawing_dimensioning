@@ -87,7 +87,7 @@ def linearDimensionSVG( x1, y1, x2, y2, x3, y3, x4=None, y4=None, scale=1.0, tex
 
 def circularDimensionSVG( center_x, center_y, radius, radialLine_x=None, radialLine_y=None, tail_x=None, tail_y=None, text_x=None, text_y=None, textFormat='Ø%3.3f', centerPointDia = 1, arrowL1=3, arrowL2=1, arrowW=2, svgTag='g', svgParms='', fontSize=4, strokeWidth=0.5, dimScale=1.0):
     XML_body = [ ' <circle cx ="%f" cy ="%f" r="%f" stroke="none" fill="rgb(0,0,255)" /> ' % (center_x, center_y, centerPointDia*0.5) ]
-    XML_body.append( '<circle cx="%f" cy="%f" r="%f" stroke="rgb(0,0,255)" stroke-width="%1.2f" fill="none" />' % (center_x, center_y, radius, strokeWidth) )
+    #XML_body.append( '<circle cx="%f" cy="%f" r="%f" stroke="rgb(0,0,255)" stroke-width="%1.2f" fill="none" />' % (center_x, center_y, radius, strokeWidth) )
     if radialLine_x <> None and radialLine_y <> None:
         theta = numpy.arctan2( radialLine_y - center_y, radialLine_x - center_x )
         A = numpy.array([ center_x + radius*numpy.cos(theta) , center_y + radius*numpy.sin(theta) ])
@@ -102,6 +102,27 @@ def circularDimensionSVG( center_x, center_y, radius, radialLine_x=None, radialL
     if text_x <> None and text_y <> None:
         XML_body.append( '<text x="%f" y="%f" fill="red" style="font-size:%i">%s</text>' % ( text_x, text_y, fontSize, dimensionText(2*radius*dimScale,textFormat)))
         XML_body.append( '<!--%s-->' % (2*radius) )
+        XML_body.append( '<!--%s-->' % (textFormat) )
+    XML = '''<%s  %s >
+%s
+</%s> ''' % ( svgTag, svgParms, "\n".join(XML_body), svgTag )
+    return XML
+
+def radiusDimensionSVG( center_x, center_y, radius, radialLine_x=None, radialLine_y=None, tail_x=None, tail_y=None, text_x=None, text_y=None, textFormat='R%3.3f', centerPointDia = 1, arrowL1=3, arrowL2=1, arrowW=2, svgTag='g', svgParms='', fontSize=4, strokeWidth=0.5, dimScale=1.0):
+    XML_body = [ ' <circle cx ="%f" cy ="%f" r="%f" stroke="none" fill="rgb(0,0,255)" /> ' % (center_x, center_y, centerPointDia*0.5) ]
+    if radialLine_x <> None and radialLine_y <> None:
+        theta = numpy.arctan2( radialLine_y - center_y, radialLine_x - center_x )
+        A = numpy.array([ center_x + radius*numpy.cos(theta) , center_y + radius*numpy.sin(theta) ])
+        B = numpy.array([ center_x - radius*numpy.cos(theta) , center_y - radius*numpy.sin(theta) ])
+        XML_body.append( '<line x1="%f" y1="%f" x2="%f" y2="%f" style="stroke:rgb(0,0,255);stroke-width:%1.2f" />' % (radialLine_x, radialLine_y, center_x, center_y, strokeWidth) )
+        if radius > 0:
+            s = 1 if radius > arrowL1 + arrowL2 + 0.5*centerPointDia else -1
+            XML_body.append( arrowHeadSVG( A, s*directionVector(A,B), arrowL1, arrowL2, arrowW ) )
+        if tail_x <> None and tail_y <> None:
+            XML_body.append( '<line x1="%f" y1="%f" x2="%f" y2="%f" style="stroke:rgb(0,0,255);stroke-width:%1.2f" />' % (radialLine_x, radialLine_y, tail_x, radialLine_y, strokeWidth) )
+    if text_x <> None and text_y <> None:
+        XML_body.append( '<text x="%f" y="%f" fill="red" style="font-size:%i">%s</text>' % ( text_x, text_y, fontSize, dimensionText(radius*dimScale,textFormat)))
+        XML_body.append( '<!--%s-->' % (radius) )
         XML_body.append( '<!--%s-->' % (textFormat) )
     XML = '''<%s  %s >
 %s
