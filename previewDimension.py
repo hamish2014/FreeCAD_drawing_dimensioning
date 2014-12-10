@@ -22,14 +22,24 @@ def initializePreview( drawingVars, clickFunPreview, hoverFunPreview ):
     preview.drawingVars = drawingVars
     preview.setTransform(drawingVars)
     if preview.createQtItems: 
-        # then initialize graphicsScene Objects, otherwise dont recreate objects. 
-        # initializing dimPreview is particularly troublesome, as in FreeCAD 0.15 this is unstable and occasionally causes FreeCAD to crash.
-        debugPrint(4, 'creating dimPreview QtGraphicsItems')
-        preview.rect = DimensionPreviewRect()
-        preview.SVG =  QtSvg.QGraphicsSvgItem() 
-        preview.SVGRenderer = QtSvg.QSvgRenderer()
-        preview.SVGRenderer.load( QtCore.QByteArray( '''<svg width="%i" height="%i"> </svg>''' % (drawingVars.width, drawingVars.height) ) ) #without this something goes wrong...
-        preview.SVG.setSharedRenderer( preview.SVGRenderer )
+        #there are two possible options here
+        # 1. FreeCAD.ActivieDocument.recompute() has been called with out clean up, i.e. preview.rect and preview.SVG need to be recreated
+        # 2. The user selects another dimensioning tool half way through the original dimensioning process. preview.rect and preview.SVG need to be dettached
+        case = 1 
+        for c in drawingVars.graphicsScene.children():
+            if isinstance(c,DimensionPreviewRect):
+                case = 2
+        if case == 1:
+            # then initialize graphicsScene Objects, otherwise dont recreate objects. 
+            # initializing dimPreview is particularly troublesome, as in FreeCAD 0.15 this is unstable and occasionally causes FreeCAD to crash.
+            debugPrint(4, 'creating dimPreview QtGraphicsItems')
+            preview.rect = DimensionPreviewRect()
+            preview.SVG =  QtSvg.QGraphicsSvgItem() 
+            preview.SVGRenderer = QtSvg.QSvgRenderer()
+            preview.SVGRenderer.load( QtCore.QByteArray( '''<svg width="%i" height="%i"> </svg>''' % (drawingVars.width, drawingVars.height) ) ) #without this something goes wrong...
+            preview.SVG.setSharedRenderer( preview.SVGRenderer )
+        else:
+            preview.rect.cleanUp()
     debugPrint(4, 'adding SVG')
     preview.SVGRenderer.load( QtCore.QByteArray( '''<svg width="%i" height="%i"> </svg>''' % (drawingVars.width, drawingVars.height) ) )
     preview.SVG.update()
