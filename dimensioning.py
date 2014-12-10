@@ -41,15 +41,15 @@ def getDrawingPageGUIVars():
         raise ValueError, notDrawingPage_title 
     graphicsScene = graphicsView.scene()
     pageRect = graphicsScene.items()[0] #hope this index does not change!
-    width = pageRect.boundingRect().width()
-    height = pageRect.boundingRect().height()
+    width = pageRect.rect().width()
+    height = pageRect.rect().height()
     #ViewResult has an additional tranform on it [VRT].
-    if 'A3' in os.path.basename( page.Template ):
+    if width > 1400: #then A3 # or == 1488 in FreeCAD v 0.15 
         VRT_scale = width / 420.0 #VRT = view result transform, where 420mm is the width of an A3 page.
     else: #assuming A4
         VRT_scale = width / 297.0
-    VRT_ox = -1 / VRT_scale
-    VRT_oy = -1 / VRT_scale
+    VRT_ox = pageRect.rect().left() / VRT_scale
+    VRT_oy = pageRect.rect().top() / VRT_scale
 
     transform = QtGui.QTransform()
     transform.translate(VRT_ox, VRT_oy)
