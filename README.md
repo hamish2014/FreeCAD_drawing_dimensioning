@@ -2,7 +2,7 @@ FreeCAD_drawing_dimensioning
 ============================
 
 Drawing dimensioning workbench for FreeCAD v0.15.
-Take note that this workbench is experimental and likely still contains bugs.
+Take note that this workbench is experimental and still contains bugs.
 
 Intended work-flow:
   * create a drawing page and a drawing of the part using the drawing workbench
@@ -10,10 +10,10 @@ Intended work-flow:
 
 Features
   * linear dimensioning
-  * circular dimensioning
+  * circular and radial dimensioning
   * angular dimension
-  * adding text
-  * deleting dimensioning
+  * adding, editing and moving dimension text
+  * deleting dimensions
 
 Limitations
   * No parametric updating, if the drawing is updated the dimensions need to be redone
@@ -32,7 +32,7 @@ On a Linux Debian based system such as Ubuntu, installation can be done through 
 
   $ cd .FreeCAD/Mod
 
-  $ git clone git@github.com:hamish2014/FreeCAD_drawing_dimensioning.git
+  $ git clone https://github.com/hamish2014/FreeCAD_drawing_dimensioning.git
 
 
 Updating to the latest version
