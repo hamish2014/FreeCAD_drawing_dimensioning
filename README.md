@@ -46,5 +46,5 @@ Updating to the latest version
 Bugs
 ----
 
-Please report bugs on FreeCAD_assembly2 git page at https://github.com/hamish2014/FreeCAD_drawing_dimensioning
+Please report bugs at https://github.com/hamish2014/FreeCAD_drawing_dimensioning/issues
 
