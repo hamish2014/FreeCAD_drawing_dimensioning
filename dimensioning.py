@@ -44,10 +44,12 @@ def getDrawingPageGUIVars():
     width = pageRect.rect().width()
     height = pageRect.rect().height()
     #ViewResult has an additional tranform on it [VRT].
-    if width > 1400: #then A3 # or == 1488 in FreeCAD v 0.15 
-        VRT_scale = width / 420.0 #VRT = view result transform, where 420mm is the width of an A3 page.
-    else: #assuming A4
-        VRT_scale = width / 297.0
+    #if width > 1400: #then A3 # or == 1488 in FreeCAD v 0.15 
+    #    VRT_scale = width / 420.0 #VRT = view result transform, where 420mm is the width of an A3 page.
+    #else: #assuming A4
+    #    VRT_scale = width / 297.0
+    VRT_scale = 3.542 #i wonder where this number comes from
+
     VRT_ox = pageRect.rect().left() / VRT_scale
     VRT_oy = pageRect.rect().top() / VRT_scale
 
@@ -58,7 +60,7 @@ def getDrawingPageGUIVars():
     return DrawingPageGUIVars(locals())
 
 class DrawingPageGUIVars:
-    "for codding convience, wrt v.transform instead of v['transform']"
+    "for coding convience, wrt v.transform instead of v['transform']"
     def __init__(self, data):
         self.__dict__.update(data)
 
@@ -69,8 +71,9 @@ class DimensioningProcessTracker:
         self.stage = 0
         self.svg_preview_KWs = {
             'svgTag' : 'svg',
-            'svgParms' : 'width="%(width)i" height="%(height)i" transform="translate( %(VRT_ox)f, %(VRT_oy)f) scale( %(VRT_scale)f, %(VRT_scale)f)"' % V.__dict__
-            }
+            'svgParms' : 'width="%(width)i" height="%(height)i"' % V.__dict__ }
+            #'svgParms' : 'width="%(width)i" height="%(height)i" transform="translate( %(VRT_ox)f, %(VRT_oy)f) scale( %(VRT_scale)f, %(VRT_scale)f)"' % V.__dict__
+            #}
 
 
 def recomputeWithOutViewReset( drawingVars ):
@@ -95,7 +98,7 @@ def recomputeWithOutViewReset( drawingVars ):
     v_scrollValue = gV.verticalScrollBar().value()
     drawingVars.page.touch()
     App.ActiveDocument.recompute()
-    gV.scale( scale , scale ) # 1.38 is a correction factor derived from printGraphicsViewInfo
+    gV.scale( scale , scale )
     #scale correction
     for i in range(3):
         scale_actual = gV.transform().m11()
@@ -109,31 +112,31 @@ def recomputeWithOutViewReset( drawingVars ):
 
 
 def printGraphicsViewInfo( drawingVars ):
-        '''
-        A PySide.QtGui.QTransform object contains a 3 x 3 matrix. The m31 (dx ) and m32 (dy ) elements specify horizontal and vertical translation. 
-        The m11 and m22 elements specify horizontal and vertical scaling. 
-        The m21 and m12 elements specify horizontal and vertical shearing . 
-        And finally, the m13 and m23 elements specify horizontal and vertical projection, with m33 as an additional projection factor.
-
-        This function was written help restore the view transform after App.ActiveDocument.recompute(); 
-        example of how to get T, T= preview.drawingVars.graphicsView.transform()
-
-        DrawingView.cpp: line134: s->setSceneRect(m_outlineItem->boundingRect().adjusted(-10, -10, 10, 10)); # s is QGraphicsScene  used for scroll bars!
-        '''
-        T = drawingVars.graphicsView.transform()
-        sx, sy, dx, dy = T.m11(), T.m22(), T.m31(), T.m32()
-        debugPrint(4,'graphicsView transform info: sx %1.2f, sy %1.2f, dx %1.2f, dy %1.2f' % (sx, sy, dx, dy) )
-        debugPrint(4,'    [ %1.2f  %1.2f  %1.2f ]' % (T.m11(), T.m12(), T.m13() ))
-        debugPrint(4,'M = [ %1.2f  %1.2f  %1.2f ]' % (T.m21(), T.m22(), T.m23() ))
-        debugPrint(4,'    [ %1.2f  %1.2f  %1.2f ]' % (T.m31(), T.m32(), T.m33() ))
-
-        #r = preview.drawingVars.graphicsView.sceneRect() #seems to be used for scroll bars, not for anything else
-        #debugPrint(2,'graphicsView.sceneRect info: topLeft.x %3.2f, topLeft.y %3.2f, bottomRight.x %3.2f, bottomRight.y %3.2f' \
-        #               % (r.topLeft().x(), r.topLeft().y(), r.bottomRight().x(), r.bottomRight().y() ) )
-
-        #T = drawingVars.graphicsView.viewportTransform()
-        #sx, sy, dx, dy = T.m11(), T.m22(), T.m31(), T.m32()
-        #debugPrint(2,'viewPort transform info: sx %1.2f, sy %1.2f, dx %1.2f, dy %1.2f' % (sx, sy, dx, dy) )
-        #debugPrint(4,'    [ %1.2f  %1.2f  %1.2f ]' % (T.m11(), T.m12(), T.m13() ))
-        #debugPrint(4,'M = [ %1.2f  %1.2f  %1.2f ]' % (T.m21(), T.m22(), T.m23() ))
-        #debugPrint(4,'    [ %1.2f  %1.2f  %1.2f ]' % (T.m31(), T.m32(), T.m33() ))
+    '''
+    A PySide.QtGui.QTransform object contains a 3 x 3 matrix. The m31 (dx ) and m32 (dy ) elements specify horizontal and vertical translation. 
+    The m11 and m22 elements specify horizontal and vertical scaling. 
+    The m21 and m12 elements specify horizontal and vertical shearing . 
+    And finally, the m13 and m23 elements specify horizontal and vertical projection, with m33 as an additional projection factor.
+    
+    This function was written help restore the view transform after App.ActiveDocument.recompute(); 
+    example of how to get T, T= preview.drawingVars.graphicsView.transform()
+    
+    DrawingView.cpp: line134: s->setSceneRect(m_outlineItem->boundingRect().adjusted(-10, -10, 10, 10)); # s is QGraphicsScene  used for scroll bars!
+    '''
+    T = drawingVars.graphicsView.transform()
+    sx, sy, dx, dy = T.m11(), T.m22(), T.m31(), T.m32()
+    debugPrint(4,'graphicsView transform info: sx %1.2f, sy %1.2f, dx %1.2f, dy %1.2f' % (sx, sy, dx, dy) )
+    debugPrint(4,'    [ %1.2f  %1.2f  %1.2f ]' % (T.m11(), T.m12(), T.m13() ))
+    debugPrint(4,'M = [ %1.2f  %1.2f  %1.2f ]' % (T.m21(), T.m22(), T.m23() ))
+    debugPrint(4,'    [ %1.2f  %1.2f  %1.2f ]' % (T.m31(), T.m32(), T.m33() ))
+    
+    #r = preview.drawingVars.graphicsView.sceneRect() #seems to be used for scroll bars, not for anything else
+    #debugPrint(2,'graphicsView.sceneRect info: topLeft.x %3.2f, topLeft.y %3.2f, bottomRight.x %3.2f, bottomRight.y %3.2f' \
+    #               % (r.topLeft().x(), r.topLeft().y(), r.bottomRight().x(), r.bottomRight().y() ) )
+    
+    #T = drawingVars.graphicsView.viewportTransform()
+    #sx, sy, dx, dy = T.m11(), T.m22(), T.m31(), T.m32()
+    #debugPrint(2,'viewPort transform info: sx %1.2f, sy %1.2f, dx %1.2f, dy %1.2f' % (sx, sy, dx, dy) )
+    #debugPrint(4,'    [ %1.2f  %1.2f  %1.2f ]' % (T.m11(), T.m12(), T.m13() ))
+    #debugPrint(4,'M = [ %1.2f  %1.2f  %1.2f ]' % (T.m21(), T.m22(), T.m23() ))
+    #debugPrint(4,'    [ %1.2f  %1.2f  %1.2f ]' % (T.m31(), T.m32(), T.m33() ))
