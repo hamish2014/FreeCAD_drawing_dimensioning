@@ -103,7 +103,9 @@ class DimensionPreviewRect(QtGui.QGraphicsRectItem):
                 debugPrint(3, XML)
                 debugPrint(2, 'creating dimension %s' % viewName)
                 obj = App.ActiveDocument.addObject('Drawing::FeatureView',viewName)
-                obj.ViewResult = XML                    
+                obj.ViewResult = XML
+                for prop in ['Rotation', 'Scale', 'ViewResult', 'X', 'Y']: 
+                    obj.setEditorMode(prop, 2)
                 preview.drawingVars.page.addObject( obj ) #App.ActiveDocument.getObject(viewName) )
                 removePreviewGraphicItems( recomputeActiveDocument=True )
             elif XML <> None and viewName == None:
