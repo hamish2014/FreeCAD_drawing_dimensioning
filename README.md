@@ -35,6 +35,16 @@ On a Linux Debian based system such as Ubuntu, installation can be done through 
   $ git clone https://github.com/hamish2014/FreeCAD_drawing_dimensioning.git
 
 
+Setting your dimensioning prefences
+-----------------------------------
+
+To setup your desired dimensioning style
+
+  1. open FreeCAD
+  2. switch to the Drawing dimensioning workbench
+  3. edit -> prefences -> drawing dimensioning
+
+
 Updating to the latest version
 ------------------------------
 
