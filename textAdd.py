@@ -13,7 +13,7 @@ dialog.show()
 '''
 
 from dimensioning import *
-from dimensioning import __dir__ # not imported with * directive
+from dimensioning import iconPath # not imported with * directive
 import previewDimension
 import textAddDialog
 
@@ -67,7 +67,7 @@ class AddText:
         
     def GetResources(self): 
         return {
-            'Pixmap' : os.path.join( __dir__ , 'textAdd.svg' ) , 
+            'Pixmap' : os.path.join( iconPath , 'textAdd.svg' ) , 
             'MenuText': 'Add text to drawing', 
             'ToolTip': 'Add text to drawing'
             } 

@@ -13,7 +13,7 @@ dialog.show()
 '''
 
 from dimensioning import *
-from dimensioning import __dir__ # not imported with * directive
+from dimensioning import iconPath # not imported with * directive
 import selectionOverlay 
 import textAddDialog
 import XMLlib
@@ -92,7 +92,7 @@ class EditText:
     def GetResources(self): 
         msg = "Edit a dimension's text"
         return {
-            'Pixmap' : os.path.join( __dir__ , 'textEdit.svg' ) , 
+            'Pixmap' : os.path.join( iconPath , 'textEdit.svg' ) , 
             'MenuText': msg, 
             'ToolTip': msg
             } 

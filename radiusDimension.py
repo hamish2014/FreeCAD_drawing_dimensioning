@@ -1,6 +1,6 @@
 
 from dimensioning import *
-from dimensioning import __dir__ # not imported with * directive
+from dimensioning import iconPath # not imported with * directive
 import selectionOverlay, previewDimension
 from dimensionSvgConstructor import radiusDimensionSVG
 
@@ -71,7 +71,7 @@ class radiusDimension:
 
     def GetResources(self): 
         return {
-            'Pixmap' : os.path.join( __dir__ , 'radiusDimension.svg' ) , 
+            'Pixmap' : os.path.join( iconPath , 'radiusDimension.svg' ) , 
             'MenuText': 'Radius Dimension', 
             'ToolTip': 'Creates a radius dimension'
             } 

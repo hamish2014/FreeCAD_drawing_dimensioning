@@ -1,6 +1,6 @@
 
 from dimensioning import *
-from dimensioning import __dir__ # not imported with * directive
+from dimensioning import iconPath # not imported with * directive
 import selectionOverlay 
 
 dimensioning = DimensioningProcessTracker()
@@ -36,7 +36,7 @@ class DeleteDimension:
         
     def GetResources(self): 
         return {
-            'Pixmap' : os.path.join( __dir__ , 'deleteDimension.svg' ) , 
+            'Pixmap' : os.path.join( iconPath , 'deleteDimension.svg' ) , 
             'MenuText': 'Delete Dimension', 
             'ToolTip': 'Delete a dimension'
             } 

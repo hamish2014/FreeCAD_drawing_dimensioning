@@ -1,6 +1,6 @@
 
 from dimensioning import *
-from dimensioning import __dir__ # not imported with * directive
+from dimensioning import iconPath # not imported with * directive
 import selectionOverlay, previewDimension
 from dimensionSvgConstructor import angularDimensionSVG
 
@@ -63,7 +63,7 @@ class angularDimension:
         
     def GetResources(self): 
         return {
-            'Pixmap' : os.path.join( __dir__ , 'angularDimension.svg' ) , 
+            'Pixmap' : os.path.join( iconPath , 'angularDimension.svg' ) , 
             'MenuText': 'Angular Dimension', 
             'ToolTip': 'Creates a angular dimension'
             } 

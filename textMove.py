@@ -1,6 +1,6 @@
 
 from dimensioning import *
-from dimensioning import __dir__ # not imported with * directive
+from dimensioning import iconPath # not imported with * directive
 import selectionOverlay, previewDimension
 import XMLlib
 
@@ -68,7 +68,7 @@ class MoveText:
     def GetResources(self): 
         msg = "Move a dimension's text"
         return {
-            'Pixmap' : os.path.join( __dir__ , 'textMove.svg' ) , 
+            'Pixmap' : os.path.join( iconPath , 'textMove.svg' ) , 
             'MenuText': msg, 
             'ToolTip': msg
             } 

@@ -1,6 +1,6 @@
 
 from dimensioning import *
-from dimensioning import __dir__ # not imported with * directive
+from dimensioning import iconPath # not imported with * directive
 import selectionOverlay, previewDimension
 from dimensionSvgConstructor import circularDimensionSVG
 
@@ -71,7 +71,7 @@ class circularDimension:
 
     def GetResources(self): 
         return {
-            'Pixmap' : os.path.join( __dir__ , 'circularDimension.svg' ) , 
+            'Pixmap' : os.path.join( iconPath , 'circularDimension.svg' ) , 
             'MenuText': 'Circular Dimension', 
             'ToolTip': 'Creates a circular dimension'
             } 

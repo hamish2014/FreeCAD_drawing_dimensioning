@@ -1,6 +1,6 @@
 
 from dimensioning import *
-from dimensioning import __dir__ # not imported with * directive
+from dimensioning import iconPath # not imported with * directive
 import selectionOverlay, previewDimension
 from dimensionSvgConstructor import linearDimensionSVG
 
@@ -69,7 +69,7 @@ class linearDimension:
         
     def GetResources(self): 
         return {
-            'Pixmap' : os.path.join( __dir__ , 'linearDimension.svg' ) , 
+            'Pixmap' : os.path.join( iconPath , 'linearDimension.svg' ) , 
             'MenuText': 'Linear Dimension', 
             'ToolTip': 'Creates a linear dimension'
             } 
