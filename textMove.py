@@ -20,7 +20,7 @@ def moveTextSvg( x, y, svgTag='g', svgParms=''):
     return newXML
 
 def previewTextSvg( x, y):
-    return moveTextSvg( x, y, **dimensioning.svg_preview_KWs )
+    return moveTextSvg( x, y, svgTag=dimensioning.svg_preview_KWs['svgTag'], svgParms=dimensioning.svg_preview_KWs['svgParms'] )
 
 def placeText( x, y):
     dimensioning.dimToEdit.ViewResult = moveTextSvg(x, y )
