@@ -31,7 +31,8 @@ def clickFunPreview( x, y ):
         XML = circularDimensionSVG( dimensioning.point1[0], dimensioning.point1[1], dimensioning.radius,
                                     dimensioning.point2[0], dimensioning.point2[1], 
                                     dimensioning.point3[0], dimensioning.point3[1], 
-                                    x, y, dimScale=dimensioning.dimScale)
+                                    x, y, dimScale=dimensioning.dimScale,
+                                    **dimensioning.dimensionConstructorKWs)
         return findUnusedObjectName('dim'), XML
 
 def hoverFunPreview( x, y):
@@ -55,7 +56,7 @@ maskHoverPen.setWidth(2.0)
 class circularDimension:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        dimensioning.activate(V)
+        dimensioning.activate(V, [['centerPointDia',1.0]])
         selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if not obj.Name.startswith('dim')], 
             selectFun ,

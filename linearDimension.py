@@ -30,7 +30,8 @@ def clickFunPreview( x, y ):
     else:
         p1,p2,p3 = dimensioning.point1,  dimensioning.point2,  dimensioning.point3
         XML = linearDimensionSVG( p1[0], p1[1], p2[0], p2[1], p3[0], p3[1], 
-                                  x, y, scale=dimensioning.dimScale)
+                                  x, y, scale=dimensioning.dimScale, 
+                                  **dimensioning.dimensionConstructorKWs)
         return findUnusedObjectName('dim'), XML
 
 def hoverFunPreview( x, y ):
@@ -52,7 +53,7 @@ class linearDimension:
     "this class will create a line after the user clicked 2 points on the screen"
     def Activated(self):
         V = getDrawingPageGUIVars()
-        dimensioning.activate(V)
+        dimensioning.activate( V, [['gap_datum_points', 2.0 ], ['dimension_line_overshoot',1.0]] )
         selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if not obj.Name.startswith('dim')], 
             selectDimensioningPoint ,

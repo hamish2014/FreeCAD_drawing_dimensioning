@@ -8,7 +8,6 @@ from XMLlib import SvgXMLTreeNode
 from circleLib import fitCircle_to_path, findCircularArcCentrePoint
 import sys, numpy
 from PySide import QtGui, QtCore, QtSvg
-import FreeCAD
 
 defaultMaskBrush = QtGui.QBrush( QtGui.QColor(0,255,0,100) )
 defaultMaskPen =      QtGui.QPen( QtGui.QColor(0,255,0,100) )
@@ -225,6 +224,7 @@ def hideSelectionGraphicsItems():
     for gi in graphicItems:
         gi.hide()
 
+#import FreeCAD
 class ResizeGraphicItemsRect(QtGui.QGraphicsRectItem):
     '''
     from src/Mod/Drawing/Gui/DrawingView.cpp 

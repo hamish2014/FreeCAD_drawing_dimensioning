@@ -4,6 +4,7 @@ import FreeCADGui, Part, os
 from PySide import QtGui, QtCore, QtSvg
 
 __dir__ = os.path.dirname(__file__)
+iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 
 def debugPrint( level, msg ):
     if level <= debugPrint.level:
@@ -65,15 +66,34 @@ class DrawingPageGUIVars:
         self.__dict__.update(data)
 
 class DimensioningProcessTracker:
-    def activate( self, drawingVars):
+    def activate( self, drawingVars, extraRealParms = []):
         V = drawingVars #short hand
         self.drawingVars = V
         self.stage = 0
         self.svg_preview_KWs = {
             'svgTag' : 'svg',
             'svgParms' : 'width="%(width)i" height="%(height)i"' % V.__dict__ }
-            #'svgParms' : 'width="%(width)i" height="%(height)i" transform="translate( %(VRT_ox)f, %(VRT_oy)f) scale( %(VRT_scale)f, %(VRT_scale)f)"' % V.__dict__
-            #}
+        # get FreeCAD preferences
+        self.dimensionConstructorKWs = {}
+        parms = App.ParamGet("User parameter:BaseApp/Preferences/Mod/Drawing_Dimensioning")
+        parmNames =    ['strokeWidth', 'fontSize', 'arrowL1', 'arrowL2', 'arrowW']
+        parmDefaults = [ 0.3, 4.0, 3.0, 1.0, 2.0 ]
+        assert len(parmNames) == len(parmDefaults)
+        for name, default in zip(parmNames, parmDefaults) + extraRealParms:
+            self.dimensionConstructorKWs[name] = parms.GetFloat(name, default)
+        def getColor(parmName, default):
+            v = parms.GetUnsigned(parmName, default)
+            r = v >> 24
+            g = (v >> 16) - (v >> 24 << 8 )
+            b = (v >>  8) - (v >> 16 << 8 )
+            return 'rgb(%i,%i,%i)' % (r, g, b)
+        self.dimensionConstructorKWs['lineColor'] = getColor('lineColor',255 << 8)
+        self.dimensionConstructorKWs['fontColor'] = getColor('fontColor',255 << 24)
+        debugPrint(3, 'dimensionConstructorKWs %s' % self.dimensionConstructorKWs )
+        self.svg_preview_KWs.update( self.dimensionConstructorKWs )
+        
+            
+        
 
 
 def recomputeWithOutViewReset( drawingVars ):

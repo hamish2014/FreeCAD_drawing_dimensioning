@@ -28,7 +28,7 @@ def clickFunPreview( x, y ):
     else:
         XML = angularDimensionSVG( dimensioning.line1, dimensioning.line2,
                                    dimensioning.point3[0], dimensioning.point3[1], 
-                                   x, y)
+                                   x, y, **dimensioning.dimensionConstructorKWs)
         return findUnusedObjectName('dim'), XML
 
 def hoverFunPreview( x, y ):
@@ -48,7 +48,7 @@ maskHoverPen.setWidth(2.0)
 class angularDimension:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        dimensioning.activate(V)
+        dimensioning.activate(V, [['gap_datum_points', 2.0 ], ['dimension_line_overshoot',1.0]] )
         selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if not obj.Name.startswith('dim')], 
             selectFun ,
