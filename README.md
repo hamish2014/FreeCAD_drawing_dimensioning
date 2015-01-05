@@ -38,6 +38,9 @@ On a Linux Debian based system such as Ubuntu, installation can be done through 
 Setting your dimensioning prefences
 -----------------------------------
 
+Unit prefences are taken from the General unit preferences (excluding number of decimal places!).
+From inside FreeCAD, edit -> prefences -> general -> units
+
 To setup your desired dimensioning style
 
   1. open FreeCAD

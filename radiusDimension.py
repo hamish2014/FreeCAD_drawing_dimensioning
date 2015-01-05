@@ -11,7 +11,7 @@ def selectFun(  event, referer, elementXML, elementParms, elementViewObject ):
     dimensioning.point1 = x, y
     debugPrint(2, 'center selected at x=%3.1f y=%3.1f' % (x,y))
     dimensioning.radius = elementParms['r']
-    dimensioning.dimScale = 1/elementXML.rootNode().scaling()
+    dimensioning.dimScale = 1/elementXML.rootNode().scaling() / UnitConversionFactor()
     dimensioning.stage = 1
     selectionOverlay.hideSelectionGraphicsItems()
     previewDimension.initializePreview( dimensioning.drawingVars, clickFunPreview, hoverFunPreview )

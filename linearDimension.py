@@ -17,7 +17,7 @@ def selectDimensioningPoint( event, referer, elementXML, elementParms, elementVi
         dimensioning.point2 =  x,y
         debugPrint(2, 'point2 set to x=%3.1f y=%3.1f' % (x,y))
         dimensioning.stage = 2 
-        dimensioning.dimScale = 1/elementXML.rootNode().scaling()
+        dimensioning.dimScale = 1 / elementXML.rootNode().scaling() / UnitConversionFactor()
         selectionOverlay.hideSelectionGraphicsItems()
         previewDimension.initializePreview( dimensioning.drawingVars, clickFunPreview, hoverFunPreview )
 

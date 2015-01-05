@@ -92,9 +92,16 @@ class DimensioningProcessTracker:
         debugPrint(3, 'dimensionConstructorKWs %s' % self.dimensionConstructorKWs )
         self.svg_preview_KWs.update( self.dimensionConstructorKWs )
         
-            
-        
-
+def UnitConversionFactor():
+    #found using App.ParamGet("User parameter:BaseApp/Preferences").Export('/tmp/p3')
+    p = App.ParamGet("User parameter:BaseApp/Preferences/Units")
+    UserSchema = p.GetInt("UserSchema")
+    if UserSchema == 0: #standard (mm/kg/s/degree
+        return 1.0
+    elif UserSchema == 1: #standard (m/kg/s/degree)
+        return 1000.0
+    else: #either US customary, or Imperial decimal
+        return 25.4
 
 def recomputeWithOutViewReset( drawingVars ):
     '''
