@@ -1,6 +1,6 @@
 
-class DimensioningWorkbench (Workbench): 
-    # Icon generated using Gimp to convert linearDimension.svg to xpm format
+class DrawingDimensioningWorkbench (Workbench): 
+    # Icon generated using by converting linearDimension.svg to xpm format using Gimp
     Icon = '''
 /* XPM */
 static char * linearDimension_xpm[] = {
@@ -67,4 +67,4 @@ static char * linearDimension_xpm[] = {
         FreeCADGui.addPreferencePage( os.path.join( __dir__, 'Resources', 'ui', 'drawing_dimensioing_prefs-base.ui'),'Drawing Dimensioning' )
 
 
-Gui.addWorkbench(DimensioningWorkbench())
+Gui.addWorkbench(DrawingDimensioningWorkbench())

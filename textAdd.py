@@ -32,7 +32,7 @@ def clickEvent( x, y):
     return viewName, XML
 
 def hoverEvent( x, y):
-    return textSVG( x, y, **dimensioning.svg_preview_KWs )
+    return textSVG( x, y, svgTag=dimensioning.svg_preview_KWs['svgTag'], svgParms=dimensioning.svg_preview_KWs['svgParms'] )
 
 class AddTextDialogWidget( QtGui.QWidget ):
     def accept( self ):
