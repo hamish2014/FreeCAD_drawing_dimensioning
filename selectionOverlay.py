@@ -192,12 +192,14 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                             # (x1,y1) as the control point at the beginning of the curve and (x2,y2) as the control point at the end of the curve.
                             _x1, _y1, _x2, _y2, _end_x, _end_y = map( float, parms[j+1:j+1 + 6] ) 
                             P = [ [pen_x, pen_y], element.applyTransforms(_x1, _y1), element.applyTransforms(_x2, _y2), element.applyTransforms(_end_x, _end_y) ]
+                            j = j + 7
                         elif parms[j] == 'Q': # quadratic Bézier curve from the current point to (x,y) using (x1,y1) as the control point. 
                             # Q (uppercase) indicates that absolute coordinates will follow; 
                             # q (lowercase) indicates that relative coordinates will follow. 
                             # Multiple sets of coordinates may be specified to draw a polybézier. 
                             # At the end of the command, the new current point becomes the final (x,y) coordinate pair used in the polybézier.
                             _x1, _y1, _end_x, _end_y = map( float, parms[j+1:j+1 + 4] ) 
+                            j = j + 5
                             P = [ [pen_x, pen_y], element.applyTransforms(_x1, _y1), element.applyTransforms(_end_x, _end_y) ]
                         end_x, end_y = P[-1]
                         if doPoints:
@@ -206,7 +208,6 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                         fitData.append( P )
                         _pen_x, _pen_y = _end_x, _end_y
                         pen_x, pen_y = end_x, end_y
-                        j = j + 7
                     else:
                         raise RuntimeError, 'unable to parse path "%s" with d parms %s' % (element.XML[element.pStart: element.pEnd], parms)
                 if len(fitData) > 0: 
