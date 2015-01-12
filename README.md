@@ -37,7 +37,7 @@ On a Linux Debian based system such as Ubuntu, installation can be done through 
   $ git clone https://github.com/hamish2014/FreeCAD_drawing_dimensioning.git
 
 
-Update to the latest version using git,
+Once installed, use git to easily update to the latest version:
 
   $ cd ~/.FreeCAD/Mod/FreeCAD_drawing_dimensioning
 
@@ -48,27 +48,23 @@ Windows Installation Instructions
 
 Tested with 015.4415 Development Snapshot on a Windows 7 64bit-System (thanks BPLRFE )
 
-  $ download the git repository as ZIP
-
-  $ dssuming FreeCAD is installed in "C:\PortableApps\FreeCAD 0_15",  go to "C:\PortableApps\FreeCAD 0_15\Mod" within Windows Explorer
-
-  $ create new directory named "DrawingDimensioning"
-
-  $ unzip downloaded repository in "C:\PortableApps\FreeCAD 0_15\Mod\DrawingDimensioning"
+  * download the git repository as ZIP
+  * assuming FreeCAD is installed in "C:\PortableApps\FreeCAD 0_15",  go to "C:\PortableApps\FreeCAD 0_15\Mod" within Windows Explorer
+  * create new directory named "DrawingDimensioning"
+  * $ unzip downloaded repository in "C:\PortableApps\FreeCAD 0_15\Mod\DrawingDimensioning"
   
 FreeCAD you will now have a new workbench-entry called "DrawingDimensioning".
 
-*Pyside and Numpy are integrated in the dev-Snapshots 0.15, so these Python packages do not need to be installed individually*
+*Pyside and Numpy are integrated in the FreeCAD dev-Snapshots 0.15, so these Python packages do not need to be installed individually*
 
 
 Setting your dimensioning preferences
 -----------------------------------
 
 Unit preferences are taken from the General unit preferences (excluding number of decimal places!).
-From inside FreeCAD, edit -> preferences -> general -> units
+To set unit preferences goto edit -> preferences -> general -> units
 
-To setup your desired dimensioning style
-
+To set up your desired dimensioning style
   1. open FreeCAD
   2. switch to the Drawing dimensioning workbench
   3. edit -> preferences -> drawing dimensioning
