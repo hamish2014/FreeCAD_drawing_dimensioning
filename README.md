@@ -51,7 +51,7 @@ Tested with 015.4415 Development Snapshot on a Windows 7 64bit-System (thanks BP
   * download the git repository as ZIP
   * assuming FreeCAD is installed in "C:\PortableApps\FreeCAD 0_15",  go to "C:\PortableApps\FreeCAD 0_15\Mod" within Windows Explorer
   * create new directory named "DrawingDimensioning"
-  * $ unzip downloaded repository in "C:\PortableApps\FreeCAD 0_15\Mod\DrawingDimensioning"
+  * unzip downloaded repository in "C:\PortableApps\FreeCAD 0_15\Mod\DrawingDimensioning"
   
 FreeCAD you will now have a new workbench-entry called "DrawingDimensioning".
 
