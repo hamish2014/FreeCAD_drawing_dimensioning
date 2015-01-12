@@ -140,8 +140,32 @@ def findCircularArcCentrePoint(r, x_1, y_1, x_2, y_2, largeArc, sweep, debug=Fal
         return c_x_alt,  c_y_alt 
 
 
+def toStdOut(txt):
+    print(txt)
+
+def fitCircleNumerically( X, Y, printF=toStdOut ):
+    from cgpr import CGPR, GradientApproximatorForwardDifference
+    X = array(X)
+    Y = array(Y)
+    def f(x):
+        #c_x, c_y = x #not working as planning
+        c_x, c_y, r = x
+        D = (X - c_x)**2 + (Y - c_y)**2 - r**2
+        return linalg.norm(D)
+
+    grad_f = GradientApproximatorForwardDifference(f)
+    #initial guess 
+    x0 = numpy.array([0.0, 0.0, 1.0])
+    xOpt = CGPR( x0, f, grad_f, debugPrintLevel=2, printF=printF, lineSearchIt=20 )
+    error = f(xOpt)
+    c_x, c_y, R = xOpt
+    #R = mean( (X - c_x)**2 + (Y - c_y)**2)
+    return c_x, c_y, R, error
+
+
 if __name__ == '__main__':
     from matplotlib import pyplot
+    from numpy.random import rand
     
     print('testing circle lib')
 
@@ -161,11 +185,32 @@ if __name__ == '__main__':
 
     #print now fitting circle to data
     c_x, c_y, R, R_error = fitCircle( B[:,0], B[:,1])
-    T = linspace(0,2*pi)
-    X_circle = c_x + cos(T)*R
-    Y_circle = c_y + sin(T)*R
-    pyplot.plot(  X_circle, Y_circle, 'g-.'  )
+
+    def plotCircle( cx, cy, R, style):
+        T = linspace(0,2*pi)
+        X = c_x + cos(T)*R
+        Y = c_y + sin(T)*R
+        pyplot.plot(  X, Y, style  )
+    plotCircle( c_x, c_y, R, 'g-.')
 
     pyplot.axis('equal')
 
+    pyplot.figure()
+    n = 20
+    for i, angleUpperlimit in enumerate(numpy.array([45, 90, 180, 270])*pi/180):
+        r = 10 + 40*rand()
+        angles = rand(n)*angleUpperlimit
+        c_x, c_y = 42*rand(2) - 21
+        X = c_x + cos(angles)*r + rand(n)
+        Y = c_y + sin(angles)*r
+        pyplot.subplot(2,2,i+1)
+        pyplot.plot( X, Y,'go')
+        c_x, c_y, R, R_error = fitCircle( X, Y)
+        plotCircle( c_x, c_y, R, 'g:')
+        c_x, c_y, R, R_error = fitCircleNumerically( X, Y)
+        plotCircle( c_x, c_y, R, 'b--')
+        pyplot.axis('equal')
+
+
     pyplot.show()
+
