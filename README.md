@@ -19,7 +19,7 @@ Features
 Limitations
   * No parametric updating, if the drawing is updated the dimensions need to be redone
   * undo and other similar features not supported
-  * only work with FreeCAD version 0.15
+  * only works with FreeCAD version 0.15
 
 
 Linux Installation Instructions
