@@ -9,7 +9,7 @@ iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 def debugPrint( level, msg ):
     if level <= debugPrint.level:
         App.Console.PrintMessage(msg + '\n')
-debugPrint.level = 2
+debugPrint.level = 2 if not os.uname()[1].startswith('antoine') else 3
 
 def findUnusedObjectName(base, counterStart=1, fmt='%03i'):
     i = counterStart

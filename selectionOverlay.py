@@ -67,7 +67,7 @@ class LineSelectionGraphicsItem( QtGui.QGraphicsLineItem, CircleSelectionGraphic
 graphicItems = [] #storing selection graphics items here as to protect against the garbage collector
 
 def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sceneToAddTo=None, clearPreviousSelectionItems=True,
-                                    doPoints=False, doTextItems=False, doLines=False, doCircles=False, doFittedCircles=False, 
+                                    doPoints=False, doTextItems=False, doLines=False, doCircles=False, doFittedCircles=False, doPathEndPoints=False, doMidPoints=False,
                                     pointWid=1.0 , maskPen=defaultMaskPen , maskBrush=defaultMaskBrush, maskHoverPen=defaultMaskHoverPen ):
     if clearPreviousSelectionItems:         
         if sceneToAddTo <> None:
@@ -164,6 +164,8 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                         if doLines:
                             graphicsItem = LineSelectionGraphicsItem( pen_x, pen_y, end_x, end_y )
                             postProcessGraphicsItem(graphicsItem, {'x1':pen_x,'y1':pen_y,'x2':end_x,'y2':end_y})
+                        if doMidPoints:
+                            addSelectionPoint( (pen_x+end_x)/2, (pen_y+end_y)/2 )
                         _pen_x, _pen_y = _end_x, _end_y
                         pen_x, pen_y = end_x, end_y
                     elif parms[j] == 'A':
@@ -210,6 +212,9 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                         pen_x, pen_y = end_x, end_y
                     else:
                         raise RuntimeError, 'unable to parse path "%s" with d parms %s' % (element.XML[element.pStart: element.pEnd], parms)
+                if j > 0 and doPathEndPoints:
+                    addSelectionPoint ( pen_x, pen_y )
+                    
                 if len(fitData) > 0: 
                     x, y, r, r_error = fitCircle_to_path(fitData)
                     #print('fittedCircle: x, y, r, r_error', x, y, r, r_error)

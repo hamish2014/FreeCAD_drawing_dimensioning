@@ -14,7 +14,7 @@ width = 640
 height = 480
 
 graphicsScene = QtGui.QGraphicsScene(0,0,width,height)
-graphicsScene.addText("Linear dimensioning testing app.\nEsc to Exit")
+graphicsScene.addText("Angular dimensioning testing app.\nEsc to Exit")
 
 dimensions = []
 

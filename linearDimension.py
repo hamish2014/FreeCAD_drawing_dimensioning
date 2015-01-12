@@ -54,16 +54,25 @@ class linearDimension:
     def Activated(self):
         V = getDrawingPageGUIVars()
         dimensioning.activate( V, [['gap_datum_points', 2.0 ], ['dimension_line_overshoot',1.0]] )
-        selectionOverlay.generateSelectionGraphicsItems( 
-            [obj for obj in V.page.Group  if not obj.Name.startswith('dim')], 
-            selectDimensioningPoint ,
+        commonArgs = dict( 
+            onClickFun=selectDimensioningPoint,
             transform = V.transform,
             sceneToAddTo = V.graphicsScene, 
-            doPoints=True, 
             pointWid=1.0,
             maskPen=maskPen, 
             maskHoverPen=maskHoverPen, 
             maskBrush = maskBrush
+            )
+        selectionOverlay.generateSelectionGraphicsItems( 
+            [obj for obj in V.page.Group  if not obj.Name.startswith('dim') and not obj.Name.startswith('center')],
+            doPoints=True, 
+            **commonArgs
+            )
+        selectionOverlay.generateSelectionGraphicsItems( 
+            [obj for obj in V.page.Group if obj.Name.startswith('center')], 
+            clearPreviousSelectionItems = False,
+            doPathEndPoints=True, 
+            **commonArgs
             )
         selectionOverlay.addProxyRectToRescaleGraphicsSelectionItems( V.graphicsScene, V.graphicsView, V.width, V.height)
         

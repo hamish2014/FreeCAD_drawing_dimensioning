@@ -154,7 +154,7 @@ def angularDimensionSVG( line1, line2, x_baseline, y_baseline, x_text=None, y_te
     XML = []
     x_int, y_int = lineIntersection(line1, line2)
     #XML.append( '<circle cx ="%f" cy ="%f" r="4" stroke="none" fill="rgb(0,0,255)" /> ' % (x_int, y_int) ) #for debugging
-    p_centre = numpy.array([ x_int, y_int ] )
+    p_center = numpy.array([ x_int, y_int ] )
     p1 = numpy.array( [line1[0], line1[1]] )
     p2 = numpy.array( [line1[2], line1[3]] )
     p3 = numpy.array( [line2[0], line2[1]] )
@@ -163,11 +163,11 @@ def angularDimensionSVG( line1, line2, x_baseline, y_baseline, x_text=None, y_te
     #XML.append( '<line x1="%f" y1="%f" x2="%f" y2="%f" style="stroke:rgb(0,255,0);stroke-width:3" />' % (p3[0],p3[1],p4[0],p4[1]) )
 
     p5 = numpy.array([ x_baseline, y_baseline ])
-    r_P5 = norm( p5 -p_centre )
+    r_P5 = norm( p5 -p_center )
     # determine arrow position
     def arrowPosition( d ): 
-        cand1 = p_centre + d*r_P5
-        cand2 = p_centre - d*r_P5
+        cand1 = p_center + d*r_P5
+        cand2 = p_center - d*r_P5
         return cand1 if norm( cand1 - p5) < norm( cand2 - p5) else cand2
     p_arrow1 = arrowPosition(directionVector(p1,p2))
     p_arrow2 = arrowPosition(directionVector(p3,p4))
@@ -182,8 +182,8 @@ def angularDimensionSVG( line1, line2, x_baseline, y_baseline, x_text=None, y_te
     line_to_arrow_point( p1, p2, p_arrow1)
     line_to_arrow_point( p3, p4, p_arrow2)
 
-    d1 = directionVector(p_centre, p_arrow1)
-    d2 = directionVector(p_centre, p_arrow2)
+    d1 = directionVector(p_center, p_arrow1)
+    d2 = directionVector(p_center, p_arrow2)
 
     largeArc = False # given the selection method for the arrow heads (points and line1 and line2 used for measuring the angle)
     angle_1 = arctan2( d2[1], d2[0] )
@@ -214,3 +214,52 @@ def angularDimensionSVG( line1, line2, x_baseline, y_baseline, x_text=None, y_te
     return XML
 
     
+def _centerLineSVG( x1, y1, x2, y2, len_dot, len_dash, len_gap, start_with_half_dot=False):
+    start = numpy.array( [x1, y1] )
+    end = numpy.array( [x2, y2] )
+    d = directionVector(start, end)
+    dCode = ''
+    pos = start
+    step = len_dot*0.5 if start_with_half_dot else len_dot
+    while norm(pos - start) + 10**-6 < norm(end - start):
+        dCode = dCode + 'M %f,%f' %  (pos[0], pos[1])    
+        pos = pos + d*step
+        if norm(pos - start) > norm(end - start):
+            pos = end
+        dCode = dCode + ' L %f,%f ' % (pos[0], pos[1])
+        pos = pos + d*len_gap
+        step = len_dash if step < len_dash else len_dot
+    if dCode <> '':
+        return '<path d="%s"/>' % dCode
+    else:
+        return ''
+
+def centerLinesSVG( center, topLeft, bottomRight=None, centerLine_len_dot=2.0, centerLine_len_dash=6.0, centerLine_len_gap=2.0, svgTag='g', svgParms='', strokeWidth=0.5, lineColor='blue'):
+    XML_body = []
+    commonArgs =  centerLine_len_dot,  centerLine_len_dash,  centerLine_len_gap
+    XML_body.append( _centerLineSVG(center[0], center[1], center[0], topLeft[1], *commonArgs ) )
+    XML_body.append( _centerLineSVG(center[0], center[1], topLeft[0], center[1], *commonArgs ) )
+    if bottomRight <> None:
+        XML_body.append( _centerLineSVG(center[0], center[1], center[0], bottomRight[1], *commonArgs ) )
+        XML_body.append( _centerLineSVG(center[0], center[1], bottomRight[0], center[1], *commonArgs ) )
+    return '''<%s %s stroke="%s"  stroke-width="%f" >
+%s
+</%s> ''' % ( svgTag, svgParms, lineColor, strokeWidth, "\n".join(XML_body), svgTag )
+
+
+def centerLineSVG( center, topLeft, bottomRight=None, centerLine_len_dot=2.0, centerLine_len_dash=6.0, centerLine_len_gap=2.0, svgTag='g', svgParms='', strokeWidth=0.5, lineColor='blue'):
+    XML_body = []
+    commonArgs =  centerLine_len_dot,  centerLine_len_dash,  centerLine_len_gap
+    vertical = abs(center[0] - topLeft[0]) < abs(center[1] - topLeft[1])
+    if vertical:
+        XML_body.append( _centerLineSVG(center[0], center[1], center[0], topLeft[1], *commonArgs ) )
+    else:
+        XML_body.append( _centerLineSVG(center[0], center[1], topLeft[0], center[1], *commonArgs ) )
+    if bottomRight <> None:
+        if vertical:
+            XML_body.append( _centerLineSVG(center[0], center[1], center[0], bottomRight[1], *commonArgs ) )
+        else:
+            XML_body.append( _centerLineSVG(center[0], center[1], bottomRight[0], center[1], *commonArgs ) )
+    return '''<%s %s stroke="%s"  stroke-width="%f" >
+%s
+</%s> ''' % ( svgTag, svgParms, lineColor, strokeWidth, "\n".join(XML_body), svgTag )
