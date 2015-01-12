@@ -234,32 +234,25 @@ def _centerLineSVG( x1, y1, x2, y2, len_dot, len_dash, len_gap, start_with_half_
     else:
         return ''
 
-def centerLinesSVG( center, topLeft, bottomRight=None, centerLine_len_dot=2.0, centerLine_len_dash=6.0, centerLine_len_gap=2.0, svgTag='g', svgParms='', strokeWidth=0.5, lineColor='blue'):
+def _centerLinesSVG( center, topLeft, bottomRight, dimScale, centerLine_len_dot, centerLine_len_dash, centerLine_len_gap, svgTag, svgParms, strokeWidth, lineColor, doVertical, doHorizontal ):
     XML_body = []
-    commonArgs =  centerLine_len_dot,  centerLine_len_dash,  centerLine_len_gap
-    XML_body.append( _centerLineSVG(center[0], center[1], center[0], topLeft[1], *commonArgs ) )
-    XML_body.append( _centerLineSVG(center[0], center[1], topLeft[0], center[1], *commonArgs ) )
+    center = numpy.array( center ) / dimScale
+    topLeft = numpy.array( topLeft ) / dimScale
+    if bottomRight <> None: bottomRight =  numpy.array( bottomRight ) / dimScale
+    commonArgs =  centerLine_len_dot / dimScale,  centerLine_len_dash / dimScale,  centerLine_len_gap / dimScale
+    if doVertical: XML_body.append( _centerLineSVG(center[0], center[1], center[0], topLeft[1], *commonArgs ) )
+    if doHorizontal: XML_body.append( _centerLineSVG(center[0], center[1], topLeft[0], center[1], *commonArgs ) )
     if bottomRight <> None:
-        XML_body.append( _centerLineSVG(center[0], center[1], center[0], bottomRight[1], *commonArgs ) )
-        XML_body.append( _centerLineSVG(center[0], center[1], bottomRight[0], center[1], *commonArgs ) )
-    return '''<%s %s stroke="%s"  stroke-width="%f" >
+        if doVertical: XML_body.append( _centerLineSVG(center[0], center[1], center[0], bottomRight[1], *commonArgs ) )
+        if doHorizontal: XML_body.append( _centerLineSVG(center[0], center[1], bottomRight[0], center[1], *commonArgs ) )
+    return '''<%s %s transform="scale(%f,%f)" stroke="%s"  stroke-width="%f" >
 %s
-</%s> ''' % ( svgTag, svgParms, lineColor, strokeWidth, "\n".join(XML_body), svgTag )
+</%s> ''' % ( svgTag, svgParms, dimScale, dimScale, lineColor, strokeWidth, "\n".join(XML_body), svgTag )
 
 
-def centerLineSVG( center, topLeft, bottomRight=None, centerLine_len_dot=2.0, centerLine_len_dash=6.0, centerLine_len_gap=2.0, svgTag='g', svgParms='', strokeWidth=0.5, lineColor='blue'):
-    XML_body = []
-    commonArgs =  centerLine_len_dot,  centerLine_len_dash,  centerLine_len_gap
-    vertical = abs(center[0] - topLeft[0]) < abs(center[1] - topLeft[1])
-    if vertical:
-        XML_body.append( _centerLineSVG(center[0], center[1], center[0], topLeft[1], *commonArgs ) )
-    else:
-        XML_body.append( _centerLineSVG(center[0], center[1], topLeft[0], center[1], *commonArgs ) )
-    if bottomRight <> None:
-        if vertical:
-            XML_body.append( _centerLineSVG(center[0], center[1], center[0], bottomRight[1], *commonArgs ) )
-        else:
-            XML_body.append( _centerLineSVG(center[0], center[1], bottomRight[0], center[1], *commonArgs ) )
-    return '''<%s %s stroke="%s"  stroke-width="%f" >
-%s
-</%s> ''' % ( svgTag, svgParms, lineColor, strokeWidth, "\n".join(XML_body), svgTag )
+def centerLinesSVG( center, topLeft, bottomRight=None, dimScale=1.0, centerLine_len_dot=2.0, centerLine_len_dash=6.0, centerLine_len_gap=2.0, svgTag='g', svgParms='', strokeWidth=0.5, lineColor='blue'):
+    return _centerLinesSVG( center, topLeft, bottomRight, dimScale, centerLine_len_dot, centerLine_len_dash, centerLine_len_gap, svgTag, svgParms, strokeWidth, lineColor, True, True )
+
+def centerLineSVG( center, topLeft, bottomRight=None,  dimScale=1.0, centerLine_len_dot=2.0, centerLine_len_dash=6.0, centerLine_len_gap=2.0, svgTag='g', svgParms='', strokeWidth=0.5, lineColor='blue'):
+    v = abs(center[0] - topLeft[0]) < abs(center[1] - topLeft[1]) #vertical
+    return _centerLinesSVG( center, topLeft, bottomRight, dimScale, centerLine_len_dot, centerLine_len_dash, centerLine_len_gap, svgTag, svgParms, strokeWidth, lineColor, v, not v )

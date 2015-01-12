@@ -9,8 +9,9 @@ dimensioning = DimensioningProcessTracker()
 def selectFun(  event, referer, elementXML, elementParms, elementViewObject ):
     x,y = elementParms['x'], elementParms['y']
     dimensioning.center = [x, y]
-    debugPrint(3, 'center selected at x=%3.1f y=%3.1f' % (x,y))
     dimensioning.stage = 1
+    dimensioning.dimScale = elementXML.rootNode().scaling()
+    debugPrint(3, 'center selected at x=%3.1f y=%3.1f scale %3.1f' % (x,y, dimensioning.dimScale))
     selectionOverlay.hideSelectionGraphicsItems()
     previewDimension.initializePreview( dimensioning.drawingVars, clickFunPreview, hoverFunPreview )
 
@@ -26,15 +27,19 @@ def clickFunPreview( x, y ):
         XML = dimensioning.SVGFun( dimensioning.center,
                               dimensioning.topLeft,
                               dimensioning.bottomRight,
+                              dimScale = dimensioning.dimScale,
                               **dimensioning.dimensionConstructorKWs)
         return findUnusedObjectName('centerLines'), XML
 
 def hoverFunPreview( x, y):
     if dimensioning.stage == 1:
-        return dimensioning.SVGFun( dimensioning.center, [x, y], **dimensioning.svg_preview_KWs )
+        return dimensioning.SVGFun( dimensioning.center, [x, y], 
+                                    dimScale = dimensioning.dimScale,
+                                    **dimensioning.svg_preview_KWs )
     elif dimensioning.stage == 2:
         return dimensioning.SVGFun( dimensioning.center, dimensioning.topLeft, [x, y],
-                               **dimensioning.svg_preview_KWs )
+                                    dimScale = dimensioning.dimScale,
+                                    **dimensioning.svg_preview_KWs )
 
 class CenterLines:
     def Activated(self):
