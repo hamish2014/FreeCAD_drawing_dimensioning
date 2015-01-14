@@ -15,14 +15,14 @@ def directionVector( A, B ):
         return (B-A)/norm(B-A)
 
 def dimensionSVG_trimLine(A,B,trimA, trimB):
-    d = directionVector( A, B) 
+    d = directionVector( A, B)
     return (A + d*trimA).tolist() + (B - d*trimB).tolist()
 
 def rotate2D( v, angle ):
     return numpy.dot( [[ cos(angle), -sin(angle)],[ sin(angle), cos(angle)]], v)
 
 def arrowHeadSVG( tipPos, d, L1, L2, W, clr='blue'):
-    d2 = numpy.dot( [[ 0, -1],[ 1, 0]], d) #same as rotate2D( d, pi/2 ) 
+    d2 = numpy.dot( [[ 0, -1],[ 1, 0]], d) #same as rotate2D( d, pi/2 )
     R = numpy.array( [d, d2]).transpose()
     p2 = numpy.dot( R, [ L1,    W/2.0 ]) + tipPos
     p3 = numpy.dot( R, [ L1+L2, 0     ]) + tipPos
@@ -52,7 +52,7 @@ def linearDimensionSVG( x1, y1, x2, y2, x3, y3, x4=None, y4=None, scale=1.0, tex
         if abs( sum( numpy.sign(d) * numpy.sign( p3- (p1+p2)/2 ))) == 0:
             return None
         textRotation = numpy.arctan( (y2 - y1)/(x2 - x1))  / numpy.pi * 180
-        #if textRotation < 
+        #if textRotation <
     else:
         return None
     A = p1 + numpy.dot(p3-p1,d)*d
@@ -129,6 +129,28 @@ def radiusDimensionSVG( center_x, center_y, radius, radialLine_x=None, radialLin
 </%s> ''' % ( svgTag, svgParms, "\n".join(XML_body), svgTag )
     return XML
 
+
+def noteCircleSVG( start_x, start_y,
+                   radialLine_x=None, radialLine_y=None,
+                   tail_x=None, tail_y=None,
+                   textFormat='R%3.3f', centerPointDia = 1, svgTag='g', svgParms='', fontSize=4,
+                   strokeWidth=0.5, dimScale=1.0, lineColor='blue', fontColor='red'):
+    XML_body = [ ]
+    if radialLine_x <> None and radialLine_y <> None:
+        XML_body.append( '<line x1="%f" y1="%f" x2="%f" y2="%f" style="stroke:%s;stroke-width:%1.2f" />' % (radialLine_x, radialLine_y, start_x, start_y, lineColor, strokeWidth) )
+        if tail_x <> None and tail_y <> None:
+            XML_body.append( '<line x1="%f" y1="%f" x2="%f" y2="%f" style="stroke:%s;stroke-width:%1.2f" />' % (radialLine_x, radialLine_y, tail_x, radialLine_y, lineColor, strokeWidth) )
+            XML_body.append(' <circle cx ="%f" cy ="%f" r="%f" stroke="%s" fill="white" /> ' % (tail_x, radialLine_y, 4.5, lineColor) )
+            notenum = 0
+            XML_body.append( '<text x="%f" y="%f" fill="%s" style="font-size:%i">%s</text>' % ( tail_x - 1.5, radialLine_y + 1.5, fontColor, fontSize, '0'))
+            XML_body.append( '<!--%s-->' % (notenum) )
+            XML_body.append( '<!--%s-->' % (textFormat) )
+    XML = '''<%s  %s >
+%s
+</%s> ''' % ( svgTag, svgParms, "\n".join(XML_body), svgTag )
+    return XML
+
+
 def lineIntersection(line1, line2):
     x1,y1 = line1[0:2]
     dx1 = line1[2] - x1
@@ -138,18 +160,18 @@ def lineIntersection(line1, line2):
     dy2 = line2[3] - y2
     # x1 + dx1*t1 = x2 + dx2*t2
     # y1 + dy1*t1 = y2 + dy2*t2
-    A = numpy.array([ 
+    A = numpy.array([
             [ dx1, -dx2 ],
             [ dy1, -dy2 ],
             ])
     b = numpy.array([ x2 - x1, y2 - y1])
     t1,t2 = numpy.linalg.solve(A,b)
-    x_int = x1 + dx1*t1 
+    x_int = x1 + dx1*t1
     y_int = y1 + dy1*t1
     #assert x1 + dx1*t1 == x2 + dx2*t2
     return x_int, y_int
 
-def angularDimensionSVG( line1, line2, x_baseline, y_baseline, x_text=None, y_text=None, textFormat='%3.1f°',  gap_datum_points = 2, dimension_line_overshoot=1, 
+def angularDimensionSVG( line1, line2, x_baseline, y_baseline, x_text=None, y_text=None, textFormat='%3.1f°',  gap_datum_points = 2, dimension_line_overshoot=1,
                          arrowL1=3, arrowL2=1, arrowW=2, svgTag='g', svgParms='', fontSize=4, strokeWidth=0.5, lineColor='blue', fontColor='red'):
     XML = []
     x_int, y_int = lineIntersection(line1, line2)
@@ -165,7 +187,7 @@ def angularDimensionSVG( line1, line2, x_baseline, y_baseline, x_text=None, y_te
     p5 = numpy.array([ x_baseline, y_baseline ])
     r_P5 = norm( p5 -p_center )
     # determine arrow position
-    def arrowPosition( d ): 
+    def arrowPosition( d ):
         cand1 = p_center + d*r_P5
         cand2 = p_center - d*r_P5
         return cand1 if norm( cand1 - p5) < norm( cand2 - p5) else cand2
@@ -187,7 +209,7 @@ def angularDimensionSVG( line1, line2, x_baseline, y_baseline, x_text=None, y_te
 
     largeArc = False # given the selection method for the arrow heads (points and line1 and line2 used for measuring the angle)
     angle_1 = arctan2( d2[1], d2[0] )
-    angle_2 = arctan2( d1[1], d1[0] ) 
+    angle_2 = arctan2( d1[1], d1[0] )
     if abs(angle_1 - angle_2) < pi: #modulo correction required, since arctan2 return [-pi, pi]
         if angle_2 < angle_1:
             angle_2 = angle_2 + 2*pi
@@ -213,7 +235,7 @@ def angularDimensionSVG( line1, line2, x_baseline, y_baseline, x_text=None, y_te
 </%s> ''' % ( svgTag, svgParms, '\n'.join(XML), svgTag )
     return XML
 
-    
+
 def _centerLineSVG( x1, y1, x2, y2, len_dot, len_dash, len_gap, start_with_half_dot=False):
     start = numpy.array( [x1, y1] )
     end = numpy.array( [x2, y2] )
@@ -222,7 +244,7 @@ def _centerLineSVG( x1, y1, x2, y2, len_dot, len_dash, len_gap, start_with_half_
     pos = start
     step = len_dot*0.5 if start_with_half_dot else len_dot
     while norm(pos - start) + 10**-6 < norm(end - start):
-        dCode = dCode + 'M %f,%f' %  (pos[0], pos[1])    
+        dCode = dCode + 'M %f,%f' %  (pos[0], pos[1])
         pos = pos + d*step
         if norm(pos - start) > norm(end - start):
             pos = end
