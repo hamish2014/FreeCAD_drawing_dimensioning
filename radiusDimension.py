@@ -29,8 +29,8 @@ def clickFunPreview( x, y ):
         return None, None
     else:
         XML = radiusDimensionSVG( dimensioning.point1[0], dimensioning.point1[1], dimensioning.radius,
-                                  dimensioning.point2[0], dimensioning.point2[1], 
-                                  dimensioning.point3[0], dimensioning.point3[1], 
+                                  dimensioning.point2[0], dimensioning.point2[1],
+                                  dimensioning.point3[0], dimensioning.point3[1],
                                   x, y, dimScale=dimensioning.dimScale,
                                   **dimensioning.dimensionConstructorKWs)
         return findUnusedObjectName('dim'), XML
@@ -39,14 +39,15 @@ def hoverFunPreview( x, y):
     if dimensioning.stage == 1:
         return radiusDimensionSVG( dimensioning.point1[0], dimensioning.point1[1], dimensioning.radius, x, y, dimScale=dimensioning.dimScale, **dimensioning.svg_preview_KWs )
     elif dimensioning.stage == 2:
-        return radiusDimensionSVG( dimensioning.point1[0], dimensioning.point1[1], dimensioning.radius, 
+        return radiusDimensionSVG( dimensioning.point1[0], dimensioning.point1[1], dimensioning.radius,
                                      dimensioning.point2[0], dimensioning.point2[1], x, y, dimScale=dimensioning.dimScale, **dimensioning.svg_preview_KWs )
-    else: 
-        return radiusDimensionSVG( dimensioning.point1[0], dimensioning.point1[1], dimensioning.radius, 
-                                     dimensioning.point2[0], dimensioning.point2[1], 
-                                     dimensioning.point3[0], dimensioning.point3[1], 
-                                     x, y, dimScale=dimensioning.dimScale,**dimensioning.svg_preview_KWs )
-    
+    else:
+        return radiusDimensionSVG( dimensioning.point1[0], dimensioning.point1[1], dimensioning.radius,
+                                     dimensioning.point2[0], dimensioning.point2[1],
+                                     dimensioning.point3[0], dimensioning.point3[1],
+                                     x, y,
+                                     dimScale=dimensioning.dimScale, **dimensioning.svg_preview_KWs )
+
 
 maskPen =      QtGui.QPen( QtGui.QColor(0,255,0,100) )
 maskPen.setWidth(2.0)
@@ -57,23 +58,23 @@ class radiusDimension:
     def Activated(self):
         V = getDrawingPageGUIVars()
         dimensioning.activate(V, [['centerPointDia',1.0]])
-        selectionOverlay.generateSelectionGraphicsItems( 
-            [obj for obj in V.page.Group  if not obj.Name.startswith('dim')], 
+        selectionOverlay.generateSelectionGraphicsItems(
+            [obj for obj in V.page.Group  if not obj.Name.startswith('dim')],
             selectFun ,
             transform = V.transform,
-            sceneToAddTo = V.graphicsScene, 
-            doCircles=True, doFittedCircles=True, 
-            maskPen=maskPen, 
-            maskHoverPen=maskHoverPen, 
+            sceneToAddTo = V.graphicsScene,
+            doCircles=True, doFittedCircles=True,
+            maskPen=maskPen,
+            maskHoverPen=maskHoverPen,
             maskBrush = QtGui.QBrush() #clear
             )
         selectionOverlay.addProxyRectToRescaleGraphicsSelectionItems( V.graphicsScene, V.graphicsView, V.width, V.height)
 
-    def GetResources(self): 
+    def GetResources(self):
         return {
-            'Pixmap' : os.path.join( iconPath , 'radiusDimension.svg' ) , 
-            'MenuText': 'Radius Dimension', 
+            'Pixmap' : os.path.join( iconPath , 'radiusDimension.svg' ) ,
+            'MenuText': 'Radius Dimension',
             'ToolTip': 'Creates a radius dimension'
-            } 
+            }
 
 FreeCADGui.addCommand('radiusDimension', radiusDimension())

@@ -1,5 +1,5 @@
 
-class DrawingDimensioningWorkbench (Workbench): 
+class DrawingDimensioningWorkbench (Workbench):
     # Icon generated using by converting linearDimension.svg to xpm format using Gimp
     Icon = '''
 /* XPM */
@@ -55,13 +55,13 @@ static char * linearDimension_xpm[] = {
         DEBUG=False
         if DEBUG:
             import crudeDebugger
-        for module in ['linearDimension', 'deleteDimension', 'circularDimension', 'textAdd', 'textEdit', 'textMove','escapeDimensioning', 'angularDimension' ,'radiusDimension', 'centerLines']:
+        for module in ['linearDimension', 'deleteDimension', 'circularDimension', 'textAdd', 'textEdit', 'textMove','escapeDimensioning', 'angularDimension' ,'radiusDimension', 'centerLines', 'noteCircle']:
             if not DEBUG:
                 importlib.import_module( module )
             else:
                 crudeDebugger.printingDebugging( os.path.join(__dir__, module + '.py') )
                 importlib.import_module(  module + '_crudeDebugging')
-        commandslist = ['linearDimension', 'circularDimension', 'radiusDimension', 'angularDimension', 'DrawingDimensioning_centerLines', 'DrawingDimensioning_centerLine', 'textAddDimensioning','textEditDimensioning', 'textMoveDimensioning', 'deleteDimension', 'escapeDimensioning']
+        commandslist = ['linearDimension', 'circularDimension', 'radiusDimension', 'angularDimension', 'DrawingDimensioning_centerLines', 'DrawingDimensioning_centerLine', 'noteCircle', 'textAddDimensioning','textEditDimensioning', 'textMoveDimensioning', 'deleteDimension', 'escapeDimensioning']
         self.appendToolbar('Drawing Dimensioning', commandslist)
         FreeCADGui.addIconPath(iconPath)
         FreeCADGui.addPreferencePage( os.path.join( __dir__, 'Resources', 'ui', 'drawing_dimensioing_prefs-base.ui'),'Drawing Dimensioning' )
