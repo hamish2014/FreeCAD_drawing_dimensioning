@@ -59,7 +59,7 @@ def initializePreview( drawingVars, clickFunPreview, hoverFunPreview ):
         preview.SVG_initialization_height = drawingVars.height
         preview.SVG.setSharedRenderer( preview.SVGRenderer )
         preview.SVG.setTransform( drawingVars.transform )
-        preview.removedQtItems = False
+    preview.removedQtItems = False
     debugPrint(4, 'adding SVG')
     preview.SVGRenderer.load( QtCore.QByteArray( '''<svg width="%i" height="%i"> </svg>''' % (drawingVars.width, drawingVars.height) ) )
     preview.SVG.update()
