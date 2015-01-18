@@ -62,11 +62,7 @@ class CenterLines:
         selectionOverlay.addProxyRectToRescaleGraphicsSelectionItems( V.graphicsScene, V.graphicsView, V.width, V.height)
     def Activated_common(self):
         V = getDrawingPageGUIVars()
-        dimensioning.activate(V, [['centerLine_len_gap',2.0], ['centerLine_len_dash',6.0], ['centerLine_len_dot',2.0]] )
-        keywordsToBeRemoved = [ 'arrowW', 'arrowL1', 'arrowL2', 'fontSize', 'fontColor' ]
-        for k in keywordsToBeRemoved:
-            del dimensioning.dimensionConstructorKWs[k]
-            del dimensioning.svg_preview_KWs[k]
+        dimensioning.activate(V, ['strokeWidth','centerLine_len_gap','centerLine_len_dash','centerLine_len_dot'], ['lineColor'] )
         return V
     def GetResources(self): 
         return {

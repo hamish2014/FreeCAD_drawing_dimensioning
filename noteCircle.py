@@ -47,27 +47,18 @@ def hoverFunPreview( x, y ):
                               x, y,
                               dimScale=dimensioning.dimScale,**dimensioning.svg_preview_KWs )
 
-#selection variables for angular dimensioning
-maskPen =      QtGui.QPen( QtGui.QColor(0,255,0,100) )
-maskPen.setWidth(2.0)
+
+maskBrush  =   QtGui.QBrush( QtGui.QColor(0,160,0,100) )
+maskPen =      QtGui.QPen( QtGui.QColor(0,160,0,100) )
+maskPen.setWidth(0.0)
 maskHoverPen = QtGui.QPen( QtGui.QColor(0,255,0,255) )
-maskHoverPen.setWidth(2.0)
+maskHoverPen.setWidth(0.0)
 
 class noteCircle:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        dimensioning.activate(V, [['centerPointDia',1.0]])
-        keywordsToBeRemoved = [ 'arrowW', 'arrowL1', 'arrowL2']
-        for k in keywordsToBeRemoved:
-            del dimensioning.dimensionConstructorKWs[k]
-            del dimensioning.svg_preview_KWs[k]
-
-        dimensioning.SVGFun = noteCircleSVG
-        maskBrush  =   QtGui.QBrush( QtGui.QColor(0,160,0,100) )
-        maskPen =      QtGui.QPen( QtGui.QColor(0,160,0,100) )
-        maskPen.setWidth(0.0)
-        maskHoverPen = QtGui.QPen( QtGui.QColor(0,255,0,255) )
-        maskHoverPen.setWidth(0.0)
+        dimensioning.activate(V, ['strokeWidth','fontSize','centerPointDia'], ['lineColor','fontColor'])
+        #dimensioning.SVGFun = noteCircleSVG
         selectionOverlay.generateSelectionGraphicsItems(
             [obj for obj in V.page.Group  if not obj.Name.startswith('dim') and not obj.Name.startswith('center')],
             selectFun,

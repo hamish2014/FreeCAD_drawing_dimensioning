@@ -81,32 +81,54 @@ class DrawingPageGUIVars:
     def __init__(self, data):
         self.__dict__.update(data)
 
+
+defaultRealParameters = {
+    'strokeWidth': 0.3,
+    'fontSize': 4.0,
+    'arrowL1': 3.0,
+    'arrowL2': 1.0,
+    'arrowW': 2.0,
+    'gap_datum_points': 2.0,
+    'dimension_line_overshoot': 1.0,
+    'centerPointDia': 1.0,
+    'centerLine_len_gap': 2.0,
+    'centerLine_len_dash': 6.0,
+    'centerLine_len_dot': 2.0,
+}
+
+def unsignedToRGBText(v):
+    r = v >> 24
+    g = (v >> 16) - (v >> 24 << 8 )
+    b = (v >>  8) - (v >> 16 << 8 )
+    return 'rgb(%i,%i,%i)' % (r, g, b)
+
+def RGBtoUnsigned(r,g,b):
+    return (r << 24) + (g << 16) + (b << 8) 
+
+defaultColorParameters = {
+    'lineColor' : RGBtoUnsigned(0, 0, 255),
+    'fontColor' : RGBtoUnsigned(255, 0, 0) 
+}
+
 class DimensioningProcessTracker:
-    def activate( self, drawingVars, extraRealParms = []):
+    def activate( self, drawingVars, realParms=[], colorParms=[]):
         V = drawingVars #short hand
         self.drawingVars = V
         self.stage = 0
+        # get FreeCAD preferences
+        parms = App.ParamGet("User parameter:BaseApp/Preferences/Mod/Drawing_Dimensioning")
+        KWs = {}
+        for name in realParms:
+            KWs[name] = parms.GetFloat( name, defaultRealParameters[name] )
+        for cName in colorParms:
+            KWs[cName] = unsignedToRGBText( parms.GetUnsigned(cName, defaultColorParameters[cName]) )
+        self.dimensionConstructorKWs = KWs
+        debugPrint(3, 'dimensionConstructorKWs %s' % self.dimensionConstructorKWs )
         self.svg_preview_KWs = {
             'svgTag' : 'svg',
-            'svgParms' : 'width="%(width)i" height="%(height)i"' % V.__dict__ }
-        # get FreeCAD preferences
-        self.dimensionConstructorKWs = {}
-        parms = App.ParamGet("User parameter:BaseApp/Preferences/Mod/Drawing_Dimensioning")
-        parmNames =    ['strokeWidth', 'fontSize', 'arrowL1', 'arrowL2', 'arrowW']
-        parmDefaults = [ 0.3, 4.0, 3.0, 1.0, 2.0 ]
-        assert len(parmNames) == len(parmDefaults)
-        for name, default in zip(parmNames, parmDefaults) + extraRealParms:
-            self.dimensionConstructorKWs[name] = parms.GetFloat(name, default)
-        def getColor(parmName, default):
-            v = parms.GetUnsigned(parmName, default)
-            r = v >> 24
-            g = (v >> 16) - (v >> 24 << 8 )
-            b = (v >>  8) - (v >> 16 << 8 )
-            return 'rgb(%i,%i,%i)' % (r, g, b)
-        self.dimensionConstructorKWs['lineColor'] = getColor('lineColor',255 << 8)
-        self.dimensionConstructorKWs['fontColor'] = getColor('fontColor',255 << 24)
-        debugPrint(3, 'dimensionConstructorKWs %s' % self.dimensionConstructorKWs )
-        self.svg_preview_KWs.update( self.dimensionConstructorKWs )
+            'svgParms' : 'width="%(width)i" height="%(height)i"' % V.__dict__ 
+        }
+        self.svg_preview_KWs.update( KWs )
 
 def UnitConversionFactor():
     #found using App.ParamGet("User parameter:BaseApp/Preferences").Export('/tmp/p3')
