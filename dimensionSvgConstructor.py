@@ -269,7 +269,7 @@ def _centerLinesSVG( center, topLeft, bottomRight, dimScale, centerLine_len_dot,
         if doHorizontal: XML_body.append( _centerLineSVG(center[0], center[1], bottomRight[0], center[1], *commonArgs ) )
     return '''<%s %s transform="scale(%f,%f)" stroke="%s"  stroke-width="%f" >
 %s
-</%s> ''' % ( svgTag, svgParms, dimScale, dimScale, lineColor, strokeWidth, "\n".join(XML_body), svgTag )
+</%s> ''' % ( svgTag, svgParms, dimScale, dimScale, lineColor, strokeWidth/ dimScale, "\n".join(XML_body), svgTag )
 
 
 def centerLinesSVG( center, topLeft, bottomRight=None, dimScale=1.0, centerLine_len_dot=2.0, centerLine_len_dash=6.0, centerLine_len_gap=2.0, svgTag='g', svgParms='', strokeWidth=0.5, lineColor='blue'):
