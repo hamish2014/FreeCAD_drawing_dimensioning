@@ -30,9 +30,9 @@ On a Linux Debian based system such as Ubuntu, installation can be done through 
 
   $ sudo apt-get install git python-numpy python-pyside
 
-  $ mkdir .FreeCAD/Mod
+  $ mkdir ~/.FreeCAD/Mod
 
-  $ cd .FreeCAD/Mod
+  $ cd ~/.FreeCAD/Mod
 
   $ git clone https://github.com/hamish2014/FreeCAD_drawing_dimensioning.git
 
