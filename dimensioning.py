@@ -45,7 +45,7 @@ def getDrawingPageGUIVars():
     pages = App.ActiveDocument.getObjectsByLabel( subWinMW.objectName() )
 
     # raise an error explaining that the page wasn't found if the list is empty
-    if len(pages) == 0:
+    if len(pages) <> 1:
         raise ValueError, notDrawingPage_title
 
     # get the page from the list

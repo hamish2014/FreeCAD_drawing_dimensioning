@@ -6,7 +6,7 @@ Circular fitting ref:    http://wiki.scipy.org/Cookbook/Least_Squares_Circle
 '''
 
 import numpy
-from numpy import array, mean, linalg, sqrt, pi, linspace, cos, sin
+from numpy import array, mean, linalg, sqrt, pi, linspace, cos, sin, arctan2
 
 def bezier_cubic_point( p0, p1, p2, p3, t):
     ''' source wikipedia'''
@@ -84,6 +84,10 @@ def findCircularArcCentrePoint(r, x_1, y_1, x_2, y_2, largeArc, sweep, debug=Fal
     (x_2 - x_c)**2 + (y_2 - y_c)**2 = r**2  (2)
     giving 2 posible centre points from, that is where largeArc and Sweep come in
     using geometry to solve for centre point...
+
+    large arc flag - is 0 if an arc spanning less than or equal to 180 degrees is chosen, or 1 if an arc spanning greater than 180 degrees is chosen.
+    sweep flag     - is 0 if the line joining center to arc sweeps through decreasing angles, or 1 if it sweeps through increasing angles.
+
     '''
     from numpy import arccos, arctan2, sin, cos, pi
     # the law of cosines states c^2 = a^2 + b^2 - 2ab*cos(gamma)
@@ -102,7 +106,7 @@ def findCircularArcCentrePoint(r, x_1, y_1, x_2, y_2, largeArc, sweep, debug=Fal
     if debug: print('gamma %3.1f' % (gamma/pi*180))
     
 
-    angle_1_2 = arctan2( y_2 - y_1, x_2 - x_1)
+    angle_1_2 = arctan2( y_2 - y_1, x_2 - x_1) #range ``[-pi, pi]``
     # taking possible centre and testing it
     c_x = x_1 + r*cos(angle_1_2 + gamma)
     c_y = y_1 + r*sin(angle_1_2 + gamma)
@@ -139,7 +143,26 @@ def findCircularArcCentrePoint(r, x_1, y_1, x_2, y_2, largeArc, sweep, debug=Fal
     else:
         return c_x_alt,  c_y_alt 
 
-
+def pointsAlongCircularArc(r, x_1, y_1, x_2, y_2, largeArc, sweep, noPoints, debug=False ):
+    'excluding first points'
+    c_x, c_y = findCircularArcCentrePoint(r, x_1, y_1, x_2, y_2, largeArc, sweep, debug)
+    angle_1 = arctan2( y_1 - c_y, x_1 - c_x)
+    angle_2 = arctan2( y_2 - c_y, x_2 - c_x)
+    if not sweep: # arc sweeps through increasing angles
+        if angle_2 > angle_1:
+            angle_2 = angle_2 - 2*pi
+    else:
+        if angle_1 > angle_2:
+            angle_2 = angle_2 + 2*pi
+    points = []
+    for i in range(1,noPoints+1):
+        a = angle_1 + (angle_2 - angle_1) * 1.0*i/noPoints
+        points.append([ 
+                c_x + r*cos(a), 
+                c_y + r*sin(a)
+                ])
+    return points
+    
 def toStdOut(txt):
     print(txt)
 

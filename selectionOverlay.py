@@ -5,7 +5,7 @@ This library provides a crude hack to get around this problem.
 Specifically, DrawingObject.ViewResults are parsed as to create QGraphicsItems to handle selection.
 '''
 from XMLlib import SvgXMLTreeNode
-from circleLib import fitCircle_to_path, findCircularArcCentrePoint
+from circleLib import fitCircle_to_path, findCircularArcCentrePoint, pointsAlongCircularArc
 import sys, numpy
 from PySide import QtGui, QtCore, QtSvg
 
@@ -62,6 +62,8 @@ class LineSelectionGraphicsItem( QtGui.QGraphicsLineItem, CircleSelectionGraphic
     def setBrush(self, Brush):
         pass #this function should not been inherrited from CircleSelectionGraphicsItem
 
+class PathSelectionGraphicsItem( QtGui.QGraphicsPathItem, CircleSelectionGraphicsItem ):
+    pass
 
 
 graphicItems = [] #storing selection graphics items here as to protect against the garbage collector
@@ -182,9 +184,16 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                                 c_x, c_y = element.applyTransforms( _c_x, _c_y )
                                 r = rX * scaling
                                 if doCircles: 
-                                    addCircle( c_x, c_y, r , largeArc=largeArc, sweep=sweep)
-                                if doPoints:
-                                    circlePoints( c_x, c_y, r)
+                                    #addCircle( c_x, c_y, r , largeArc=largeArc, sweep=sweep)
+                                    gi = PathSelectionGraphicsItem()
+                                    path = QtGui.QPainterPath(QtCore.QPointF(pen_x, pen_y))
+                                    #path.arcTo(c_x - r, c_y -r , 2*r, 2*r, angle_1, angle_CCW) #dont know what is up with this function so trying something else.
+                                    for _p in pointsAlongCircularArc(rX, _pen_x, _pen_y, _end_x, _end_y, largeArc==1, sweep==1, noPoints=12):
+                                        path.lineTo(* element.applyTransforms(*_p) )
+                                    gi.setPath(path)
+                                    postProcessGraphicsItem( gi, {'x':c_x,'y':c_y,'r':r, 'largeArc':largeArc, 'sweep':sweep,  } )
+                                #if doPoints:
+                                #    circlePoints( c_x, c_y, r)
                         _pen_x, _pen_y = _end_x, _end_y
                         pen_x, pen_y = end_x, end_y
                         j = j + 8
@@ -203,11 +212,24 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                             _x1, _y1, _end_x, _end_y = map( float, parms[j+1:j+1 + 4] ) 
                             j = j + 5
                             P = [ [pen_x, pen_y], element.applyTransforms(_x1, _y1), element.applyTransforms(_end_x, _end_y) ]
+                        if doFittedCircles or True:
+                            x, y, r, r_error = fitCircle_to_path([P])
+                            print('fittedCircle: x, y, r, r_error', x, y, r, r_error)
+                            if r_error < 10**-4:
+                                gi = PathSelectionGraphicsItem()
+                                path = QtGui.QPainterPath(QtCore.QPointF(pen_x, pen_y))
+                                if len(P) == 4:
+                                    path.cubicTo( QtCore.QPointF(*P[1]), QtCore.QPointF(*P[2]), QtCore.QPointF(*P[3]) )
+                                else:
+                                    path.quadTo( QtCore.QPointF(*P[1]), QtCore.QPointF(*P[2]) )
+                                gi.setPath(path)
+                                postProcessGraphicsItem( gi, {'x':x,'y':y,'r':r} )
+
                         end_x, end_y = P[-1]
                         if doPoints:
                             addSelectionPoint ( pen_x, pen_y )
                             addSelectionPoint ( end_x, end_y )
-                        fitData.append( P )
+                        #fitData.append( P )
                         _pen_x, _pen_y = _end_x, _end_y
                         pen_x, pen_y = end_x, end_y
                     else:
@@ -215,14 +237,14 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                 if j > 0 and doPathEndPoints:
                     addSelectionPoint ( pen_x, pen_y )
                     
-                if len(fitData) > 0: 
-                    x, y, r, r_error = fitCircle_to_path(fitData)
-                    #print('fittedCircle: x, y, r, r_error', x, y, r, r_error)
-                    if r_error < 10**-4:
-                        if doFittedCircles:
-                            addCircle( x, y, r , r_error=r_error )
-                        if doPoints:
-                            circlePoints( x, y, r)
+                #if len(fitData) > 0: 
+                #    x, y, r, r_error = fitCircle_to_path(fitData)
+                #    #print('fittedCircle: x, y, r, r_error', x, y, r, r_error)
+                #    if r_error < 10**-4:
+                #        if doFittedCircles:
+                #            addCircle( x, y, r , r_error=r_error )
+                #        if doPoints:
+                #            circlePoints( x, y, r)
 
     return graphicItems
     
@@ -271,7 +293,7 @@ def addProxyRectToRescaleGraphicsSelectionItems( graphicsScene, graphicsView, wi
 if __name__ == "__main__":
     print('Testing selectionOverlay.py')
     testCase1 = '''<svg id="Ortho_0_1" width="640" height="480"
-   transform="rotate(90,122.43,123.757) translate(122.43,123.757) scale(1.5,1.5)"
+   transform="rotate(90,122.43,123.757) translate(250,0) scale(3.0,3.0)"
   >
 <g   stroke="rgb(0, 0, 0)"
    stroke-width="0.233333"
@@ -316,6 +338,10 @@ if __name__ == "__main__":
 <circle cx ="-60" cy ="35" r ="3" /></g>
 </g>'''
     testCase3 = '<g id="Ortho_0_0"\n   transform="rotate(0,98.5,131.5) translate(200,400) scale(30,30)"\n  >\n<g   stroke="rgb(0, 0, 0)"\n   stroke-width="0.035"\n   stroke-linecap="butt"\n   stroke-linejoin="miter"\n   fill="none"\n   transform="scale(1,-1)"\n  >\n<path id= "1" d=" M 0 1 L 0 9 " />\n<path d="M-2.22045e-16 1 A1 1 0 0 1 1 -2.22045e-16" /><path d="M-2.22045e-16 9 A1 1 0 0 0 1 10" /><path id= "4" d=" M 1 0 L 9 0 " />\n<path id= "5" d=" M 1 10 L 9 10 " />\n<path d="M10 1 A1 1 0 0 0 9 -2.22045e-16" /><path d="M10 9 A1 1 0 0 1 9 10" /><path id= "8" d=" M 10 1 L 10 9 " />\n</g>\n</g>\n'
+
+    testCase4 = '<g id="Ortho_0_0"\n   transform="rotate(-90,75.6667,71) translate(-300,100) scale(30,30)"\n  >\n<g   stroke="rgb(0, 0, 0)"\n   stroke-width="0.0875"\n   stroke-linecap="butt"\n   stroke-linejoin="miter"\n   fill="none"\n   transform="scale(1,-1)"\n  >\n<path id= "1" d=" M 1 2.22045e-16 L 9 2.22045e-16 " />\n<path id= "2" d=" M -2.22045e-16 -1 L -2.22045e-16 -9 " />\n<path id= "3" d=" M 10 -1 L 10 -9 " />\n<path id= "4" d=" M 1 -10 L 9 -10 " />\n<path d="M0 -1 A1 1 0 0 0 1 2.22045e-16" /><path d="M10 -1 A1 1 0 0 1 9 2.22045e-16" /><path d="M0 -9 A1 1 0 0 1 1 -10" /><path d="M9 -10 A1 1 0 0 1 10 -9" /></g>\n</g>\n'
+
+    testCase5 = '<g id="Ortho_0_-1"\n   transform="rotate(90,75.6667,132) translate(300,100) scale(30,30)"\n  >\n<g   stroke="rgb(0, 0, 0)"\n   stroke-width="0.0875"\n   stroke-linecap="butt"\n   stroke-linejoin="miter"\n   fill="none"\n   transform="scale(1,-1)"\n  >\n<path id= "1" d=" M 1.11022e-16 1 L 1.11022e-16 9 " />\n<path d="M1.11022e-16 1 A1 1 0 0 0 -1 -2.22045e-16" /><path id= "3" d=" M -1 -2.22045e-16 L -9 -2.22045e-16 " />\n<path d="M1.11022e-16 9 A1 1 0 0 1 -1 10" /><path id= "5" d=" M -1 10 L -9 10 " />\n<path id= "6" d=" M -1 10 L -9 10 " />\n<path id= "7" d=" M -10 1 L -10 9 " />\n<path id= "8" d=" M -10 1 L -10 9 " />\n<path d="M-10 1 A1 1 0 0 1 -9 -2.22045e-16" /><path d="M-10 1 A1 1 0 0 1 -9 -2.22045e-16" /><path d="M-10 9 A1 1 0 0 0 -9 10" /><path d="M-9 10 A1 1 0 0 1 -10 9" /></g>\n</g>\n'
 
     XML = testCase3
 
