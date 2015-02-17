@@ -12,6 +12,7 @@ from PySide import QtGui, QtCore, QtSvg
 app = QtGui.QApplication(sys.argv)
 width = 640
 height = 480
+textRenderer = SvgTextRenderer(font_family='Verdana', font_size='16pt', fill="red")
 
 graphicsScene = QtGui.QGraphicsScene(0,0,width,height)
 graphicsScene.addText("Angular dimensioning testing app.\nEsc to Exit")
@@ -32,7 +33,7 @@ class DimensioningRect(QtGui.QGraphicsRectItem):
         graphicsScene.addItem( self.dimPreview )
         self.dim_svg_KWs = dict(
             svgTag='svg', svgParms='width="%i" height="%i"' % (args[2],args[3]),
-            fontSize= 16, strokeWidth=1.0, arrowL1=10, arrowL2=4, arrowW=6,
+            strokeWidth=1.0, arrowL1=10, arrowL2=4, arrowW=6, textRenderer=textRenderer,
             gap_datum_points = 8, dimension_line_overshoot=4,
             )
     def selectDimensioningLine( self, event, referer, elementXML, elementParms, elementViewObject ):

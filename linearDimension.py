@@ -71,7 +71,7 @@ class linearDimension:
     "this class will create a line after the user clicked 2 points on the screen"
     def Activated(self):
         V = getDrawingPageGUIVars()
-        dimensioning.activate( V, ['strokeWidth','fontSize','arrowL1','arrowL2','arrowW','gap_datum_points', 'dimension_line_overshoot'], ['lineColor','fontColor'] )
+        dimensioning.activate( V, ['strokeWidth','arrowL1','arrowL2','arrowW','gap_datum_points', 'dimension_line_overshoot'], ['lineColor'], ['textRenderer'] )
         commonArgs = dict( 
             onClickFun=selectDimensioningPoint,
             transform = V.transform,

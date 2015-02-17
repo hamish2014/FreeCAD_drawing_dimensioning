@@ -79,7 +79,7 @@ point_maskHoverPen.setWidth(0.0)
 class angularDimension:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        dimensioning.activate(V, ['strokeWidth','fontSize','arrowL1','arrowL2','arrowW','gap_datum_points', 'dimension_line_overshoot'], ['lineColor','fontColor'] )
+        dimensioning.activate(V, ['strokeWidth','arrowL1','arrowL2','arrowW','gap_datum_points', 'dimension_line_overshoot'], ['lineColor'], ['textRenderer'] )
         selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if not obj.Name.startswith('dim')], 
             selectFun ,

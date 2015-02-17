@@ -57,7 +57,7 @@ maskHoverPen.setWidth(0.0)
 class noteCircle:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        dimensioning.activate(V, ['strokeWidth','fontSize','centerPointDia'], ['lineColor','fontColor'])
+        dimensioning.activate(V, ['strokeWidth','centerPointDia'], ['lineColor'], ['textRenderer'])
         #dimensioning.SVGFun = noteCircleSVG
         selectionOverlay.generateSelectionGraphicsItems(
             [obj for obj in V.page.Group  if not obj.Name.startswith('dim') and not obj.Name.startswith('center')],

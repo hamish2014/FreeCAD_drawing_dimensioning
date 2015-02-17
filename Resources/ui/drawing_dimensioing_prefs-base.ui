@@ -6,18 +6,24 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>593</width>
-    <height>654</height>
+    <width>663</width>
+    <height>622</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>General settings</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
-   <item row="0" column="0">
+   <item row="1" column="0">
     <widget class="QGroupBox" name="groupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="title">
-      <string>Settings for the Drawing Dimensioning Workbench</string>
+      <string>Font</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
@@ -25,53 +31,59 @@
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>font size</string>
+           <string>size</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="Gui::PrefDoubleSpinBox" name="gui::prefdoublespinbox">
-          <property name="maximumSize">
-           <size>
-            <width>60</width>
-            <height>16777215</height>
-           </size>
-          </property>
+         <widget class="Gui::PrefLineEdit" name="gui::preflineedit_3">
           <property name="toolTip">
-           <string>This is the value used by functions that use a tolerance.
-Values with differences below this value will be treated as same.</string>
+           <string>This is the default group name for construction geometry</string>
           </property>
-          <property name="suffix">
-           <string/>
-          </property>
-          <property name="decimals">
-           <number>1</number>
-          </property>
-          <property name="minimum">
-           <double>0.100000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
-          </property>
-          <property name="value">
-           <double>4.000000000000000</double>
+          <property name="text">
+           <string>3.6pt</string>
           </property>
           <property name="prefEntry" stdset="0">
-           <cstring>fontSize</cstring>
+           <cstring>textRenderer_size</cstring>
           </property>
           <property name="prefPath" stdset="0">
            <cstring>Mod/Drawing_Dimensioning</cstring>
           </property>
          </widget>
         </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <widget class="QLabel" name="label_2">
+         <spacer name="horizontalSpacer_5">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_14">
           <property name="text">
-           <string>font color</string>
+           <string>family</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Gui::PrefLineEdit" name="gui::preflineedit_2">
+          <property name="toolTip">
+           <string>This is the default group name for construction geometry</string>
+          </property>
+          <property name="text">
+           <string>Verdana</string>
+          </property>
+          <property name="prefEntry" stdset="0">
+           <cstring>textRenderer_family</cstring>
+          </property>
+          <property name="prefPath" stdset="0">
+           <cstring>Mod/Drawing_Dimensioning</cstring>
           </property>
          </widget>
         </item>
@@ -89,6 +101,13 @@ Values with differences below this value will be treated as same.</string>
          </spacer>
         </item>
         <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>color</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="Gui::PrefColorButton" name="gui::prefcolorbutton_3">
           <property name="toolTip">
            <string>This is the default color for objects being drawn while in construction mode.</string>
@@ -101,361 +120,7 @@ Values with differences below this value will be treated as same.</string>
            </color>
           </property>
           <property name="prefEntry" stdset="0">
-           <cstring>fontColor</cstring>
-          </property>
-          <property name="prefPath" stdset="0">
-           <cstring>Mod/Drawing_Dimensioning</cstring>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>line width</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="Gui::PrefDoubleSpinBox" name="gui::prefdoublespinbox_2">
-          <property name="maximumSize">
-           <size>
-            <width>60</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>This is the value used by functions that use a tolerance.
-Values with differences below this value will be treated as same.</string>
-          </property>
-          <property name="suffix">
-           <string/>
-          </property>
-          <property name="minimum">
-           <double>0.010000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.010000000000000</double>
-          </property>
-          <property name="value">
-           <double>0.300000000000000</double>
-          </property>
-          <property name="prefEntry" stdset="0">
-           <cstring>strokeWidth</cstring>
-          </property>
-          <property name="prefPath" stdset="0">
-           <cstring>Mod/Drawing_Dimensioning</cstring>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <item>
-         <widget class="QLabel" name="label_4">
-          <property name="text">
-           <string>line color</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="Gui::PrefColorButton" name="gui::prefcolorbutton_4">
-          <property name="toolTip">
-           <string>This is the default color for objects being drawn while in construction mode.</string>
-          </property>
-          <property name="color" stdset="0">
-           <color>
-            <red>0</red>
-            <green>0</green>
-            <blue>255</blue>
-           </color>
-          </property>
-          <property name="prefEntry" stdset="0">
-           <cstring>lineColor</cstring>
-          </property>
-          <property name="prefPath" stdset="0">
-           <cstring>Mod/Drawing_Dimensioning</cstring>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_4">
-        <item>
-         <widget class="QLabel" name="label_5">
-          <property name="text">
-           <string>arrow tip length</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="Gui::PrefDoubleSpinBox" name="gui::prefdoublespinbox_3">
-          <property name="maximumSize">
-           <size>
-            <width>60</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>This is the value used by functions that use a tolerance.
-Values with differences below this value will be treated as same.</string>
-          </property>
-          <property name="suffix">
-           <string/>
-          </property>
-          <property name="decimals">
-           <number>1</number>
-          </property>
-          <property name="minimum">
-           <double>0.100000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
-          </property>
-          <property name="value">
-           <double>3.000000000000000</double>
-          </property>
-          <property name="prefEntry" stdset="0">
-           <cstring>arrowL1</cstring>
-          </property>
-          <property name="prefPath" stdset="0">
-           <cstring>Mod/Drawing_Dimensioning</cstring>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_5">
-        <item>
-         <widget class="QLabel" name="label_6">
-          <property name="text">
-           <string>arrow width</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="Gui::PrefDoubleSpinBox" name="gui::prefdoublespinbox_4">
-          <property name="maximumSize">
-           <size>
-            <width>60</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>This is the value used by functions that use a tolerance.
-Values with differences below this value will be treated as same.</string>
-          </property>
-          <property name="suffix">
-           <string/>
-          </property>
-          <property name="decimals">
-           <number>1</number>
-          </property>
-          <property name="minimum">
-           <double>0.100000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
-          </property>
-          <property name="value">
-           <double>2.000000000000000</double>
-          </property>
-          <property name="prefEntry" stdset="0">
-           <cstring>arrowW</cstring>
-          </property>
-          <property name="prefPath" stdset="0">
-           <cstring>Mod/Drawing_Dimensioning</cstring>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_6">
-        <item>
-         <widget class="QLabel" name="label_7">
-          <property name="text">
-           <string>arrow tail length (may be negative)</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="Gui::PrefDoubleSpinBox" name="gui::prefdoublespinbox_5">
-          <property name="maximumSize">
-           <size>
-            <width>60</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>This is the value used by functions that use a tolerance.
-Values with differences below this value will be treated as same.</string>
-          </property>
-          <property name="suffix">
-           <string/>
-          </property>
-          <property name="decimals">
-           <number>1</number>
-          </property>
-          <property name="minimum">
-           <double>-10.000000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.010000000000000</double>
-          </property>
-          <property name="value">
-           <double>1.000000000000000</double>
-          </property>
-          <property name="prefEntry" stdset="0">
-           <cstring>arrowL2</cstring>
-          </property>
-          <property name="prefPath" stdset="0">
-           <cstring>Mod/Drawing_Dimensioning</cstring>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_7">
-        <item>
-         <widget class="QLabel" name="label_8">
-          <property name="text">
-           <string>gap datum points ( linear and angular dimensions )</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="Gui::PrefDoubleSpinBox" name="gui::prefdoublespinbox_6">
-          <property name="maximumSize">
-           <size>
-            <width>60</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>This is the value used by functions that use a tolerance.
-Values with differences below this value will be treated as same.</string>
-          </property>
-          <property name="suffix">
-           <string/>
-          </property>
-          <property name="decimals">
-           <number>1</number>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
-          </property>
-          <property name="value">
-           <double>2.000000000000000</double>
-          </property>
-          <property name="prefEntry" stdset="0">
-           <cstring>gap_datum_points</cstring>
-          </property>
-          <property name="prefPath" stdset="0">
-           <cstring>Mod/Drawing_Dimensioning</cstring>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_8">
-        <item>
-         <widget class="QLabel" name="label_9">
-          <property name="text">
-           <string>line overshoot ( linear and angular dimensions )</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="Gui::PrefDoubleSpinBox" name="gui::prefdoublespinbox_7">
-          <property name="maximumSize">
-           <size>
-            <width>60</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>This is the value used by functions that use a tolerance.
-Values with differences below this value will be treated as same.</string>
-          </property>
-          <property name="suffix">
-           <string/>
-          </property>
-          <property name="decimals">
-           <number>1</number>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
-          </property>
-          <property name="value">
-           <double>1.000000000000000</double>
-          </property>
-          <property name="prefEntry" stdset="0">
-           <cstring>dimension_line_overshoot</cstring>
-          </property>
-          <property name="prefPath" stdset="0">
-           <cstring>Mod/Drawing_Dimensioning</cstring>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_9">
-        <item>
-         <widget class="QLabel" name="label_10">
-          <property name="text">
-           <string>center point diameter (circular and radial dimensions)</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="Gui::PrefDoubleSpinBox" name="gui::prefdoublespinbox_8">
-          <property name="maximumSize">
-           <size>
-            <width>60</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>This is the value used by functions that use a tolerance.
-Values with differences below this value will be treated as same.</string>
-          </property>
-          <property name="suffix">
-           <string/>
-          </property>
-          <property name="decimals">
-           <number>1</number>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
-          </property>
-          <property name="value">
-           <double>1.000000000000000</double>
-          </property>
-          <property name="prefEntry" stdset="0">
-           <cstring>centerPointDia</cstring>
+           <cstring>textRenderer_color</cstring>
           </property>
           <property name="prefPath" stdset="0">
            <cstring>Mod/Drawing_Dimensioning</cstring>
@@ -467,7 +132,7 @@ Values with differences below this value will be treated as same.</string>
      </layout>
     </widget>
    </item>
-   <item row="1" column="0">
+   <item row="6" column="0">
     <widget class="QGroupBox" name="groupBox_2">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
@@ -644,6 +309,449 @@ Values with differences below this value will be treated as same.</string>
      </layout>
     </widget>
    </item>
+   <item row="4" column="0">
+    <widget class="QGroupBox" name="groupBox_4">
+     <property name="title">
+      <string>Linear and Angular Dimensions</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_7">
+        <item>
+         <widget class="QLabel" name="label_8">
+          <property name="text">
+           <string>gap datum points</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Gui::PrefDoubleSpinBox" name="gui::prefdoublespinbox_6">
+          <property name="maximumSize">
+           <size>
+            <width>60</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>This is the value used by functions that use a tolerance.
+Values with differences below this value will be treated as same.</string>
+          </property>
+          <property name="suffix">
+           <string/>
+          </property>
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>2.000000000000000</double>
+          </property>
+          <property name="prefEntry" stdset="0">
+           <cstring>gap_datum_points</cstring>
+          </property>
+          <property name="prefPath" stdset="0">
+           <cstring>Mod/Drawing_Dimensioning</cstring>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_6">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_9">
+          <property name="text">
+           <string>line overshoot</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Gui::PrefDoubleSpinBox" name="gui::prefdoublespinbox_7">
+          <property name="maximumSize">
+           <size>
+            <width>60</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>This is the value used by functions that use a tolerance.
+Values with differences below this value will be treated as same.</string>
+          </property>
+          <property name="suffix">
+           <string/>
+          </property>
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>1.000000000000000</double>
+          </property>
+          <property name="prefEntry" stdset="0">
+           <cstring>dimension_line_overshoot</cstring>
+          </property>
+          <property name="prefPath" stdset="0">
+           <cstring>Mod/Drawing_Dimensioning</cstring>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>Circular and Radial Dimensions</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_9">
+        <item>
+         <widget class="QLabel" name="label_10">
+          <property name="text">
+           <string>center point diameter</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Gui::PrefDoubleSpinBox" name="gui::prefdoublespinbox_8">
+          <property name="maximumSize">
+           <size>
+            <width>60</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>This is the value used by functions that use a tolerance.
+Values with differences below this value will be treated as same.</string>
+          </property>
+          <property name="suffix">
+           <string/>
+          </property>
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>1.000000000000000</double>
+          </property>
+          <property name="prefEntry" stdset="0">
+           <cstring>centerPointDia</cstring>
+          </property>
+          <property name="prefPath" stdset="0">
+           <cstring>Mod/Drawing_Dimensioning</cstring>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QGroupBox" name="groupBox_6">
+     <property name="title">
+      <string>Lines</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_5">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>width</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Gui::PrefDoubleSpinBox" name="gui::prefdoublespinbox_2">
+          <property name="maximumSize">
+           <size>
+            <width>60</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>This is the value used by functions that use a tolerance.
+Values with differences below this value will be treated as same.</string>
+          </property>
+          <property name="suffix">
+           <string/>
+          </property>
+          <property name="minimum">
+           <double>0.010000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.010000000000000</double>
+          </property>
+          <property name="value">
+           <double>0.300000000000000</double>
+          </property>
+          <property name="prefEntry" stdset="0">
+           <cstring>strokeWidth</cstring>
+          </property>
+          <property name="prefPath" stdset="0">
+           <cstring>Mod/Drawing_Dimensioning</cstring>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>color</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Gui::PrefColorButton" name="gui::prefcolorbutton_4">
+          <property name="toolTip">
+           <string>This is the default color for objects being drawn while in construction mode.</string>
+          </property>
+          <property name="color" stdset="0">
+           <color>
+            <red>0</red>
+            <green>0</green>
+            <blue>255</blue>
+           </color>
+          </property>
+          <property name="prefEntry" stdset="0">
+           <cstring>lineColor</cstring>
+          </property>
+          <property name="prefPath" stdset="0">
+           <cstring>Mod/Drawing_Dimensioning</cstring>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QGroupBox" name="groupBox_5">
+     <property name="title">
+      <string>Arrows</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_8">
+        <item>
+         <widget class="QLabel" name="label_16">
+          <property name="text">
+           <string>width</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Gui::PrefDoubleSpinBox" name="gui::prefdoublespinbox_13">
+          <property name="maximumSize">
+           <size>
+            <width>60</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>This is the value used by functions that use a tolerance.
+Values with differences below this value will be treated as same.</string>
+          </property>
+          <property name="suffix">
+           <string/>
+          </property>
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="minimum">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>2.000000000000000</double>
+          </property>
+          <property name="prefEntry" stdset="0">
+           <cstring>arrowW</cstring>
+          </property>
+          <property name="prefPath" stdset="0">
+           <cstring>Mod/Drawing_Dimensioning</cstring>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_8">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>tip length</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Gui::PrefDoubleSpinBox" name="gui::prefdoublespinbox_3">
+          <property name="maximumSize">
+           <size>
+            <width>60</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>This is the value used by functions that use a tolerance.
+Values with differences below this value will be treated as same.</string>
+          </property>
+          <property name="suffix">
+           <string/>
+          </property>
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="minimum">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>3.000000000000000</double>
+          </property>
+          <property name="prefEntry" stdset="0">
+           <cstring>arrowL1</cstring>
+          </property>
+          <property name="prefPath" stdset="0">
+           <cstring>Mod/Drawing_Dimensioning</cstring>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_7">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_15">
+          <property name="text">
+           <string>tail length (may be negative)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Gui::PrefDoubleSpinBox" name="gui::prefdoublespinbox_12">
+          <property name="maximumSize">
+           <size>
+            <width>60</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>This is the value used by functions that use a tolerance.
+Values with differences below this value will be treated as same.</string>
+          </property>
+          <property name="suffix">
+           <string/>
+          </property>
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="minimum">
+           <double>-10.000000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.010000000000000</double>
+          </property>
+          <property name="value">
+           <double>1.000000000000000</double>
+          </property>
+          <property name="prefEntry" stdset="0">
+           <cstring>arrowL2</cstring>
+          </property>
+          <property name="prefPath" stdset="0">
+           <cstring>Mod/Drawing_Dimensioning</cstring>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QGroupBox" name="groupBox_7">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>30</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>14</pointsize>
+      </font>
+     </property>
+     <property name="title">
+      <string>Preferences for the Drawing Dimensioning Workbench</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
@@ -662,6 +770,11 @@ Values with differences below this value will be treated as same.</string>
   <customwidget>
    <class>Gui::PrefDoubleSpinBox</class>
    <extends>QDoubleSpinBox</extends>
+   <header>Gui/PrefWidgets.h</header>
+  </customwidget>
+  <customwidget>
+   <class>Gui::PrefLineEdit</class>
+   <extends>QLineEdit</extends>
    <header>Gui/PrefWidgets.h</header>
   </customwidget>
  </customwidgets>

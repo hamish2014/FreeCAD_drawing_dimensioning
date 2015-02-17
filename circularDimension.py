@@ -56,7 +56,7 @@ maskHoverPen.setWidth(2.0)
 class circularDimension:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        dimensioning.activate(V, ['strokeWidth','fontSize','arrowL1','arrowL2','arrowW','centerPointDia'], ['lineColor','fontColor'])
+        dimensioning.activate(V, ['strokeWidth','arrowL1','arrowL2','arrowW','centerPointDia'], ['lineColor'], ['textRenderer'])
         selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if not obj.Name.startswith('dim')], 
             selectFun ,

@@ -17,6 +17,7 @@ from dimensioning import iconPath # not imported with * directive
 import selectionOverlay 
 import textAddDialog
 import XMLlib
+from textSvg import SvgTextParser
 
 dimensioning = DimensioningProcessTracker()
 
@@ -25,12 +26,14 @@ def EditDimensionText( event, referer, elementXML, elementParms, elementViewObje
     dimensioning.elementXML = elementXML
     selectionOverlay.hideSelectionGraphicsItems()
     e = elementXML
-    xml = e.XML[e.pStart:e.pEnd]
-    text = xml[xml.find('>')+1:-len('</text>')]
+    svgText = SvgTextParser( e.XML[e.pStart:e.pEnd] )
+    dimensioning.svgText = svgText
+    debugPrint(3,'editing %s' % repr(svgText))
     widgets = dict( [c.objectName(), c] for c in dialog.children() )
-    widgets['textLineEdit'].setText( text )
-    widgets['textSizeSpinBox'].setValue( float( e.parms['style'][len('font-size:'):] ) )
-    widgets['colorLineEdit'].setText( e.parms['fill'] )
+    widgets['textLineEdit'].setText( svgText.text )
+    widgets['sizeLineEdit'].setText( svgText.font_size)
+    widgets['colorLineEdit'].setText( svgText.fill )
+    widgets['familyLineEdit'].setText( svgText.font_family )
     widgets['placeButton'].setText('Change')
     dialog.setWindowTitle('Editing %s' % elementViewObject.Name)
     dialog.show()
@@ -44,19 +47,16 @@ class EditTextDialogWidget( QtGui.QWidget ):
             debugPrint(1, 'Aborting placing empty text.')
             return
         self.hide()
-        newText = widgets['textLineEdit'].text()
+        svgText = dimensioning.svgText 
+        svgText.text = widgets['textLineEdit'].text()
         widgets['textLineEdit'].setText('')
-        newSize = widgets['textSizeSpinBox'].value()
-        newColor = widgets['colorLineEdit'].text()
-        debugPrint(3,'updating %s.ViewResult to' % dimensioning.dimToEdit.Name)
-        e = dimensioning.elementXML
-        xml = e.XML[e.pStart:e.pEnd]
-        xml = XMLlib.replaceParm(xml, 'style', 'font-size:%i' % newSize )
-        xml = XMLlib.replaceParm(xml, 'fill', newColor )
-        p1 = xml.find('>')+1
-        p2 = xml.find('</text>')
-        xml = xml[:p1] + newText + xml[p2:]
+        svgText.font_size = widgets['sizeLineEdit'].text()
+        svgText.font_family = widgets['familyLineEdit'].text()
+        svgText.fill = widgets['colorLineEdit'].text()
+        debugPrint(3,'updating XML in %s to' % dimensioning.dimToEdit.Name)
+        xml = svgText.toXML()
         debugPrint(4,xml)
+        e =  dimensioning.elementXML
         newXML = e.XML[:e.pStart] + xml + e.XML[e.pEnd:]
         debugPrint(3,newXML)
         dimensioning.dimToEdit.ViewResult = newXML

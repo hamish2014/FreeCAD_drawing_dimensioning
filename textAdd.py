@@ -18,11 +18,12 @@ import previewDimension
 import textAddDialog
 
 dimensioning = DimensioningProcessTracker()
+dimensioning.assignedPrefenceValues = False
 
 def textSVG( x, y, svgTag='g', svgParms=''):
     XML = '''<%s  %s >
-<text x="%f" y="%f" fill="%s" style="font-size:%i">%s</text>
-</%s> ''' % ( svgTag, svgParms, x, y, dimensioning.color, dimensioning.fontSize, dimensioning.text, svgTag )
+%s
+</%s> ''' % ( svgTag, svgParms, dimensioning.textRenderer(x,y,dimensioning.text), svgTag )
     debugPrint(4, 'textSVG.XML %s' % XML)
     return XML
 
@@ -36,9 +37,9 @@ def hoverEvent( x, y):
 
 class AddTextDialogWidget( QtGui.QWidget ):
     def accept( self ):
-        debugPrint(3, 'AddTextDialogWidget accept pressed')
+        debugPrint(2, 'AddTextDialogWidget accept pressed')
         widgets = dict( [c.objectName(), c] for c in self.children() )
-        debugPrint(4, 'widgets %s' % widgets)
+        debugPrint(2, 'widgets %s' % widgets)
         if widgets['textLineEdit'].text() == '':
             debugPrint(1, 'Aborting placing empty text.')
             return
@@ -46,9 +47,12 @@ class AddTextDialogWidget( QtGui.QWidget ):
         self.hide()
         dimensioning.text = widgets['textLineEdit'].text()
         widgets['textLineEdit'].setText('')
-        dimensioning.fontSize =  widgets['textSizeSpinBox'].value()
-        dimensioning.color = widgets['colorLineEdit'].text()
-        debugPrint(4,'previewDimension.initializePreview')
+        family = widgets['familyLineEdit'].text()
+        size = widgets['sizeLineEdit'].text()
+        fill = widgets['colorLineEdit'].text()
+        dimensioning.textRenderer = SvgTextRenderer( family, size, fill )
+        debugPrint(3,'textRenderer created')
+        debugPrint(3,'previewDimension.initializePreview')
         previewDimension.initializePreview(
             dimensioning.drawingVars,
             clickEvent, 
@@ -61,8 +65,15 @@ dialogUi.setupUi(dialog)
 
 class AddText:
     def Activated(self):
-        V = getDrawingPageGUIVars() #needs to be done before dialog show, else Qt active is dialog and not freecads
-        dimensioning.activate( V )
+        V = getDrawingPageGUIVars() #needs to be done before dialog show, else active window is dialog and not freecad
+        dimensioning.activate( V, textParms=['textRenderer'] )
+        if not dimensioning.assignedPrefenceValues:
+            tR = dimensioning.dimensionConstructorKWs['textRenderer']
+            widgets = dict( [c.objectName(), c] for c in dialog.children() )
+            widgets['sizeLineEdit'].setText( tR.font_size )
+            widgets['colorLineEdit'].setText(  tR.fill )
+            widgets['familyLineEdit'].setText( tR.font_family )
+            dimensioning.assignedPrefenceValues = True
         dialog.show()
         
     def GetResources(self): 

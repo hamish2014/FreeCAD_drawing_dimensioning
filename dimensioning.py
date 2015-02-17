@@ -2,6 +2,7 @@ import numpy
 import FreeCAD as App
 import FreeCADGui, Part, os
 from PySide import QtGui, QtCore, QtSvg
+from textSvg import SvgTextRenderer
 
 __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
@@ -84,7 +85,6 @@ class DrawingPageGUIVars:
 
 defaultRealParameters = {
     'strokeWidth': 0.3,
-    'fontSize': 4.0,
     'arrowL1': 3.0,
     'arrowL2': 1.0,
     'arrowW': 2.0,
@@ -107,11 +107,16 @@ def RGBtoUnsigned(r,g,b):
 
 defaultColorParameters = {
     'lineColor' : RGBtoUnsigned(0, 0, 255),
-    'fontColor' : RGBtoUnsigned(255, 0, 0) 
+}
+
+defaultTextParameters = {
+    'textRenderer_family':'Verdana',
+    'textRenderer_size':'3.6pt',
+    'textRenderer_color': RGBtoUnsigned(255, 0, 0),
 }
 
 class DimensioningProcessTracker:
-    def activate( self, drawingVars, realParms=[], colorParms=[]):
+    def activate( self, drawingVars, realParms=[], colorParms=[], textParms=[]):
         V = drawingVars #short hand
         self.drawingVars = V
         self.stage = 0
@@ -122,6 +127,11 @@ class DimensioningProcessTracker:
             KWs[name] = parms.GetFloat( name, defaultRealParameters[name] )
         for cName in colorParms:
             KWs[cName] = unsignedToRGBText( parms.GetUnsigned(cName, defaultColorParameters[cName]) )
+        for prefix in textParms:
+            family = parms.GetString( prefix+'_family', defaultTextParameters[ prefix+'_family' ])
+            size = parms.GetString( prefix+'_size', defaultTextParameters[ prefix+'_size' ])
+            color = unsignedToRGBText(  parms.GetUnsigned(prefix+'_color', defaultTextParameters[ prefix+'_color' ] ) )
+            KWs[prefix] = SvgTextRenderer(family, size, color)
         self.dimensionConstructorKWs = KWs
         debugPrint(3, 'dimensionConstructorKWs %s' % self.dimensionConstructorKWs )
         self.svg_preview_KWs = {
