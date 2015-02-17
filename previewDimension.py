@@ -95,30 +95,36 @@ class DimensionPreviewRect(QtGui.QGraphicsRectItem):
             removePreviewGraphicItems( recomputeActiveDocument = True )
 
     def mousePressEvent( self, event ):
-        if event.button() == QtCore.Qt.MouseButton.LeftButton:
-            x, y =  preview.applyTransform( event.scenePos() )
-            debugPrint(3, 'mousePressEvent: x %f, y %f' % (x, y) )
-            viewName, XML = self.clickFunPreview(x,y)
-            if XML <> None and viewName <> None:
-                debugPrint(3, XML)
-                debugPrint(2, 'creating dimension %s' % viewName)
-                obj = App.ActiveDocument.addObject('Drawing::FeatureView',viewName)
-                obj.ViewResult = XML
-                for prop in ['Rotation', 'Scale', 'ViewResult', 'X', 'Y']: 
-                    obj.setEditorMode(prop, 2)
-                preview.drawingVars.page.addObject( obj ) #App.ActiveDocument.getObject(viewName) )
-                removePreviewGraphicItems( recomputeActiveDocument=True )
-            elif XML <> None and viewName == None:
-                removePreviewGraphicItems( recomputeActiveDocument=True )
-        else:
-            event.ignore()
+        try:
+            if event.button() == QtCore.Qt.MouseButton.LeftButton:
+                x, y =  preview.applyTransform( event.scenePos() )
+                debugPrint(3, 'mousePressEvent: x %f, y %f' % (x, y) )
+                viewName, XML = self.clickFunPreview(x,y)
+                if XML <> None and viewName <> None:
+                    debugPrint(3, XML)
+                    debugPrint(2, 'creating dimension %s' % viewName)
+                    obj = App.ActiveDocument.addObject('Drawing::FeatureView',viewName)
+                    obj.ViewResult = XML
+                    for prop in ['Rotation', 'Scale', 'ViewResult', 'X', 'Y']: 
+                        obj.setEditorMode(prop, 2)
+                    preview.drawingVars.page.addObject( obj ) #App.ActiveDocument.getObject(viewName) )
+                    removePreviewGraphicItems( recomputeActiveDocument=True )
+                elif XML <> None and viewName == None:
+                    removePreviewGraphicItems( recomputeActiveDocument=True )
+            else:
+                event.ignore()
+        except:
+            App.Console.PrintError(traceback.format_exc())
 
     def hoverMoveEvent(self, event):
-        x, y =  preview.applyTransform( event.scenePos() )
-        debugPrint(4, 'hoverMoveEvent: x %f, y %f' % (x, y) )
-        XML = self.hoverFunPreview( x, y)
-        if isinstance(XML, unicode): 
-            XML = XML.encode('utf8')
-        debugPrint(5, XML)
-        preview.SVGRenderer.load( QtCore.QByteArray( XML ) )
-        preview.SVG.update()
+        try:
+            x, y =  preview.applyTransform( event.scenePos() )
+            debugPrint(4, 'hoverMoveEvent: x %f, y %f' % (x, y) )
+            XML = self.hoverFunPreview( x, y)
+            if isinstance(XML, unicode): 
+                XML = XML.encode('utf8')
+            debugPrint(5, XML)
+            preview.SVGRenderer.load( QtCore.QByteArray( XML ) )
+            preview.SVG.update()
+        except:
+            App.Console.PrintError(traceback.format_exc())

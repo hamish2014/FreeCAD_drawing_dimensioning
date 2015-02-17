@@ -26,9 +26,10 @@ def EditDimensionText( event, referer, elementXML, elementParms, elementViewObje
     dimensioning.elementXML = elementXML
     selectionOverlay.hideSelectionGraphicsItems()
     e = elementXML
+    debugPrint(3, e.XML[e.pStart:e.pEnd] )
     svgText = SvgTextParser( e.XML[e.pStart:e.pEnd] )
     dimensioning.svgText = svgText
-    debugPrint(3,'editing %s' % repr(svgText))
+    debugPrint(3, u'editing %s' % unicode(svgText))
     widgets = dict( [c.objectName(), c] for c in dialog.children() )
     widgets['textLineEdit'].setText( svgText.text )
     widgets['sizeLineEdit'].setText( svgText.font_size)

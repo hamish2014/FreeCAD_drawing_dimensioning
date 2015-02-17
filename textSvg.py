@@ -1,3 +1,4 @@
+# This Python file uses the following encoding: utf-8
 import sys
 from PySide import QtGui, QtSvg, QtCore
 
@@ -20,7 +21,7 @@ class SvgTextParser:
     def __init__(self, xml):
         p_header_end = xml.find('>') 
         self.header = xml[:p_header_end]
-        self.text = xml[ p_header_end+1:-len('</text>') ]
+        self.text = unicode(xml[ p_header_end+1:-len('</text>') ])
         self.parms = {}
         h = self.header
         p = h.find('=')
@@ -52,8 +53,35 @@ class SvgTextParser:
     def toXML(self):
         XML = '''<text x="%f" y="%f" font-family="%s" font-size="%s" fill="%s" text-anchor="%s" %s >%s</text>'''  % (  self.x, self.y, self.font_family, self.font_size,  self.fill, self.text_anchor, 'transform="rotate(%f %f,%f)"' % (self.rotation,self.x,self.y) if self.rotation <> 0 else '', self.text )
         return XML
+    def convertUnits(self,value):
+        '''http://www.w3.org/TR/SVG/coords.html#Units
+        units do not seem to have on font size though:
+        8cm == 8pt == 8blah?'''
+        i = 0
+        while i < len(value) and value[i] in '0123456789.':
+            i = i + 1
+        v = value[:i]
+        factor = 1.0
+        return float(v)*factor
+
+    def textRect(self):
+        sizeInPoints = self.convertUnits(self.font_size.strip())
+        font = QtGui.QFont(self.font_family, sizeInPoints)
+        fm = QtGui.QFontMetrics(font)
+        return fm.boundingRect(self.text)
+
+    def width(self):
+        'return width of untransformed text'
+        return self.textRect().width() *0.63
+    def height(self):
+        'height of untransformed text'
+        return self.textRect().height() *0.6
+
+    def __unicode__(self):
+        return u'<textSvg.SvgTextParser family="%s" font_size="%s" fill="%s" rotation="%f" text="%s">' % (self.font_family, self.font_size, self.fill, self.rotation, self.text )
+
     def __repr__(self):
-        return '<textSvg.SvgTextParser family="%s" font_size="%s" fill="%s" rotation="%f" text="%s">' % (self.font_family, self.font_size, self.fill, self.rotation, self.text )
+        return u'<textSvg.SvgTextParser family="%s" font_size="%s" fill="%s" rotation="%f">' % (self.font_family, self.font_size, self.fill, self.rotation )
 
 
 if __name__ == '__main__':

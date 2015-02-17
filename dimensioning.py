@@ -2,7 +2,8 @@ import numpy
 import FreeCAD as App
 import FreeCADGui, Part, os
 from PySide import QtGui, QtCore, QtSvg
-from textSvg import SvgTextRenderer
+from textSvg import SvgTextRenderer, SvgTextParser
+import traceback
 
 __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
@@ -19,6 +20,15 @@ def findUnusedObjectName(base, counterStart=1, fmt='%03i'):
         i = i + 1
         objName = '%s%s' % (base, fmt%i)
     return objName
+
+def errorMessagebox_with_traceback(title='Error'):
+    'for also those PySide linked codes where the Python debugger does not work...'
+    App.Console.PrintError(traceback.format_exc())
+    QtGui.QMessageBox.critical( 
+        QtGui.qApp.activeWindow(), 
+        title,
+        traceback.format_exc(),
+        )
 
 notDrawingPage_title = "Current Window not showing a Drawing Page"
 notDrawingPage_msg =  "Drawing Dimensioning tools are for page objects generated using the Drawing workbench. Aborting operation."
@@ -215,3 +225,4 @@ def printGraphicsViewInfo( drawingVars ):
     #debugPrint(4,'    [ %1.2f  %1.2f  %1.2f ]' % (T.m11(), T.m12(), T.m13() ))
     #debugPrint(4,'M = [ %1.2f  %1.2f  %1.2f ]' % (T.m21(), T.m22(), T.m23() ))
     #debugPrint(4,'    [ %1.2f  %1.2f  %1.2f ]' % (T.m31(), T.m32(), T.m33() ))
+
