@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>663</width>
-    <height>622</height>
+    <width>563</width>
+    <height>512</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
+       <verstretch>1</verstretch>
       </sizepolicy>
      </property>
      <property name="title">
@@ -41,7 +41,7 @@
            <string>This is the default group name for construction geometry</string>
           </property>
           <property name="text">
-           <string>3.6pt</string>
+           <string>3.6</string>
           </property>
           <property name="prefEntry" stdset="0">
            <cstring>textRenderer_size</cstring>
@@ -135,21 +135,21 @@
    <item row="6" column="0">
     <widget class="QGroupBox" name="groupBox_2">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
+       <verstretch>2</verstretch>
       </sizepolicy>
      </property>
      <property name="maximumSize">
       <size>
        <width>16777215</width>
-       <height>80</height>
+       <height>16777215</height>
       </size>
      </property>
      <property name="title">
       <string>Center Lines</string>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_11">
+     <layout class="QVBoxLayout" name="verticalLayout_6">
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_10">
         <item>
@@ -306,11 +306,100 @@ Values with differences below this value will be treated as same.</string>
         </item>
        </layout>
       </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>width</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Gui::PrefDoubleSpinBox" name="gui::prefdoublespinbox_4">
+          <property name="maximumSize">
+           <size>
+            <width>60</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>This is the value used by functions that use a tolerance.
+Values with differences below this value will be treated as same.</string>
+          </property>
+          <property name="suffix">
+           <string/>
+          </property>
+          <property name="minimum">
+           <double>0.010000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.010000000000000</double>
+          </property>
+          <property name="value">
+           <double>0.300000000000000</double>
+          </property>
+          <property name="prefEntry" stdset="0">
+           <cstring>centerLine_width</cstring>
+          </property>
+          <property name="prefPath" stdset="0">
+           <cstring>Mod/Drawing_Dimensioning</cstring>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_9">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_7">
+          <property name="text">
+           <string>color</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Gui::PrefColorButton" name="gui::prefcolorbutton_5">
+          <property name="toolTip">
+           <string>This is the default color for objects being drawn while in construction mode.</string>
+          </property>
+          <property name="color" stdset="0">
+           <color>
+            <red>0</red>
+            <green>0</green>
+            <blue>255</blue>
+           </color>
+          </property>
+          <property name="prefEntry" stdset="0">
+           <cstring>centerLine_color</cstring>
+          </property>
+          <property name="prefPath" stdset="0">
+           <cstring>Mod/Drawing_Dimensioning</cstring>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
      </layout>
     </widget>
    </item>
    <item row="4" column="0">
     <widget class="QGroupBox" name="groupBox_4">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>1</verstretch>
+      </sizepolicy>
+     </property>
      <property name="title">
       <string>Linear and Angular Dimensions</string>
      </property>
@@ -418,7 +507,7 @@ Values with differences below this value will be treated as same.</string>
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
+       <verstretch>1</verstretch>
       </sizepolicy>
      </property>
      <property name="title">
@@ -473,6 +562,12 @@ Values with differences below this value will be treated as same.</string>
    </item>
    <item row="2" column="0">
     <widget class="QGroupBox" name="groupBox_6">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>1</verstretch>
+      </sizepolicy>
+     </property>
      <property name="title">
       <string>Lines</string>
      </property>
@@ -565,6 +660,12 @@ Values with differences below this value will be treated as same.</string>
    </item>
    <item row="3" column="0">
     <widget class="QGroupBox" name="groupBox_5">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>1</verstretch>
+      </sizepolicy>
+     </property>
      <property name="title">
       <string>Arrows</string>
      </property>

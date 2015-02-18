@@ -273,9 +273,9 @@ def _centerLinesSVG( center, topLeft, bottomRight, dimScale, centerLine_len_dot,
 </%s> ''' % ( svgTag, svgParms, dimScale, dimScale, lineColor, strokeWidth/ dimScale, "\n".join(XML_body), svgTag )
 
 
-def centerLinesSVG( center, topLeft, bottomRight=None, dimScale=1.0, centerLine_len_dot=2.0, centerLine_len_dash=6.0, centerLine_len_gap=2.0, svgTag='g', svgParms='', strokeWidth=0.5, lineColor='blue'):
-    return _centerLinesSVG( center, topLeft, bottomRight, dimScale, centerLine_len_dot, centerLine_len_dash, centerLine_len_gap, svgTag, svgParms, strokeWidth, lineColor, True, True )
+def centerLinesSVG( center, topLeft, bottomRight=None, dimScale=1.0, centerLine_len_dot=2.0, centerLine_len_dash=6.0, centerLine_len_gap=2.0, svgTag='g', svgParms='', centerLine_width=0.5, centerLine_color='blue'):
+    return _centerLinesSVG( center, topLeft, bottomRight, dimScale, centerLine_len_dot, centerLine_len_dash, centerLine_len_gap, svgTag, svgParms, centerLine_width, centerLine_color, True, True )
 
-def centerLineSVG( center, topLeft, bottomRight=None,  dimScale=1.0, centerLine_len_dot=2.0, centerLine_len_dash=6.0, centerLine_len_gap=2.0, svgTag='g', svgParms='', strokeWidth=0.5, lineColor='blue'):
+def centerLineSVG( center, topLeft, bottomRight=None,  dimScale=1.0, centerLine_len_dot=2.0, centerLine_len_dash=6.0, centerLine_len_gap=2.0, svgTag='g', svgParms='', centerLine_width=0.5, centerLine_color='blue'):
     v = abs(center[0] - topLeft[0]) < abs(center[1] - topLeft[1]) #vertical
-    return _centerLinesSVG( center, topLeft, bottomRight, dimScale, centerLine_len_dot, centerLine_len_dash, centerLine_len_gap, svgTag, svgParms, strokeWidth, lineColor, v, not v )
+    return _centerLinesSVG( center, topLeft, bottomRight, dimScale, centerLine_len_dot, centerLine_len_dash, centerLine_len_gap, svgTag, svgParms, centerLine_width, centerLine_color, v, not v )

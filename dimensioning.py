@@ -104,6 +104,7 @@ defaultRealParameters = {
     'centerLine_len_gap': 2.0,
     'centerLine_len_dash': 6.0,
     'centerLine_len_dot': 2.0,
+    'centerLine_width': 0.3,
 }
 
 def unsignedToRGBText(v):
@@ -117,6 +118,7 @@ def RGBtoUnsigned(r,g,b):
 
 defaultColorParameters = {
     'lineColor' : RGBtoUnsigned(0, 0, 255),
+    'centerLine_color' : RGBtoUnsigned(0, 0, 255),
 }
 
 defaultTextParameters = {

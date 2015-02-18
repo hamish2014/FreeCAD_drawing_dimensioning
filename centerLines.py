@@ -62,7 +62,7 @@ class CenterLines:
         selectionOverlay.addProxyRectToRescaleGraphicsSelectionItems( V.graphicsScene, V.graphicsView, V.width, V.height)
     def Activated_common(self):
         V = getDrawingPageGUIVars()
-        dimensioning.activate(V, ['strokeWidth','centerLine_len_gap','centerLine_len_dash','centerLine_len_dot'], ['lineColor'] )
+        dimensioning.activate(V, ['centerLine_width','centerLine_len_gap','centerLine_len_dash','centerLine_len_dot'], ['centerLine_color'] )
         return V
     def GetResources(self): 
         return {

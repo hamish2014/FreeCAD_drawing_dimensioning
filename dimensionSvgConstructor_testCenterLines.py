@@ -26,7 +26,7 @@ class DimensioningRect(QtGui.QGraphicsRectItem):
         graphicsScene.addItem( self.dimPreview )
         self.dim_svg_KWs = dict(
             svgTag='svg', svgParms='width="%i" height="%i"' % (args[2],args[3]),
-            strokeWidth=2.0, centerLine_len_dot=5, centerLine_len_dash=15, centerLine_len_gap=5
+            centerLine_width=2.0, centerLine_len_dot=5, centerLine_len_dash=15, centerLine_len_gap=5
             )
         assert not hasattr(self, 'topLeft')
         assert not hasattr(self, 'bottomRight')
