@@ -6,7 +6,7 @@ Specifically, DrawingObject.ViewResults are parsed as to create QGraphicsItems t
 '''
 from XMLlib import SvgXMLTreeNode
 from circleLib import fitCircle_to_path, findCircularArcCentrePoint, pointsAlongCircularArc
-import sys, numpy
+import sys, numpy, traceback
 from PySide import QtGui, QtCore, QtSvg
 
 defaultMaskBrush = QtGui.QBrush( QtGui.QColor(0,255,0,100) )
@@ -18,7 +18,11 @@ defaultMaskHoverPen.setWidthF(1.0)
 class CircleSelectionGraphicsItem(QtGui.QGraphicsEllipseItem):
     def mousePressEvent( self, event ):
         if self.acceptHoverEvents():
-            self._onClickFun( event, self, self.elementXML, self.elementParms, self.elementViewObject )
+            try:
+                self._onClickFun( event, self, self.elementXML, self.elementParms, self.elementViewObject )
+            except:
+                import FreeCAD as App
+                App.Console.PrintError(traceback.format_exc())
         else:
             event.ignore()
     def hoverMoveEvent( self, event):
@@ -77,7 +81,7 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                 if isinstance(gi, CircleSelectionGraphicsItem):
                     sceneToAddTo.removeItem(gi)
         del graphicItems[:]
-    def postProcessGraphicsItem(gi, elementParms):
+    def postProcessGraphicsItem(gi, elementParms, zValue=0.99):
         gi.setBrush( maskBrush  )
         gi.setPen(maskPen)
         gi.selectionMaskPen = QtGui.QPen(maskPen)
@@ -88,6 +92,7 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
         gi.elementViewObject = viewObject
         gi.setAcceptHoverEvents(True)
         gi.setCursor( QtCore.Qt.CrossCursor ) # http://qt-project.org/doc/qt-5/qt.html#CursorShape-enum ; may not work for lines ...
+        gi.setZValue(zValue)
         if transform <> None:
             gi.setTransform( transform )
         if sceneToAddTo <> None:
@@ -99,14 +104,12 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
             return
         pointsAlreadyAdded.append( [x,y] )
         graphicsItem = PointSelectionGraphicsItem( x-pointWid, y-pointWid, 2*pointWid, 2*pointWid )
-        graphicsItem.setZValue( zValue ) #point on top!
-        postProcessGraphicsItem(graphicsItem, {'x':x, 'y':y})
+        postProcessGraphicsItem(graphicsItem, {'x':x, 'y':y}, zValue)
     def addCircle( x, y, r, **extraKWs):
         graphicsItem = CircleSelectionGraphicsItem( x-r, y-r, 2*r, 2*r )
-        graphicsItem.setZValue( 1.01**-r ) #smaller circles on top
         KWs = {'x':x,'y':y,'r':r}
         KWs.update(extraKWs)
-        postProcessGraphicsItem(graphicsItem, KWs)
+        postProcessGraphicsItem(graphicsItem, KWs, zValue=1.01**-r ) #smaller circles on top
     def circlePoints( x, y, r ):
         addSelectionPoint ( x, y, 2 ) #Circle center point
         addSelectionPoint ( x + r, y, 2 ) #Circle right quadrant point
@@ -248,9 +251,13 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
 
     return graphicItems
     
-def hideSelectionGraphicsItems():
+def hideSelectionGraphicsItems( hideFunction=None  ):
     for gi in graphicItems:
-        gi.hide()
+        if hideFunction == None:
+            gi.hide()
+        elif hideFunction(gi):
+            gi.hide()
+
 
 #import FreeCAD
 class ResizeGraphicItemsRect(QtGui.QGraphicsRectItem):

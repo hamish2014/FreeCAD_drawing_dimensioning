@@ -2,7 +2,7 @@
 from dimensioning import *
 from dimensioning import iconPath # not imported with * directive
 import selectionOverlay, previewDimension
-from dimensionSvgConstructor import linearDimensionSVG
+from dimensionSvgConstructor import linearDimensionSVG, rotate2D, distanceBetweenParallelsSVG
 
 dimensioning = DimensioningProcessTracker()
 
@@ -14,9 +14,9 @@ def selectDimensioningPoint( event, referer, elementXML, elementParms, elementVi
             dimensioning.point1 =  x,y
             debugPrint(2, 'point1 set to x=%3.1f y=%3.1f' % (x,y))
             dimensioning.stage = 1
-            for gi in selectionOverlay.graphicItems:
-                if isinstance(gi,  selectionOverlay.LineSelectionGraphicsItem):
-                    gi.hide()
+            selectionOverlay.hideSelectionGraphicsItems(
+                lambda gi: isinstance(gi,  selectionOverlay.LineSelectionGraphicsItem)
+                )
         else:
             dimensioning.point2 =  x,y
             debugPrint(2, 'point2 set to x=%3.1f y=%3.1f' % (x,y))
@@ -24,21 +24,33 @@ def selectDimensioningPoint( event, referer, elementXML, elementParms, elementVi
             dimensioning.dimScale = 1 / elementXML.rootNode().scaling() / UnitConversionFactor()
             selectionOverlay.hideSelectionGraphicsItems()
             previewDimension.initializePreview( dimensioning.drawingVars, clickFunPreview, hoverFunPreview )
-    else: #then line
-        x1,y1,x2,y2 = [ elementParms[k] for k in [ 'x1', 'y1', 'x2', 'y2' ] ]
-        debugPrint(2,'selecting line x1=%3.1f y1=%3.1f, x2=%3.1f y2=%3.1f' % (x1,y1,x2,y2))
-        dimensioning.point1 =  x1,y1
-        dimensioning.point2 =  x2,y2
-        dimensioning.stage = 2 
-        dimensioning.dimScale = 1 / elementXML.rootNode().scaling() / UnitConversionFactor()
-        selectionOverlay.hideSelectionGraphicsItems()
-        previewDimension.initializePreview( dimensioning.drawingVars, clickFunPreview, hoverFunPreview )
+    else:#then line
+        if dimensioning.stage == 0: 
+            x1,y1,x2,y2 = [ elementParms[k] for k in [ 'x1', 'y1', 'x2', 'y2' ] ]
+            debugPrint(2,'selecting line x1=%3.1f y1=%3.1f, x2=%3.1f y2=%3.1f' % (x1,y1,x2,y2))
+            dimensioning.point1 =  x1,y1
+            dimensioning.point2 =  x2,y2
+            dimensioning.stage = 2 
+            dimensioning.dimScale = 1 / elementXML.rootNode().scaling() / UnitConversionFactor()
+            lineSelected_hideSelectionGraphicsItems(elementParms, elementViewObject)
+            previewDimension.initializePreview( dimensioning.drawingVars, clickFunPreview, hoverFunPreview )
+        else: #then distance between parallels
+            x1,y1,x2,y2 = [ elementParms[k] for k in [ 'x1', 'y1', 'x2', 'y2' ] ]
+            debugPrint(2,'distance between parallels, line2 x1=%3.1f y1=%3.1f, x2=%3.1f y2=%3.1f' % (x1,y1,x2,y2))
+            dimensioning.line1 =  list(dimensioning.point1) + list(dimensioning.point2)
+            dimensioning.line2 =  [ x1,y1,x2,y2 ]
+            debugPrint(3,'dim scale %f' % dimensioning.dimScale)
+            selectionOverlay.hideSelectionGraphicsItems()
+            previewDimension.removePreviewGraphicItems( False )
+            previewDimension.initializePreview( dimensioning.drawingVars, distanceParallels_clickFunPreview, distanceParallels_hoverFunPreview )
+
 
 def clickFunPreview( x, y ):
     if dimensioning.stage == 2 :
         dimensioning.point3 = x, y
         debugPrint(2, 'point3 set to x=%3.1f y=%3.1f' % (x,y))
         dimensioning.stage = 3
+        selectionOverlay.hideSelectionGraphicsItems() # for distance between parallels case
         return None, None
     else:
         p1,p2,p3 = dimensioning.point1,  dimensioning.point2,  dimensioning.point3
@@ -113,3 +125,52 @@ class linearDimension:
             } 
 
 FreeCADGui.addCommand('linearDimension', linearDimension())
+
+
+#distance between parallels code
+def lineSelected_hideSelectionGraphicsItems(elementParms, elementViewObject):
+    x1,y1,x2,y2 = [ elementParms[k] for k in [ 'x1', 'y1', 'x2', 'y2' ] ]
+    d = numpy.array([ x2 - x1, y2 - y1] )
+    d_ref = d / numpy.linalg.norm(d)
+    p = numpy.array([ x1, y1] )
+    def hideFun( gi ):
+        if isinstance(gi,selectionOverlay.LineSelectionGraphicsItem):
+            if gi.elementParms <> elementParms:
+                x1,y1,x2,y2 = [ gi.elementParms[k] for k in [ 'x1', 'y1', 'x2', 'y2' ] ]
+                d = numpy.array([ x2 - x1, y2 - y1] )
+                d = d / numpy.linalg.norm(d)
+                if abs(numpy.dot(d_ref,d)) > 1.0 - 10**-9: #then parallel
+                    d_rotated = rotate2D(d, numpy.pi/2)
+                    offset =  numpy.array([ x1, y1] ) - p
+                    if abs(numpy.dot(d_rotated, offset)) > 10**-6: #then not colinear
+                        return False
+        return True
+    selectionOverlay.hideSelectionGraphicsItems(hideFun)
+
+
+def distanceParallels_clickFunPreview( x, y ):
+    if dimensioning.stage == 2 :
+        dimensioning.point3 = x, y
+        debugPrint(2, 'base-line point set to x=%3.1f y=%3.1f' % (x,y))
+        dimensioning.stage = 3
+        return None, None
+    else:
+        XML = distanceBetweenParallelsSVG( 
+            dimensioning.line1, dimensioning.line2,
+            dimensioning.point3[0], dimensioning.point3[1], 
+            x, y, scale=dimensioning.dimScale,  
+            **dimensioning.dimensionConstructorKWs)
+        return findUnusedObjectName('dim'), XML
+
+def distanceParallels_hoverFunPreview( x, y ):
+    if dimensioning.stage == 2 :
+        return distanceBetweenParallelsSVG( 
+            dimensioning.line1, dimensioning.line2, x, y, 
+            scale=dimensioning.dimScale,  
+            **dimensioning.svg_preview_KWs )
+    else:
+        return distanceBetweenParallelsSVG( 
+            dimensioning.line1, dimensioning.line2,
+            dimensioning.point3[0], dimensioning.point3[1], 
+            x, y, scale=dimensioning.dimScale,  
+            **dimensioning.svg_preview_KWs )

@@ -73,6 +73,7 @@ def initializePreview( drawingVars, clickFunPreview, hoverFunPreview ):
     preview.rect.setAcceptHoverEvents(True)
     preview.rect.setFlag( QtGui.QGraphicsItem.GraphicsItemFlag.ItemIsFocusable, True )
     preview.rect.setCursor( QtCore.Qt.ArrowCursor ) # http://qt-project.org/doc/qt-5/qt.html#CursorShape-enum
+    preview.rect.setZValue( 0.1 )
     drawingVars.graphicsScene.addItem( preview.rect )
     debugPrint(4, 'DimensionPreviewSvgGraphicsItem added to graphics Scene')
 

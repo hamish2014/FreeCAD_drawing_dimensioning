@@ -279,3 +279,49 @@ def centerLinesSVG( center, topLeft, bottomRight=None, dimScale=1.0, centerLine_
 def centerLineSVG( center, topLeft, bottomRight=None,  dimScale=1.0, centerLine_len_dot=2.0, centerLine_len_dash=6.0, centerLine_len_gap=2.0, svgTag='g', svgParms='', centerLine_width=0.5, centerLine_color='blue'):
     v = abs(center[0] - topLeft[0]) < abs(center[1] - topLeft[1]) #vertical
     return _centerLinesSVG( center, topLeft, bottomRight, dimScale, centerLine_len_dot, centerLine_len_dash, centerLine_len_gap, svgTag, svgParms, centerLine_width, centerLine_color, v, not v )
+
+
+
+def distanceBetweenParallelsSVG( line1, line2, x_baseline, y_baseline, x_text=None, y_text=None, textFormat='%3.3f', scale=1.0, gap_datum_points = 2, dimension_line_overshoot=1,
+                                 arrowL1=3, arrowL2=1, arrowW=2, svgTag='g', svgParms='', strokeWidth=0.5, lineColor='blue', textRenderer=defaultTextRenderer):
+    XML = []
+    p1 = numpy.array( [line1[0], line1[1]] )
+    p2 = numpy.array( [line1[2], line1[3]] )
+    p3 = numpy.array( [line2[0], line2[1]] )
+    p4 = numpy.array( [line2[2], line2[3]] )
+    p5 = numpy.array([ x_baseline, y_baseline ])
+    d = directionVector(p1,p2)
+    # arrow positions
+    p_arrow1 = p1 + d*dot(d, p5-p1)
+    p_arrow2 = p3 + d*dot(d, p5-p3)
+    p_center = (p_arrow1 + p_arrow2)/2
+    def line_to_arrow_point( a, b, c): # where a=p1,b=p2 or a=p3,b=p4 and c=p_arrow1 or c=p_arrow2
+        if abs( norm(a -b) - (norm(a-c) + norm(b-c))) < norm(a -b)/1000:
+            return
+        if norm(a-c) < norm(b-c): #then closer to a
+            d_a =  directionVector(a, c)
+            v = a + gap_datum_points*d_a
+            w = c + dimension_line_overshoot*d_a
+        else:
+            d_b =  directionVector(b, c)
+            v = b + gap_datum_points*d_b
+            w = c + dimension_line_overshoot*d_b
+        XML.append( '<line x1="%f" y1="%f" x2="%f" y2="%f" style="stroke:%s;stroke-width:%f" />' % (v[0],v[1],w[0],w[1], lineColor, strokeWidth) )
+    line_to_arrow_point( p1, p2, p_arrow1)
+    line_to_arrow_point( p3, p4, p_arrow2)
+    XML.append( '<line x1="%f" y1="%f" x2="%f" y2="%f" style="stroke:%s;stroke-width:%f" />' % ( p_arrow1[0], p_arrow1[1], p_arrow2[0], p_arrow2[1], lineColor, strokeWidth) )
+    dist = norm(p_arrow1 - p_arrow2)
+    if dist > 0:
+        s = -1 if dist > 2.5*(arrowL1 + arrowL2) else 1
+    XML.append( arrowHeadSVG( p_arrow1,  directionVector(p_center, p_arrow1)*s, arrowL1, arrowL2, arrowW, lineColor ) )
+    XML.append( arrowHeadSVG( p_arrow2,  directionVector(p_center, p_arrow2)*s, arrowL1, arrowL2, arrowW, lineColor ) )
+    if x_text <> None and y_text <> None:
+        textRotation = numpy.arctan2( d[1], d[0]) / numpy.pi * 180 + 90
+        if textRotation > 90 or textRotation < -90:
+            textRotation = textRotation + 180
+        textXML = textRenderer( x_text, y_text, dimensionText(dist*scale,textFormat), rotation=textRotation)
+        XML.append( textXML )
+    XML = '''<%s  %s >
+ %s
+</%s> ''' % ( svgTag, svgParms, '\n'.join(XML), svgTag )
+    return XML
