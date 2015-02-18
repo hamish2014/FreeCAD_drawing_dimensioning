@@ -121,7 +121,7 @@ defaultColorParameters = {
 
 defaultTextParameters = {
     'textRenderer_family':'Verdana',
-    'textRenderer_size':'3.6pt',
+    'textRenderer_size':'3.6',
     'textRenderer_color': RGBtoUnsigned(255, 0, 0),
 }
 
