@@ -72,8 +72,8 @@ class PathSelectionGraphicsItem( QtGui.QGraphicsPathItem, CircleSelectionGraphic
 
 graphicItems = [] #storing selection graphics items here as to protect against the garbage collector
 
-def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sceneToAddTo=None, clearPreviousSelectionItems=True,
-                                    doPoints=False, doTextItems=False, doLines=False, doCircles=False, doFittedCircles=False, doPathEndPoints=False, doMidPoints=False,
+def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sceneToAddTo=None, clearPreviousSelectionItems=True, 
+                                    doPoints=False, doTextItems=False, doLines=False, doCircles=False, doFittedCircles=False, doPathEndPoints=False, doMidPoints=False, doSelectViewObjectPoints=True,
                                     pointWid=1.0 , maskPen=defaultMaskPen , maskBrush=defaultMaskBrush, maskHoverPen=defaultMaskHoverPen ):
     if clearPreviousSelectionItems:         
         if sceneToAddTo <> None:
@@ -122,6 +122,7 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
             continue
         XML_tree =  SvgXMLTreeNode(viewObject.ViewResult,0)
         scaling = XML_tree.scaling()
+        SelectViewObjectPoint_loc = None
         for element in XML_tree.getAllElements():
             if element.tag == 'circle':
                 x, y = element.applyTransforms( float( element.parms['cx'] ), float( element.parms['cy'] ) )
@@ -131,8 +132,12 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                 if doPoints: 
                     circlePoints( x, y, r)
                 
-            if element.tag == 'text' and doTextItems:
-                addSelectionPoint( *element.applyTransforms( float( element.parms['x'] ), float( element.parms['y'] ) ) )
+            if element.tag == 'text':
+                if doTextItems:
+                    addSelectionPoint( *element.applyTransforms( float( element.parms['x'] ), float( element.parms['y'] ) ) )
+                elif doSelectViewObjectPoints:
+                    addSelectionPoint( *element.applyTransforms( float( element.parms['x'] ), float( element.parms['y'] ) ) )
+
             if element.tag == 'path':
                 #print(element.XML)
                 fitData = []
@@ -239,7 +244,25 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                         raise RuntimeError, 'unable to parse path "%s" with d parms %s' % (element.XML[element.pStart: element.pEnd], parms)
                 if j > 0 and doPathEndPoints:
                     addSelectionPoint ( pen_x, pen_y )
-                    
+                if j > 0 and doSelectViewObjectPoints and SelectViewObjectPoint_loc == None:
+                    SelectViewObjectPoint_loc = pen_x, pen_y
+
+            if element.tag == 'line':
+                x1, y1 = element.applyTransforms( float( element.parms['x1'] ), float( element.parms['y1'] ) )
+                x2, y2 = element.applyTransforms( float( element.parms['x2'] ), float( element.parms['y2'] ) )
+                if doPoints:
+                    addSelectionPoint ( x1, y1 )
+                    addSelectionPoint ( x2, y2 )
+                if doLines:
+                    graphicsItem = LineSelectionGraphicsItem( x1, y1, x1, y1 )
+                    postProcessGraphicsItem(graphicsItem, {'x1':x1,'y1':y1,'x2':x2,'y2':y2})
+                if doMidPoints:
+                    addSelectionPoint( (x1+x2)/2, (y1+y2)/2 )
+                if doSelectViewObjectPoints and SelectViewObjectPoint_loc == None: #second check to textElementes preference
+                    SelectViewObjectPoint_loc = x2,y2
+
+        if doSelectViewObjectPoints and SelectViewObjectPoint_loc <> None:
+            addSelectionPoint( *SelectViewObjectPoint_loc )
                 #if len(fitData) > 0: 
                 #    x, y, r, r_error = fitCircle_to_path(fitData)
                 #    #print('fittedCircle: x, y, r, r_error', x, y, r, r_error)

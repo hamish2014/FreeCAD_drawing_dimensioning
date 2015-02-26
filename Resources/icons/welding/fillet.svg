@@ -1,0 +1,7 @@
+<svg  width="48px" height="48px" >
+<line x1="0.000000" y1="36.000000" x2="-10.000000" y2="58.000000" style="stroke:blue;stroke-width:2.00" />
+<polygon points="-10.000000,58.000000 -1.392899,48.730814 -2.551547,41.613403 -8.675831,45.420390" style="fill:blue;stroke:blue;stroke-width:0" />
+<line x1="0.000000" y1="36.000000" x2="48.000000" y2="36.000000" style="stroke:blue;stroke-width:2.00" />
+<line x1="24.000000" y1="36.000000" x2="24.000000" y2="10.800000" style="stroke:blue;stroke-width:2.00" />
+<line x1="24.000000" y1="10.800000" x2="49.200000" y2="36.000000" style="stroke:blue;stroke-width:2.00" />
+</svg> 

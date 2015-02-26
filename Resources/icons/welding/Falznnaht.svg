@@ -1,0 +1,11 @@
+<svg  width="48px" height="48px" >
+<line x1="0.000000" y1="36.000000" x2="-10.000000" y2="58.000000" style="stroke:blue;stroke-width:2.00" />
+<polygon points="-10.000000,58.000000 -1.392899,48.730814 -2.551547,41.613403 -8.675831,45.420390" style="fill:blue;stroke:blue;stroke-width:0" />
+<line x1="0.000000" y1="36.000000" x2="48.000000" y2="36.000000" style="stroke:blue;stroke-width:2.00" />
+<path d = "M 24.000000 36.000000 A 9.450000 9.450000 0 1 1 24.000000 17.100000" style="stroke:blue;stroke-width:2.00;fill:none" />
+<line x1="24.000000" y1="17.100000" x2="33.450000" y2="17.100000" style="stroke:blue;stroke-width:2.00" />
+<path d = "M 33.450000 7.650000 A 9.450000 9.450000 0 0 1 42.900000 17.100000" style="stroke:blue;stroke-width:2.00;fill:none" />
+<path d = "M 42.900000 17.100000 A 9.450000 9.450000 0 0 1 33.450000 26.550000" style="stroke:blue;stroke-width:2.00;fill:none" />
+<line x1="24.000000" y1="26.550000" x2="33.450000" y2="26.550000" style="stroke:blue;stroke-width:2.00" />
+<line x1="24.000000" y1="7.650000" x2="33.450000" y2="7.650000" style="stroke:blue;stroke-width:2.00" />
+</svg> 

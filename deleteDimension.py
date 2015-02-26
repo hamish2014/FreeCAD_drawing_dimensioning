@@ -32,12 +32,12 @@ class DeleteDimension:
             )
         selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if obj.Name.startswith('dim')], 
-            doTextItems = True, 
+            doSelectViewObjectPoints = True, 
             **commonArgs)
         selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if obj.Name.startswith('center')], 
             clearPreviousSelectionItems = False,
-            doPathEndPoints=True, 
+            doSelectViewObjectPoints=True, 
             **commonArgs)
         selectionOverlay.addProxyRectToRescaleGraphicsSelectionItems( V.graphicsScene, V.graphicsView, V.width, V.height)
         

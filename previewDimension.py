@@ -122,10 +122,11 @@ class DimensionPreviewRect(QtGui.QGraphicsRectItem):
             x, y =  preview.applyTransform( event.scenePos() )
             debugPrint(4, 'hoverMoveEvent: x %f, y %f' % (x, y) )
             XML = self.hoverFunPreview( x, y)
-            if isinstance(XML, unicode): 
-                XML = XML.encode('utf8')
-            debugPrint(5, XML)
-            preview.SVGRenderer.load( QtCore.QByteArray( XML ) )
-            preview.SVG.update()
+            if XML <> None:
+                if isinstance(XML, unicode): 
+                    XML = XML.encode('utf8')
+                debugPrint(5, XML)
+                preview.SVGRenderer.load( QtCore.QByteArray( XML ) )
+                preview.SVG.update()
         except:
             App.Console.PrintError(traceback.format_exc())
