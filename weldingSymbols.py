@@ -105,10 +105,11 @@ class WeldingSymbol_prototype:
     def generateIcon(self):
         fn = os.path.join( os.path.join(iconPath, 'welding'), self.label.replace(' ','_')) + '.svg'
         if not os.path.exists(fn):
+            svgParameters = ' xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="48px" height="48px" version="1.1" '
             xml =  self.generateSvg(
-            c_x=-10, c_y=58, radialLine_x=0, radialLine_y=36, tail_x=48, tail_y=36, weldingMarker_x=24, weldingMarker_y=36, 
-            arrowL1=12,arrowL2=6,arrowW=8, svgTag='svg', svgParms='width="48px" height="48px"', strokeWidth=2,  lineColor='blue', 
-            textRenderer=SvgTextRenderer( font_size='24px' )
+                c_x=-10, c_y=58, radialLine_x=0, radialLine_y=36, tail_x=48, tail_y=36, weldingMarker_x=24, weldingMarker_y=36, 
+                arrowL1=12,arrowL2=6,arrowW=8, svgTag='svg', svgParms=svgParameters, strokeWidth=2,  lineColor='blue', 
+                textRenderer=SvgTextRenderer( font_size='24px' )
             )
             f = open(fn,'w')
             f.write(xml)
