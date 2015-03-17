@@ -52,7 +52,19 @@ static char * linearDimension_xpm[] = {
     def Initialize(self):
         import importlib, os
         from dimensioning import __dir__, debugPrint, iconPath
-        import linearDimension, deleteDimension, circularDimension, textAdd, textEdit, textMove, escapeDimensioning, angularDimension, radiusDimension, centerLines, noteCircle, toleranceAdd, freeDrawing, weldingSymbols
+        import linearDimension
+        import deleteDimension
+        import circularDimension
+        import textAdd
+        import textEdit
+        import textMove
+        import escapeDimensioning
+        import angularDimension
+        import radiusDimension
+        import centerLines
+        import noteCircle
+        import toleranceAdd
+        import weldingSymbols
         commandslist = [
             'linearDimension',
             'circularDimension',
@@ -65,9 +77,6 @@ static char * linearDimension_xpm[] = {
             'textEditDimensioning',
             'textMoveDimensioning',
             'toleranceAdd', 
-#            'DrawingDimensioning_drawLine',
-#            'DrawingDimensioning_drawArrowWithTail',
-#            'DrawingDimensioning_weldingSymbols',
             'deleteDimension', 
             'escapeDimensioning'
             ]
