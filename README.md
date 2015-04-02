@@ -60,7 +60,9 @@ FreeCAD you will now have a new workbench-entry called "DrawingDimensioning".
 Mac Installation Instructions
 -----------------------------
 
-Copy or unzip the drawing dimensioning folder to the directory /FreeCAD.app/Contents/Mod (thanks PLChris)
+Copy or unzip the drawing dimensioning folder to the directory *FreeCAD.app*/Contents/Mod
+
+where *FreeCAD.app* is the folder where FreeCAD is installed. (thanks PLChris)
 
 Setting your dimensioning preferences
 -------------------------------------
