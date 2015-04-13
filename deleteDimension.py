@@ -35,7 +35,7 @@ class DeleteDimension:
             doSelectViewObjectPoints = True, 
             **commonArgs)
         selectionOverlay.generateSelectionGraphicsItems( 
-            [obj for obj in V.page.Group  if obj.Name.startswith('center')], 
+            [obj for obj in V.page.Group  if obj.Name.startswith('center') or  obj.Name.startswith('unfold')], 
             clearPreviousSelectionItems = False,
             doSelectViewObjectPoints=True, 
             **commonArgs)

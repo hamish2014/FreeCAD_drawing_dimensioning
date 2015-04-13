@@ -254,7 +254,7 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                     addSelectionPoint ( x1, y1 )
                     addSelectionPoint ( x2, y2 )
                 if doLines:
-                    graphicsItem = LineSelectionGraphicsItem( x1, y1, x1, y1 )
+                    graphicsItem = LineSelectionGraphicsItem( x1, y1, x2, y2 )
                     postProcessGraphicsItem(graphicsItem, {'x1':x1,'y1':y1,'x2':x2,'y2':y2})
                 if doMidPoints:
                     addSelectionPoint( (x1+x2)/2, (y1+y2)/2 )

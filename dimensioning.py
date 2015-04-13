@@ -1,6 +1,6 @@
 import numpy
 import FreeCAD as App
-import FreeCADGui, Part, os
+import FreeCAD, FreeCADGui, Part, os
 from PySide import QtGui, QtCore, QtSvg
 from textSvg import SvgTextRenderer, SvgTextParser
 import traceback
