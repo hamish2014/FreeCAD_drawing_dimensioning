@@ -1,0 +1,51 @@
+# This Python file uses the following encoding: utf-8
+
+from dimensioning import *
+from dimensioning import iconPath # not imported with * directive
+import subprocess
+
+def shellCmd(cmd, callDirectory=None):
+    debugPrint(3,'$' + cmd)
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=callDirectory)
+    stdout, stderr = p.communicate()
+    if stdout <> '':
+        debugPrint(3,'stdout:%s' % stdout )
+    if p.returncode <> 0:
+        raise RuntimeError, 'cmd %s \n STDERR:%s' % (cmd, stderr)
+    return stdout
+
+class ExportToDxfCommand:
+    def Activated(self):
+        V = getDrawingPageGUIVars()
+        if not ( hasattr(os,'uname') and os.uname()[0] == 'Linux' ):
+            QtGui.QMessageBox.critical( QtGui.qApp.activeWindow(), "Not Supported.", "Export to dxf only works on Linux Systems" )
+            return
+        dialog = QtGui.QFileDialog(
+            QtGui.qApp.activeWindow(),
+            "Enter the dxf file name"
+            )
+        dialog.setAcceptMode(QtGui.QFileDialog.AcceptSave)
+        dialog.setNameFilter("DXF files (*.dxf)")
+        lineEdit = [c for c in dialog.children() if isinstance(c, QtGui.QLineEdit) ][0]
+        lineEdit.setText(FreeCAD.ActiveDocument.Label + '.dxf')
+        if dialog.exec_():
+            dxf_fn = dialog.selectedFiles()[0]
+            debugPrint(3,'saving to %s' % dxf_fn)
+            eps_fn = dxf_fn[:-4] + '.eps'
+            if os.path.exists(eps_fn):
+                raise RuntimeError,"eps file (%s) exists, aborting operation" % eps_fn
+            V.page.PageResult
+            shellCmd('inkscape -f %s -E %s' % (V.page.PageResult, eps_fn))
+            shellCmd("pstoedit -dt -f 'dxf:-polyaslines -mm' %s %s" % (eps_fn, dxf_fn) )
+            shellCmd('rm %s' % eps_fn)
+            QtGui.QMessageBox.information(  QtGui.qApp.activeWindow(), "Success", "%s successfully created" % dxf_fn )
+
+    def GetResources(self): 
+        return {
+            #'Pixmap' : os.path.join( iconPath , 'drawLineWithArrow.svg' ) , 
+            'Pixmap' : os.path.join( iconPath, 'exportToDxf.svg'),
+            'MenuText': 'export active drawing page to dxf (only works on a Linux system with inkscape installed)', 
+            } 
+
+
+FreeCADGui.addCommand('drawingDimensioning_exportToDxf', ExportToDxfCommand())
