@@ -122,22 +122,29 @@ class Projection:
         for i,L1 in enumerate(lines):
             for L2 in lines[i+1:]:
                 if L1.colinearWith(L2):
-                    L1.visible = False
-                    L2.visible = False
                     #self.foldingLines.append( FoldingLine( L1.startPoint.posProjection, L1.endPoint.posProjection ) )
                     #determining where to draw folding lines.
                     P = numpy.array([ L1.startPoint.posProjection, L1.endPoint.posProjection, L2.startPoint.posProjection, L2.endPoint.posProjection ])
                     v = normalize(P[1] - P[0])
                     T = numpy.unique(numpy.array(sorted([ dotProduct(p-P[0],v) for p in P ])))
+                    intersectionSegment = None
+                    outsideSegments = []
+                    
                     #debugPrint(2,'"insert_fold_lines v %s, T %s"' % (v,T))
-                    for t_a, t_b in zip(T[0:3],T[1:4]):
+                    for t_a, t_b in zip(T[:-1],T[1:]):
                         a = dotProduct(             t_a, v) + P[0]
                         b = dotProduct(             t_b, v) + P[0]
                         c = dotProduct( (t_a + t_b)*0.5, v) + P[0]
                         if L1.pointOnLine(c) and L2.pointOnLine(c):
-                            #debugPrint(2,'"insert_fold_lines adding folding line a=%s b=%s"' % (a,b))
-                            self.foldingLines.append( FoldingLine( a, b ) )
+                            intersectionSegment = [a,b]
+                            #debugPrint(2,'"insert_fold_lines adding folding line at a=%s b=%s"' % (a,b))
                         elif L1.pointOnLine(c) or L2.pointOnLine(c):
+                            outsideSegments.append([a,b])
+                    if intersectionSegment <> None:
+                        L1.visible = False
+                        L2.visible = False
+                        self.foldingLines.append( FoldingLine( *intersectionSegment ) )
+                        for a,b in outsideSegments:
                             self.graphicObjects.append( pLine(
                                     self._findPoint(pPoint(a[0],a[1],None)), 
                                     self._findPoint(pPoint(b[0],b[1],None)), 
