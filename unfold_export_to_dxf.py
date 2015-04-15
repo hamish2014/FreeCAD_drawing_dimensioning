@@ -11,7 +11,7 @@ def shellCmd(cmd, callDirectory=None):
     if stdout <> '':
         debugPrint(3,'stdout:%s' % stdout )
     if p.returncode <> 0:
-        raise RuntimeError, 'cmd %s \n STDERR:%s' % (cmd, stderr)
+        raise RuntimeError, '$ %s \n STDERR:%s' % (cmd, stderr)
     return stdout
 
 class ExportToDxfCommand:
@@ -36,9 +36,14 @@ class ExportToDxfCommand:
                 raise RuntimeError,"eps file (%s) exists, aborting operation" % eps_fn
             V.page.PageResult
             shellCmd('inkscape -f %s -E %s' % (V.page.PageResult, eps_fn))
-            shellCmd("pstoedit -dt -f 'dxf:-polyaslines -mm' %s %s" % (eps_fn, dxf_fn) )
+            try:
+                shellCmd("pstoedit -dt -f 'dxf:-polyaslines -mm' %s %s" % (eps_fn, dxf_fn) ) 
+                QtGui.QMessageBox.information(  QtGui.qApp.activeWindow(), "Success", "%s successfully created" % dxf_fn )
+            except RuntimeError, msg:
+                QtGui.QMessageBox.critical( QtGui.qApp.activeWindow(), "pstoedit failed.", "%s\n\n suggestion: relaunch FreeCAD from BASH and try again." % msg )
+            #only works if FreeCAD is launched from bash shell?
+            #work around for this?
             shellCmd('rm %s' % eps_fn)
-            QtGui.QMessageBox.information(  QtGui.qApp.activeWindow(), "Success", "%s successfully created" % dxf_fn )
 
     def GetResources(self): 
         return {
