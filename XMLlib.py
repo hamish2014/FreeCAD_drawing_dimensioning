@@ -118,14 +118,26 @@ class SvgXMLTreeNode:
         sx, sy = 1.0, 1.0
         if 'transform=' in self.header:
             if 'rotate(' in self.header:
-                rotateDegrees, rx, ry = map(float, extractParms(self.header, 0, 'rotate(', ', ', ')'))
+                rotateParms = map(float, extractParms(self.header, 0, 'rotate(', ', ', ')'))
+                if len(rotateParms) == 3:
+                    rotateDegrees, rx, ry = rotateParms
+                else:
+                    assert len(rotateParms) == 1
+                    rotateDegrees, rx, ry = rotateParms[0], 0.0, 0.0
                 rads = numpy.pi * rotateDegrees / 180
                 R = numpy.array([ [ cos(rads), -sin(rads)], [ sin(rads), cos(rads)] ])
                 r_o = numpy.array([ rx, ry])
             if 'translate(' in self.header:
                 tx, ty = map(float, extractParms(self.header, 0, 'translate(', ', ', ')'))
             if 'scale(' in self.header:
-                sx, sy = map(float, extractParms(self.header, 0, 'scale(', ', ', ')'))
+                scaleParms = map(float, extractParms(self.header, 0, 'scale(', ', ', ')'))
+                if len(scaleParms) == 2:
+                    sx, sy = scaleParms
+                else:
+                    sx, sy = scaleParms[0], scaleParms[0]
+            if 'matrix(' in self.header: #"matrix(1.25,0,0,-1.25,-348.3393,383.537)"
+                sx, shear_1, shear_2, sy, tx, ty = map(float, extractParms(self.header, 0, 'matrix(', ', ', ')'))
+                assert shear_1 == 0 and shear_2 == 0
         p = numpy.array( [sx*x + tx, sy*y + ty] )
         point = dot(R, p-r_o) +r_o
         if self.parent <> None:
