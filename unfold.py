@@ -3,12 +3,8 @@ from dimensioning import iconPath, __dir__
 from lib3D import *
 import previewDimension
 import dimensionSvgConstructor
-try:
-    from matplotlib import pyplot
-except ImportError:
-    pyplot = None
-dimensioningTracker = DimensioningProcessTracker()
 
+dimensioningTracker = DimensioningProcessTracker()
 
 def unfold(faces_org):
     faces = map(FaceWrapper, faces_org)
@@ -28,7 +24,6 @@ def unfold(faces_org):
                     except UnfoldOverlapError:
                         pass
     projection.insert_fold_lines()
-    #projection.plot_via_matplotlib()
     return projection
 
 class FaceWrapper:
@@ -150,21 +145,6 @@ class Projection:
                                     self._findPoint(pPoint(b[0],b[1],None)), 
                                     L1.faceW, L1.edge ) )
 
-    def plot_via_matplotlib(self):
-        if pyplot == None:
-            QtGui.QMessageBox.critical(QtGui.qApp.activeWindow(), "Failure!", "The matplotlib python library not installed, aborting.")
-            return
-        pyplot.figure()
-        for p in self.points:
-            pyplot.plot( [p.x], [p.y], 'go' )
-        for g in self.graphicObjects:
-            if g.visible:
-                g.plot_matplotlib()
-        for L in self.foldingLines:
-            L.plot_matplotlib()
-        pyplot.axis('equal')
-        pyplot.show()
-
     def generateSvg(self, x, y, scale=1.0, rotation=0, strokeWidth=0.5,  lineColor='black', foldLineColor='blue', foldstrokeWidth=0.5, len_dash=3, len_gap=3):
         XML_body = []
         for g in self.graphicObjects:
@@ -244,12 +224,6 @@ class pLine:
         d2 = norm( c - self.startPoint.posProjection )
         return abs(d - (d1+d2)) < tol
 
-    def plot_matplotlib(self, plotStyle='-b'):
-        pyplot.plot(
-            [self.startPoint.x, self.endPoint.x],
-            [self.startPoint.y, self.endPoint.y],
-            plotStyle
-            )
     def __str__(self):
         return '<pLine x1="%f" y1="%f" x2="%f" y2="%f">' % (self.startPoint.x, self.startPoint.y, self.endPoint.x,  self.endPoint.y)
 
@@ -261,12 +235,7 @@ class FoldingLine:
     def __init__(self, p1, p2 ):
         self.p1 = p1
         self.p2 = p2
-    def plot_matplotlib(self, overShootFactor = 0.2, plotStyle='--g'):
-        pyplot.plot(
-            [self.p1[0], self.p2[0]],
-            [self.p1[1], self.p2[1]],
-            plotStyle
-            )
+
     def svg(self, strokeWidth, lineColor, len_dash, len_gap):
         xml = dimensionSvgConstructor._centerLineSVG(self.p1[0], self.p1[1], self.p2[0],  self.p2[1], len_dash, len_dash, len_gap)
         xml = xml.replace('path ','path style="stroke:%s;stroke-width:%1.2f" ' % (lineColor,strokeWidth))
@@ -285,14 +254,7 @@ class pCircularArc:
         self.faceW = faceWrapper
         self.edge = edge
         self.visible = True
-    def plot_matplotlib(self, clr='b'):
-        if self.points[0] <> self.points[-1]:
-            X = [ p.x for p in self.points ]
-            Y = [ p.y for p in self.points ]
-            pyplot.plot( X, Y, clr )     
-        else:
-            circle = pyplot.Circle( (self.center.x, self.center.y), self.radius, edgecolor=clr, facecolor='none' )
-            pyplot.gcf().gca().add_artist( circle )
+
     def svg(self, strokeWidth, lineColor):
         if self.points[0] <> self.points[-1]:
             r = self.radius
