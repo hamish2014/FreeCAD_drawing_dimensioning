@@ -11,10 +11,10 @@ def selectFun(  event, referer, elementXML, elementParms, elementViewObject ):
     dimensioning.point1 = x, y
     debugPrint(2, 'center selected at x=%3.1f y=%3.1f' % (x,y))
     dimensioning.radius = elementParms['r']
-    dimensioning.dimScale = 1/elementXML.rootNode().scaling() / UnitConversionFactor()
+    dimensioning._dimScale = 1/elementXML.rootNode().scaling()
     dimensioning.stage = 1
     selectionOverlay.hideSelectionGraphicsItems()
-    previewDimension.initializePreview( dimensioning.drawingVars, clickFunPreview, hoverFunPreview )
+    previewDimension.initializePreview( dimensioning.drawingVars, clickFunPreview, hoverFunPreview,  launchControlDialog=True )
 
 def clickFunPreview( x, y ):
     if dimensioning.stage == 1:
@@ -28,24 +28,26 @@ def clickFunPreview( x, y ):
         dimensioning.stage = 3
         return None, None
     else:
+        dimScale = dimensioning._dimScale / UnitConversionFactor()
         XML = circularDimensionSVG( dimensioning.point1[0], dimensioning.point1[1], dimensioning.radius,
                                     dimensioning.point2[0], dimensioning.point2[1], 
                                     dimensioning.point3[0], dimensioning.point3[1], 
-                                    x, y, dimScale=dimensioning.dimScale,
+                                    x, y, dimScale=dimScale,
                                     **dimensioning.dimensionConstructorKWs)
         return findUnusedObjectName('dim'), XML
 
 def hoverFunPreview( x, y):
+    dimScale = dimensioning._dimScale / UnitConversionFactor()
     if dimensioning.stage == 1:
-        return circularDimensionSVG( dimensioning.point1[0], dimensioning.point1[1], dimensioning.radius, x, y, dimScale=dimensioning.dimScale, **dimensioning.svg_preview_KWs )
+        return circularDimensionSVG( dimensioning.point1[0], dimensioning.point1[1], dimensioning.radius, x, y, dimScale=dimScale, **dimensioning.svg_preview_KWs )
     elif dimensioning.stage == 2:
         return circularDimensionSVG( dimensioning.point1[0], dimensioning.point1[1], dimensioning.radius, 
-                                     dimensioning.point2[0], dimensioning.point2[1], x, y, dimScale=dimensioning.dimScale, **dimensioning.svg_preview_KWs )
+                                     dimensioning.point2[0], dimensioning.point2[1], x, y, dimScale=dimScale, **dimensioning.svg_preview_KWs )
     else: 
         return circularDimensionSVG( dimensioning.point1[0], dimensioning.point1[1], dimensioning.radius, 
                                      dimensioning.point2[0], dimensioning.point2[1], 
                                      dimensioning.point3[0], dimensioning.point3[1], 
-                                     x, y, dimScale=dimensioning.dimScale,**dimensioning.svg_preview_KWs )
+                                     x, y, dimScale=dimScale,**dimensioning.svg_preview_KWs )
     
 
 maskPen =      QtGui.QPen( QtGui.QColor(0,255,0,100) )

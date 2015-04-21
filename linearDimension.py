@@ -21,9 +21,9 @@ def selectDimensioningPoint( event, referer, elementXML, elementParms, elementVi
             dimensioning.point2 =  x,y
             debugPrint(2, 'point2 set to x=%3.1f y=%3.1f' % (x,y))
             dimensioning.stage = 2 
-            dimensioning.dimScale = 1 / elementXML.rootNode().scaling() / UnitConversionFactor()
+            dimensioning._dimScale = 1 / elementXML.rootNode().scaling()
             selectionOverlay.hideSelectionGraphicsItems()
-            previewDimension.initializePreview( dimensioning.drawingVars, clickFunPreview, hoverFunPreview )
+            previewDimension.initializePreview( dimensioning.drawingVars, clickFunPreview, hoverFunPreview, launchControlDialog=True )
     else:#then line
         if dimensioning.stage == 0: 
             x1,y1,x2,y2 = [ elementParms[k] for k in [ 'x1', 'y1', 'x2', 'y2' ] ]
@@ -31,18 +31,17 @@ def selectDimensioningPoint( event, referer, elementXML, elementParms, elementVi
             dimensioning.point1 =  x1,y1
             dimensioning.point2 =  x2,y2
             dimensioning.stage = 2 
-            dimensioning.dimScale = 1 / elementXML.rootNode().scaling() / UnitConversionFactor()
+            dimensioning._dimScale = 1 / elementXML.rootNode().scaling()
             lineSelected_hideSelectionGraphicsItems(elementParms, elementViewObject)
-            previewDimension.initializePreview( dimensioning.drawingVars, clickFunPreview, hoverFunPreview )
+            previewDimension.initializePreview( dimensioning.drawingVars, clickFunPreview, hoverFunPreview, launchControlDialog=True )
         else: #then distance between parallels
             x1,y1,x2,y2 = [ elementParms[k] for k in [ 'x1', 'y1', 'x2', 'y2' ] ]
             debugPrint(2,'distance between parallels, line2 x1=%3.1f y1=%3.1f, x2=%3.1f y2=%3.1f' % (x1,y1,x2,y2))
             dimensioning.line1 =  list(dimensioning.point1) + list(dimensioning.point2)
             dimensioning.line2 =  [ x1,y1,x2,y2 ]
-            debugPrint(3,'dim scale %f' % dimensioning.dimScale)
             selectionOverlay.hideSelectionGraphicsItems()
             previewDimension.removePreviewGraphicItems( False )
-            previewDimension.initializePreview( dimensioning.drawingVars, distanceParallels_clickFunPreview, distanceParallels_hoverFunPreview )
+            previewDimension.initializePreview( dimensioning.drawingVars, distanceParallels_clickFunPreview, distanceParallels_hoverFunPreview, launchControlDialog=True )
 
 
 def clickFunPreview( x, y ):
@@ -53,9 +52,10 @@ def clickFunPreview( x, y ):
         selectionOverlay.hideSelectionGraphicsItems() # for distance between parallels case
         return None, None
     else:
+        dimScale = dimensioning._dimScale / UnitConversionFactor()
         p1,p2,p3 = dimensioning.point1,  dimensioning.point2,  dimensioning.point3
         XML = linearDimensionSVG( p1[0], p1[1], p2[0], p2[1], p3[0], p3[1], 
-                                  x, y, scale=dimensioning.dimScale, 
+                                  x, y, scale=dimScale, 
                                   **dimensioning.dimensionConstructorKWs)
         return findUnusedObjectName('dim'), XML
 
@@ -64,9 +64,10 @@ def hoverFunPreview( x, y ):
     if dimensioning.stage == 2 :
         return linearDimensionSVG( p1[0], p1[1], p2[0], p2[1], x, y, **dimensioning.svg_preview_KWs )
     else:
+        dimScale = dimensioning._dimScale / UnitConversionFactor()
         return  linearDimensionSVG( p1[0], p1[1], p2[0], p2[1],
                                     dimensioning.point3[0], dimensioning.point3[1], 
-                                    x, y, scale=dimensioning.dimScale,  **dimensioning.svg_preview_KWs )
+                                    x, y, scale=dimScale,  **dimensioning.svg_preview_KWs )
 
 maskBrush  =   QtGui.QBrush( QtGui.QColor(0,160,0,100) )
 maskPen =      QtGui.QPen( QtGui.QColor(0,160,0,100) )
@@ -155,10 +156,11 @@ def distanceParallels_clickFunPreview( x, y ):
         dimensioning.stage = 3
         return None, None
     else:
+        dimScale = dimensioning._dimScale / UnitConversionFactor()
         XML = distanceBetweenParallelsSVG( 
             dimensioning.line1, dimensioning.line2,
             dimensioning.point3[0], dimensioning.point3[1], 
-            x, y, scale=dimensioning.dimScale,  
+            x, y, scale=dimScale,  
             **dimensioning.dimensionConstructorKWs)
         return findUnusedObjectName('dim'), XML
 
@@ -166,11 +168,11 @@ def distanceParallels_hoverFunPreview( x, y ):
     if dimensioning.stage == 2 :
         return distanceBetweenParallelsSVG( 
             dimensioning.line1, dimensioning.line2, x, y, 
-            scale=dimensioning.dimScale,  
             **dimensioning.svg_preview_KWs )
     else:
+        dimScale = dimensioning._dimScale / UnitConversionFactor()
         return distanceBetweenParallelsSVG( 
             dimensioning.line1, dimensioning.line2,
             dimensioning.point3[0], dimensioning.point3[1], 
-            x, y, scale=dimensioning.dimScale,  
+            x, y, scale=dimScale,  
             **dimensioning.svg_preview_KWs )

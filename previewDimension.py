@@ -1,7 +1,7 @@
 
 from dimensioning import *
 from dimensioning import __dir__ # not imported with * directive
-
+import dimensioning
 
 class PreviewVars:
     def __init__(self):
@@ -19,7 +19,7 @@ class PreviewVars:
 preview = PreviewVars() 
 
 
-def initializePreview( drawingVars, clickFunPreview, hoverFunPreview ):
+def initializePreview( drawingVars, clickFunPreview, hoverFunPreview, launchControlDialog=False ):
     preview.drawingVars = drawingVars
     preview.setTransform(drawingVars)
     if not hasattr(preview, 'SVG'):
@@ -76,6 +76,10 @@ def initializePreview( drawingVars, clickFunPreview, hoverFunPreview ):
     preview.rect.setZValue( 0.1 )
     drawingVars.graphicsScene.addItem( preview.rect )
     debugPrint(4, 'DimensionPreviewSvgGraphicsItem added to graphics Scene')
+    if launchControlDialog: 
+        preview.taskPanelDialog =  PreviewTaskPanel()
+        FreeCADGui.Control.showDialog( preview.taskPanelDialog )
+
 
 def removePreviewGraphicItems( recomputeActiveDocument = True ):
     debugPrint(4,'removePreviewGraphicItems called, recomputeActiveDocument %s' % recomputeActiveDocument)
@@ -85,6 +89,8 @@ def removePreviewGraphicItems( recomputeActiveDocument = True ):
     if recomputeActiveDocument:
         debugPrint(3,'removePreviewGraphicItems: recomputing')
         recomputeWithOutViewReset( preview.drawingVars )
+    if hasattr(preview, 'taskPanelDialog'):
+        FreeCADGui.Control.closeDialog()
      
 
 class DimensionPreviewRect(QtGui.QGraphicsRectItem):
@@ -130,3 +136,43 @@ class DimensionPreviewRect(QtGui.QGraphicsRectItem):
                 preview.SVG.update()
         except:
             App.Console.PrintError(traceback.format_exc())
+
+
+class PreviewTaskPanel:
+    def __init__(self):
+        self.form = FreeCADGui.PySideUic.loadUi(os.path.join(__dir__,"previewDimension.ui"))
+        #self.form.setWindowIcon(QtGui.QIcon( os.path.join( iconPath, 'unfold.svg' ) ) )
+        p = App.ParamGet("User parameter:BaseApp/Preferences/Units")
+        UserSchema = p.GetInt("UserSchema")
+        self.form.label_defaultUnit.setText( 'default unit: %s' % ['mm','m','in','in'][UserSchema] )
+        self.form.comboBox_units.setCurrentIndex( dimensioning.PreviewTaskPanel_index )
+        self.form.doubleSpinBox_customScale.setValue( dimensioning.custom_unit_factor )
+        self.form.doubleSpinBox_customScale.valueChanged.connect( self.getValuesFromDialog)
+        self.form.comboBox_units.currentIndexChanged.connect(self.getValuesFromDialog)
+
+    def getValuesFromDialog(self, notUsed=None):
+        dimensioning.unit_scheme = self.form.comboBox_units.currentText()
+        dimensioning.custom_unit_factor = self.form.doubleSpinBox_customScale.value()
+        dimensioning.PreviewTaskPanel_index = self.form.comboBox_units.currentIndex()
+        
+    def scaledChanged(self, newScale):
+        '''
+        form.doubleSpinBox_scale.value()
+        form.doubleSpinBox_scale.setValue(1.0)
+        form.doubleSpinBox_scale.value()
+        '''
+        #debugPrint(2, 'hello')
+        dimensioningTracker.svgScale = newScale
+    def rotationChanged(self, v):
+        dimensioningTracker.svgRotation = v
+
+    def clicked(self,button):
+        if button == QtGui.QDialogButtonBox.Apply:
+            pass #? dont see an apply dialog
+        
+    def accept(self):
+        self.getValuesFromDialog()
+    
+    def reject(self):
+        removePreviewGraphicItems( recomputeActiveDocument = True )
+        FreeCADGui.Control.closeDialog()
