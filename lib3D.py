@@ -1,1 +1,0 @@
-../FreeCAD_assembly2/lib3D.py

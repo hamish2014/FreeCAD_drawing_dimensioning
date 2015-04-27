@@ -1,8 +1,12 @@
 from dimensioning import *
 from dimensioning import iconPath, __dir__
-from lib3D import *
 import previewDimension
 import dimensionSvgConstructor
+import numpy
+from numpy import pi, sin, cos, arctan2, arcsin, arccos, dot
+from numpy.linalg import norm
+dotProduct = numpy.dot
+crossProduct = numpy.cross
 
 dimensioningTracker = DimensioningProcessTracker()
 
@@ -369,3 +373,36 @@ class UnfoldTaskPanel:
     def reject(self):
         previewDimension.removePreviewGraphicItems( recomputeActiveDocument = True )
         FreeCADGui.Control.closeDialog()
+
+
+        
+#copied from assembly2/lib3D.py
+
+def arccos2( v, allowableNumericalError=10**-1 ):
+    if -1 <= v and v <= 1:
+        return arccos(v)
+    elif abs(v) -1 < allowableNumericalError:
+        return 0 if v > 0 else pi
+    else:
+        raise ValueError,"arccos2 called with invalid input of %s" % v
+
+def normalize( v ):
+    return v / norm(v)
+
+
+def axis_rotation_matrix( theta, u_x, u_y, u_z ):
+    ''' http://en.wikipedia.org/wiki/Rotation_matrix '''
+    return numpy.array( [
+            [ cos(theta) + u_x**2 * ( 1 - cos(theta)) , u_x*u_y*(1-cos(theta)) - u_z*sin(theta) ,  u_x*u_z*(1-cos(theta)) + u_y*sin(theta) ] ,
+            [ u_y*u_x*(1-cos(theta)) + u_z*sin(theta) , cos(theta) + u_y**2 * (1-cos(theta))    ,  u_y*u_z*(1-cos(theta)) - u_x*sin(theta )] ,
+            [ u_z*u_x*(1-cos(theta)) - u_y*sin(theta) , u_z*u_y*(1-cos(theta)) + u_x*sin(theta) ,              cos(theta) + u_z**2*(1-cos(theta))   ]
+            ])
+
+def rotation_required_to_rotate_a_vector_to_be_aligned_to_another_vector( v, v_ref ):
+    c = crossProduct( v, v_ref)
+    if norm(c) > 0:
+        axis = normalize(c)
+        angle = arccos2( dotProduct( v, v_ref ))
+        return axis, angle
+    else: #no rotation required
+        return numpy.array([1.0, 0, 0]), 0.0
