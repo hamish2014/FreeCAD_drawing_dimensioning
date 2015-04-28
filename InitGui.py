@@ -53,8 +53,10 @@ static char * linearDimension_xpm[] = {
         import importlib, os
         from dimensioning import __dir__, debugPrint, iconPath
         import linearDimension
+        import halfLinearDimension
         import deleteDimension
         import circularDimension
+        import grabPointAdd
         import textAdd
         import textEdit
         import textMove
@@ -66,12 +68,14 @@ static char * linearDimension_xpm[] = {
         import toleranceAdd
         commandslist = [
             'linearDimension',
+            'halfLinearDimension',
             'circularDimension',
             'radiusDimension',
             'angularDimension',
             'DrawingDimensioning_centerLines',
             'DrawingDimensioning_centerLine', 
             'noteCircle', 
+            'grabPoint',
             'textAddDimensioning',
             'textEditDimensioning',
             'textMoveDimensioning',
