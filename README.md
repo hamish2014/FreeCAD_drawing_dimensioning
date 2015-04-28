@@ -15,11 +15,13 @@ Features
   * center lines
   * adding, editing and moving dimension text
   * deleting dimensions
+  * Draw a dimension or a symbol anywhere on the drawing with "Add grab point"
 
 Limitations
   * No parametric updating, if the drawing is updated the dimensions need to be redone
   * undo and other similar features not supported
   * only works with FreeCAD version 0.15
+
 
 
 Linux Installation Instructions
