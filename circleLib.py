@@ -209,11 +209,11 @@ if __name__ == '__main__':
     #print now fitting circle to data
     c_x, c_y, R, R_error = fitCircle( B[:,0], B[:,1])
 
-    def plotCircle( cx, cy, R, style):
+    def plotCircle( cx, cy, R, style, label=None):
         T = linspace(0,2*pi)
         X = c_x + cos(T)*R
         Y = c_y + sin(T)*R
-        pyplot.plot(  X, Y, style  )
+        pyplot.plot(  X, Y, style, label=label  )
     plotCircle( c_x, c_y, R, 'g-.')
 
     pyplot.axis('equal')
@@ -229,10 +229,12 @@ if __name__ == '__main__':
         pyplot.subplot(2,2,i+1)
         pyplot.plot( X, Y,'go')
         c_x, c_y, R, R_error = fitCircle( X, Y)
-        plotCircle( c_x, c_y, R, 'g:')
+        plotCircle( c_x, c_y, R, 'g:', label='analytical')
         c_x, c_y, R, R_error = fitCircleNumerically( X, Y)
-        plotCircle( c_x, c_y, R, 'b--')
+        plotCircle( c_x, c_y, R, 'b--', label='numerical')
         pyplot.axis('equal')
+        if i == 0:
+            pyplot.legend()
 
 
     pyplot.show()
