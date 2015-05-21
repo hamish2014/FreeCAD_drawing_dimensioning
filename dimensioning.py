@@ -238,3 +238,21 @@ def printGraphicsViewInfo( drawingVars ):
     #debugPrint(4,'M = [ %1.2f  %1.2f  %1.2f ]' % (T.m21(), T.m22(), T.m23() ))
     #debugPrint(4,'    [ %1.2f  %1.2f  %1.2f ]' % (T.m31(), T.m32(), T.m33() ))
 
+
+class helpCommand:
+    def Activated(self):
+        QtGui.QMessageBox.information( 
+            QtGui.qApp.activeWindow(), 
+            'Drawing Dimensioning Help', 
+            '''For help getting started, please refer to the following YouTube video tutorials:
+
+- https://www.youtube.com/watch?v=CTEPu50bG4U
+- https://www.youtube.com/watch?v=ztMTLp4wZx4 '''  )
+    def GetResources(self): 
+        return {
+            'Pixmap' : os.path.join( iconPath , 'help.svg' ) , 
+            'MenuText': 'Help', 
+            'ToolTip': 'Help'
+            } 
+
+FreeCADGui.addCommand('drawingDimensioning_help', helpCommand())

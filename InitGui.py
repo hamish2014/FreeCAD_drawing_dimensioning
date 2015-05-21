@@ -1,4 +1,3 @@
-
 class DrawingDimensioningWorkbench (Workbench):
     # Icon generated using by converting linearDimension.svg to xpm format using Gimp
     Icon = '''
@@ -92,6 +91,9 @@ static char * linearDimension_xpm[] = {
                 'drawingDimensioning_bendingNote',
                 'drawingDimensioning_exportToDxf',
                 ])
+        self.appendToolbar('Drawing Dimensioning Help', [
+                'drawingDimensioning_help',
+                ])
         import weldingSymbols
         self.appendToolbar('Drawing Dimensioning Welding Symbols', weldingSymbols.weldingCmds)
         FreeCADGui.addIconPath(iconPath)
@@ -99,3 +101,5 @@ static char * linearDimension_xpm[] = {
 
 
 Gui.addWorkbench(DrawingDimensioningWorkbench())
+
+
