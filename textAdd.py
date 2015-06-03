@@ -23,7 +23,7 @@ dimensioning.assignedPrefenceValues = False
 def textSVG( x, y, svgTag='g', svgParms=''):
     XML = '''<%s  %s >
 %s
-</%s> ''' % ( svgTag, svgParms, dimensioning.textRenderer(x,y,dimensioning.text), svgTag )
+</%s> ''' % ( svgTag, svgParms, dimensioning.textRenderer(x,y,dimensioning.text,rotation=dimensioning.rotation), svgTag )
     debugPrint(4, 'textSVG.XML %s' % XML)
     return XML
 
@@ -51,6 +51,7 @@ class AddTextDialogWidget( QtGui.QWidget ):
         size = widgets['sizeLineEdit'].text()
         fill = widgets['colorLineEdit'].text()
         dimensioning.textRenderer = SvgTextRenderer( family, size, fill )
+        dimensioning.rotation = widgets['doubleSpinBox_rotation'].value()
         debugPrint(3,'textRenderer created')
         debugPrint(3,'previewDimension.initializePreview')
         previewDimension.initializePreview(

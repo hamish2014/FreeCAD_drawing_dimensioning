@@ -366,8 +366,14 @@ def distanceBetweenParallelsSVG( line1, line2, x_baseline, y_baseline, x_text=No
     XML.append( arrowHeadSVG( p_arrow2,  directionVector(p_center, p_arrow2)*s, arrowL1, arrowL2, arrowW, lineColor ) )
     if x_text <> None and y_text <> None:
         textRotation = numpy.arctan2( d[1], d[0]) / numpy.pi * 180 + 90
-        if textRotation > 90 or textRotation < -90:
-            textRotation = textRotation + 180
+        if textRotation > 90:
+            textRotation = textRotation - 180
+        if textRotation > 88:
+            textRotation = textRotation - 180
+        elif textRotation > 12 :
+            textRotation = textRotation - 90
+        elif textRotation < -92:
+            textRotation = textRotation + 90
         textXML = textRenderer( x_text, y_text, dimensionText(dist*scale,textFormat), rotation=textRotation)
         XML.append( textXML )
     XML = '''<%s  %s >
