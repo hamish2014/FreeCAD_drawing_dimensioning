@@ -1,6 +1,5 @@
 
 from dimensioning import *
-from dimensioning import iconPath # not imported with * directive
 
 class EscapeDimensioning:
     def Activated(self):
@@ -15,4 +14,4 @@ class EscapeDimensioning:
             'ToolTip': 'escape Dimensioning'
             } 
 
-FreeCADGui.addCommand('escapeDimensioning', EscapeDimensioning())
+FreeCADGui.addCommand('dd_escapeDimensioning', EscapeDimensioning())

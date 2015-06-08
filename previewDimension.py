@@ -19,7 +19,7 @@ class PreviewVars:
 preview = PreviewVars() 
 
 
-def initializePreview( drawingVars, clickFunPreview, hoverFunPreview, launchControlDialog=False ):
+def initializePreview( drawingVars, dimensionSvgFun, dimensionClickHandler, launchControlDialog=False ):
     preview.drawingVars = drawingVars
     preview.setTransform(drawingVars)
     if not hasattr(preview, 'SVG'):
@@ -68,8 +68,8 @@ def initializePreview( drawingVars, clickFunPreview, hoverFunPreview, launchCont
 
     debugPrint(4, 'adding Rect')
     preview.rect.setRect(0, 0, drawingVars.width, drawingVars.height)
-    preview.rect.hoverFunPreview = hoverFunPreview
-    preview.rect.clickFunPreview = clickFunPreview
+    preview.rect.dimensionSvgFun = dimensionSvgFun
+    preview.rect.dimensionClickHandler = dimensionClickHandler
     preview.rect.setAcceptHoverEvents(True)
     preview.rect.setFlag( QtGui.QGraphicsItem.GraphicsItemFlag.ItemIsFocusable, True )
     preview.rect.setCursor( QtCore.Qt.ArrowCursor ) # http://qt-project.org/doc/qt-5/qt.html#CursorShape-enum
@@ -106,8 +106,12 @@ class DimensionPreviewRect(QtGui.QGraphicsRectItem):
             if event.button() == QtCore.Qt.MouseButton.LeftButton:
                 x, y =  preview.applyTransform( event.scenePos() )
                 debugPrint(3, 'mousePressEvent: x %f, y %f' % (x, y) )
-                viewName, XML = self.clickFunPreview(x,y)
-                if XML <> None and viewName <> None:
+                instruction = self.dimensionClickHandler(x,y)
+                if instruction == None:
+                    pass
+                elif instruction.startswith('createDimension:'):
+                    viewName = instruction.split(':')[1]
+                    XML = self.dimensionSvgFun( x, y )
                     debugPrint(3, XML)
                     debugPrint(2, 'creating dimension %s' % viewName)
                     obj = App.ActiveDocument.addObject('Drawing::FeatureView',viewName)
@@ -116,7 +120,7 @@ class DimensionPreviewRect(QtGui.QGraphicsRectItem):
                         obj.setEditorMode(prop, 2)
                     preview.drawingVars.page.addObject( obj ) #App.ActiveDocument.getObject(viewName) )
                     removePreviewGraphicItems( recomputeActiveDocument=True )
-                elif XML <> None and viewName == None:
+                elif instruction == 'stopPreview':
                     removePreviewGraphicItems( recomputeActiveDocument=True )
             else:
                 event.ignore()
@@ -125,15 +129,14 @@ class DimensionPreviewRect(QtGui.QGraphicsRectItem):
 
     def hoverMoveEvent(self, event):
         try:
-            x, y =  preview.applyTransform( event.scenePos() )
+            x, y = preview.applyTransform( event.scenePos() )
             debugPrint(4, 'hoverMoveEvent: x %f, y %f' % (x, y) )
-            XML = self.hoverFunPreview( x, y)
-            if XML <> None:
-                if isinstance(XML, unicode): 
-                    XML = XML.encode('utf8')
-                debugPrint(5, XML)
-                preview.SVGRenderer.load( QtCore.QByteArray( XML ) )
-                preview.SVG.update()
+            XML = '<svg width="%i" height="%i"> %s </svg>' % (preview.drawingVars.width, preview.drawingVars.height, self.dimensionSvgFun( x, y ))
+            if isinstance(XML, unicode): 
+                XML = XML.encode('utf8')
+            debugPrint(5, XML)
+            preview.SVGRenderer.load( QtCore.QByteArray( XML ) )
+            preview.SVG.update()
         except:
             App.Console.PrintError(traceback.format_exc())
 

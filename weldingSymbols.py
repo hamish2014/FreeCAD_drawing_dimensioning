@@ -4,7 +4,7 @@ from dimensioning import iconPath # not imported with * directive
 import previewDimension, selectionOverlay 
 from dimensionSvgConstructor import arrowHeadSVG, numpy, directionVector
 
-dimensioning = DimensioningProcessTracker()
+d = DimensioningProcessTracker()
 maskBrush  =   QtGui.QBrush( QtGui.QColor(0,160,0,100) )
 maskPen =      QtGui.QPen( QtGui.QColor(0,160,0,100) )
 maskPen.setWidth(0.0)
@@ -15,7 +15,7 @@ weldingCmds = []
 class WeldingSymbol_prototype:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        dimensioning.activate(V, ['strokeWidth','arrowL1','arrowL2','arrowW'], ['lineColor'], ['textRenderer'] )
+        d.activate(V, ['strokeWidth','arrowL1','arrowL2','arrowW'], ['lineColor'], ['textRenderer'] )
         selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if not obj.Name.startswith('dim') and not obj.Name.startswith('center')], 
             self.selectFun ,
@@ -31,32 +31,28 @@ class WeldingSymbol_prototype:
 
     def selectFun(self, event, referer, elementXML, elementParms, elementViewObject ):
         x,y = elementParms['x'], elementParms['y']
-        dimensioning.dArgs = [x,y]
-        dimensioning.stage = 1
+        d.dArgs = [x,y]
+        d.stage = 1
         debugPrint(2, 'welding symbol to point at x=%3.1f y=%3.1f' % (x,y))
         selectionOverlay.hideSelectionGraphicsItems()
         previewDimension.initializePreview( 
-            dimensioning.drawingVars, 
-            self.clickFunPreview, 
-            self.hoverFunPreview )
+            d.drawingVars, 
+            self.preview_svgRenderer, 
+            self.preview_clickHandler )
+
 
     noOfStages = 4
-    def clickFunPreview( self, x, y ):
-        dimensioning.dArgs = dimensioning.dArgs + [x,y]
-        dimensioning.stage = dimensioning.stage + 1
-        if dimensioning.stage == self.noOfStages:
-            viewName = findUnusedObjectName('dimLine')
-            XML =  self.generateSvg( 
-                *dimensioning.dArgs,
-                 **dimensioning.dimensionConstructorKWs ) 
-            return viewName, XML
+    def preview_clickHandler( self, x, y ):
+        d.stage = d.stage + 1
+        if d.stage == self.noOfStages:
+            return 'createDimension:%s' % findUnusedObjectName('dimLine')
         else:
-            return None,None
+            d.dArgs = d.dArgs + [x,y]
 
-    def hoverFunPreview(self,  x, y):
+    def preview_svgRenderer(self,  x, y):
         return self.generateSvg( 
-            *(dimensioning.dArgs + [x, y]), 
-             **dimensioning.svg_preview_KWs 
+            *(d.dArgs + [x, y]), 
+             **d.dimensionConstructorKWs 
              )
 
     def getScaleFactor( self, textRenderer):

@@ -1,73 +1,192 @@
 
 from dimensioning import *
-from dimensioning import iconPath # not imported with * directive
 import selectionOverlay, previewDimension
-from dimensionSvgConstructor import linearDimensionSVG, rotate2D, distanceBetweenParallelsSVG
+from dimensionSvgConstructor import *
 
-dimensioning = DimensioningProcessTracker()
+d = DimensioningProcessTracker() #shorthand
+
+#
+# linear distance between 2 points
+#
+def linearDimensionSVG_points( x1, y1, x2, y2, x3, y3, x4=None, y4=None,
+                                 scale=1.0, textFormat='%3.3f',  gap_datum_points = 2, dimension_line_overshoot=1, arrowL1=3, arrowL2=1, arrowW=2, strokeWidth=0.5, lineColor='blue', 
+                                 textRenderer= defaultTextRenderer):
+    lines = []
+    p1 = numpy.array([ x1, y1 ])
+    p2 = numpy.array([ x2, y2 ])
+    p3 = numpy.array([ x3, y3 ])
+    if min(x1,x2) <= x3 and x3 <= max(x1,x2):
+        d = numpy.array([ 0, 1])
+        textRotation = 0
+    elif  min(y1,y2) <= y3 and y3 <= max(y1,y2):
+        d = numpy.array([ 1, 0])
+        textRotation = -90
+    elif numpy.linalg.norm(p2 - p1) > 0:
+        d = numpy.dot( [[ 0, -1],[ 1, 0]], directionVector(p1,p2))
+        if abs( sum( numpy.sign(d) * numpy.sign( p3- (p1+p2)/2 ))) == 0:
+            return None
+        textRotation = numpy.arctan( (y2 - y1)/(x2 - x1))  / numpy.pi * 180
+        #if textRotation <
+    else:
+        return None
+    A = p1 + numpy.dot(p3-p1,d)*d
+    B = p2 + numpy.dot(p3-p2,d)*d
+    lines.append( dimensionSVG_trimLine( p1, A, gap_datum_points,-dimension_line_overshoot))
+    lines.append( dimensionSVG_trimLine( p2, B, gap_datum_points,-dimension_line_overshoot))
+    lines.append( A.tolist() +  B.tolist() )
+    lineXML = '\n'.join( svgLine( x1, y1, x2, y2, lineColor, strokeWidth ) for  x1, y1, x2, y2 in lines )
+    if x4 <> None and y4 <> None:
+        v = numpy.linalg.norm(A-B)*scale
+        textXML = textRenderer( x4, y4, dimensionText(v,textFormat), rotation=textRotation )
+    else :
+        textXML = ''
+    distAB = numpy.linalg.norm(A-B)
+    if distAB > 0:
+        s = 1 if distAB > 2.5*(arrowL1 + arrowL2) else -1
+        arrowXML = arrowHeadSVG( A, s*directionVector(A,B), arrowL1, arrowL2, arrowW, lineColor ) + \
+            arrowHeadSVG( B, s*directionVector(B,A), arrowL1, arrowL2, arrowW, lineColor )
+    else:
+        arrowXML = ''
+    return '<g> \n  %s \n  %s \n  %s </g>' % ( lineXML, arrowXML, textXML )
+
+def linearDimension_points_preview(mouseX, mouseY):
+    args = d.args + [ mouseX, mouseY ] if len(d.args) < 8 else d.args
+    dimScale = d._dimScale / UnitConversionFactor()
+    return linearDimensionSVG_points( *args, scale=dimScale, **d.dimensionConstructorKWs )
+
+def linearDimension_points_clickHandler( x, y ):
+    d.args = d.args + [ x, y ]
+    d.stage = d.stage + 1
+    if d.stage == 3:
+        selectionOverlay.hideSelectionGraphicsItems() # for distance between parallels case
+    elif d.stage == 4 :
+        return 'createDimension:%s' % findUnusedObjectName('dim')
+
+
+#
+# linear distance between parallels
+#
+def linearDimensionSVG_parallels( line1, line2, x_baseline, y_baseline, x_text=None, y_text=None, 
+                                  textFormat='%3.3f', scale=1.0, gap_datum_points = 2, dimension_line_overshoot=1,
+                                 arrowL1=3, arrowL2=1, arrowW=2, svgTag='g', svgParms='', strokeWidth=0.5, lineColor='blue', textRenderer=defaultTextRenderer):
+    XML = []
+    p1 = numpy.array( [line1[0], line1[1]] )
+    p2 = numpy.array( [line1[2], line1[3]] )
+    p3 = numpy.array( [line2[0], line2[1]] )
+    p4 = numpy.array( [line2[2], line2[3]] )
+    p5 = numpy.array([ x_baseline, y_baseline ])
+    d = directionVector(p1,p2)
+    # arrow positions
+    p_arrow1 = p1 + d*dot(d, p5-p1)
+    p_arrow2 = p3 + d*dot(d, p5-p3)
+    p_center = (p_arrow1 + p_arrow2)/2
+    def line_to_arrow_point( a, b, c): # where a=p1,b=p2 or a=p3,b=p4 and c=p_arrow1 or c=p_arrow2
+        if abs( norm(a -b) - (norm(a-c) + norm(b-c))) < norm(a -b)/1000:
+            return
+        if norm(a-c) < norm(b-c): #then closer to a
+            d_a =  directionVector(a, c)
+            v = a + gap_datum_points*d_a
+            w = c + dimension_line_overshoot*d_a
+        else:
+            d_b =  directionVector(b, c)
+            v = b + gap_datum_points*d_b
+            w = c + dimension_line_overshoot*d_b
+        XML.append( svgLine(v[0],v[1],w[0],w[1], lineColor, strokeWidth) )
+    line_to_arrow_point( p1, p2, p_arrow1)
+    line_to_arrow_point( p3, p4, p_arrow2)
+    XML.append( svgLine( p_arrow1[0], p_arrow1[1], p_arrow2[0], p_arrow2[1], lineColor, strokeWidth) )
+    dist = norm(p_arrow1 - p_arrow2)
+    if dist > 0:
+        s = -1 if dist > 2.5*(arrowL1 + arrowL2) else 1
+    XML.append( arrowHeadSVG( p_arrow1,  directionVector(p_center, p_arrow1)*s, arrowL1, arrowL2, arrowW, lineColor ) )
+    XML.append( arrowHeadSVG( p_arrow2,  directionVector(p_center, p_arrow2)*s, arrowL1, arrowL2, arrowW, lineColor ) )
+    if x_text <> None and y_text <> None:
+        textRotation = numpy.arctan2( d[1], d[0]) / numpy.pi * 180 + 90
+        if textRotation > 90:
+            textRotation = textRotation - 180
+        if textRotation > 88:
+            textRotation = textRotation - 180
+        elif textRotation > 12 :
+            textRotation = textRotation - 90
+        elif textRotation < -92:
+            textRotation = textRotation + 90
+        textXML = textRenderer( x_text, y_text, dimensionText(dist*scale,textFormat), rotation=textRotation)
+        XML.append( textXML )
+    return '<g> %s </g> ''' % '\n'.join(XML)
+
+def linearDimension_parallels_preview(mouseX, mouseY):
+    args = d.args + [ mouseX, mouseY ] if len(d.args) < 6 else d.args
+    dimScale = d._dimScale / UnitConversionFactor()
+    return linearDimensionSVG_parallels( *args, scale=dimScale, **d.dimensionConstructorKWs )
+
+def linearDimension_parallels_clickHandler( x, y ):
+    d.args = d.args + [ x, y ]
+    d.stage = d.stage + 1
+    if d.stage == 4 :
+        return 'createDimension:%s' % findUnusedObjectName('dim')
+
+def linearDimension_parallels_hide_non_parallel(elementParms, elementViewObject):
+    x1,y1,x2,y2 = [ elementParms[k] for k in [ 'x1', 'y1', 'x2', 'y2' ] ]
+    d = numpy.array([ x2 - x1, y2 - y1] )
+    d_ref = d / numpy.linalg.norm(d)
+    p = numpy.array([ x1, y1] )
+    def hideFun( gi ):
+        if isinstance(gi,selectionOverlay.LineSelectionGraphicsItem):
+            if gi.elementParms <> elementParms:
+                x1,y1,x2,y2 = [ gi.elementParms[k] for k in [ 'x1', 'y1', 'x2', 'y2' ] ]
+                d = numpy.array([ x2 - x1, y2 - y1] )
+                d = d / numpy.linalg.norm(d)
+                if abs(numpy.dot(d_ref,d)) > 1.0 - 10**-9: #then parallel
+                    d_rotated = rotate2D(d, numpy.pi/2)
+                    offset =  numpy.array([ x1, y1] ) - p
+                    if abs(numpy.dot(d_rotated, offset)) > 10**-6: #then not colinear
+                        return False
+        return True
+    selectionOverlay.hideSelectionGraphicsItems(hideFun)
+
+
+
+
+
 
 def selectDimensioningPoint( event, referer, elementXML, elementParms, elementViewObject ):
     if isinstance(referer,selectionOverlay.PointSelectionGraphicsItem):
         x, y = elementParms['x'], elementParms['y']
         referer.lockSelection()
-        if dimensioning.stage == 0: #then selectPoint1
-            dimensioning.point1 =  x,y
+        if d.stage == 0: #then selectPoint1
+            d.args =  [x,y]
             debugPrint(2, 'point1 set to x=%3.1f y=%3.1f' % (x,y))
-            dimensioning.stage = 1
+            d.stage = 1
             selectionOverlay.hideSelectionGraphicsItems(
                 lambda gi: isinstance(gi,  selectionOverlay.LineSelectionGraphicsItem)
                 )
         else:
-            dimensioning.point2 =  x,y
+            d.args = d.args + [x,y]
             debugPrint(2, 'point2 set to x=%3.1f y=%3.1f' % (x,y))
-            dimensioning.stage = 2 
-            dimensioning._dimScale = 1 / elementXML.rootNode().scaling()
+            d.stage = 2 
+            d._dimScale = 1 / elementXML.rootNode().scaling()
             selectionOverlay.hideSelectionGraphicsItems()
-            previewDimension.initializePreview( dimensioning.drawingVars, clickFunPreview, hoverFunPreview, launchControlDialog=True )
+            previewDimension.initializePreview( d.drawingVars, linearDimension_points_preview, linearDimension_points_clickHandler, launchControlDialog=True )
     else:#then line
-        if dimensioning.stage == 0: 
+        if d.stage == 0: 
             x1,y1,x2,y2 = [ elementParms[k] for k in [ 'x1', 'y1', 'x2', 'y2' ] ]
             debugPrint(2,'selecting line x1=%3.1f y1=%3.1f, x2=%3.1f y2=%3.1f' % (x1,y1,x2,y2))
-            dimensioning.point1 =  x1,y1
-            dimensioning.point2 =  x2,y2
-            dimensioning.stage = 2 
-            dimensioning._dimScale = 1 / elementXML.rootNode().scaling()
-            lineSelected_hideSelectionGraphicsItems(elementParms, elementViewObject)
-            previewDimension.initializePreview( dimensioning.drawingVars, clickFunPreview, hoverFunPreview, launchControlDialog=True )
+            d.args = [ x1,y1,x2,y2 ]
+            d.stage = 2 
+            d._dimScale = 1 / elementXML.rootNode().scaling()
+            linearDimension_parallels_hide_non_parallel( elementParms, elementViewObject)
+            previewDimension.initializePreview( d.drawingVars, linearDimension_points_preview, linearDimension_points_clickHandler, launchControlDialog=True )
         else: #then distance between parallels
             x1,y1,x2,y2 = [ elementParms[k] for k in [ 'x1', 'y1', 'x2', 'y2' ] ]
             debugPrint(2,'distance between parallels, line2 x1=%3.1f y1=%3.1f, x2=%3.1f y2=%3.1f' % (x1,y1,x2,y2))
-            dimensioning.line1 =  list(dimensioning.point1) + list(dimensioning.point2)
-            dimensioning.line2 =  [ x1,y1,x2,y2 ]
+            line1 = d.args
+            d.args = [ line1, [ x1,y1,x2,y2 ] ]
+            d.stage = 2 
             selectionOverlay.hideSelectionGraphicsItems()
             previewDimension.removePreviewGraphicItems( False )
-            previewDimension.initializePreview( dimensioning.drawingVars, distanceParallels_clickFunPreview, distanceParallels_hoverFunPreview, launchControlDialog=True )
+            previewDimension.initializePreview( d.drawingVars, linearDimension_parallels_preview, linearDimension_parallels_clickHandler, launchControlDialog=True )
 
 
-def clickFunPreview( x, y ):
-    if dimensioning.stage == 2 :
-        dimensioning.point3 = x, y
-        debugPrint(2, 'point3 set to x=%3.1f y=%3.1f' % (x,y))
-        dimensioning.stage = 3
-        selectionOverlay.hideSelectionGraphicsItems() # for distance between parallels case
-        return None, None
-    else:
-        dimScale = dimensioning._dimScale / UnitConversionFactor()
-        p1,p2,p3 = dimensioning.point1,  dimensioning.point2,  dimensioning.point3
-        XML = linearDimensionSVG( p1[0], p1[1], p2[0], p2[1], p3[0], p3[1], 
-                                  x, y, scale=dimScale, 
-                                  **dimensioning.dimensionConstructorKWs)
-        return findUnusedObjectName('dim'), XML
-
-def hoverFunPreview( x, y ):
-    p1, p2 = dimensioning.point1, dimensioning.point2 
-    if dimensioning.stage == 2 :
-        return linearDimensionSVG( p1[0], p1[1], p2[0], p2[1], x, y, **dimensioning.svg_preview_KWs )
-    else:
-        dimScale = dimensioning._dimScale / UnitConversionFactor()
-        return  linearDimensionSVG( p1[0], p1[1], p2[0], p2[1],
-                                    dimensioning.point3[0], dimensioning.point3[1], 
-                                    x, y, scale=dimScale,  **dimensioning.svg_preview_KWs )
 
 maskBrush  =   QtGui.QBrush( QtGui.QColor(0,160,0,100) )
 maskPen =      QtGui.QPen( QtGui.QColor(0,160,0,100) )
@@ -80,11 +199,10 @@ line_maskHoverPen = QtGui.QPen( QtGui.QColor(0,255,0,255) )
 line_maskHoverPen.setWidth(2.0)
 line_maskBrush = QtGui.QBrush() #clear
 
-class linearDimension:
-    "this class will create a line after the user clicked 2 points on the screen"
+class LinearDimensionCommand:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        dimensioning.activate( V, ['strokeWidth','arrowL1','arrowL2','arrowW','gap_datum_points', 'dimension_line_overshoot'], ['lineColor'], ['textRenderer'] )
+        d.activate( V, ['strokeWidth','arrowL1','arrowL2','arrowW','gap_datum_points', 'dimension_line_overshoot'], ['lineColor'], ['textRenderer'] )
         commonArgs = dict( 
             onClickFun=selectDimensioningPoint,
             transform = V.transform,
@@ -125,54 +243,6 @@ class linearDimension:
             'ToolTip': 'Creates a linear dimension'
             } 
 
-FreeCADGui.addCommand('linearDimension', linearDimension())
+FreeCADGui.addCommand('dd_linearDimension', LinearDimensionCommand())
 
 
-#distance between parallels code
-def lineSelected_hideSelectionGraphicsItems(elementParms, elementViewObject):
-    x1,y1,x2,y2 = [ elementParms[k] for k in [ 'x1', 'y1', 'x2', 'y2' ] ]
-    d = numpy.array([ x2 - x1, y2 - y1] )
-    d_ref = d / numpy.linalg.norm(d)
-    p = numpy.array([ x1, y1] )
-    def hideFun( gi ):
-        if isinstance(gi,selectionOverlay.LineSelectionGraphicsItem):
-            if gi.elementParms <> elementParms:
-                x1,y1,x2,y2 = [ gi.elementParms[k] for k in [ 'x1', 'y1', 'x2', 'y2' ] ]
-                d = numpy.array([ x2 - x1, y2 - y1] )
-                d = d / numpy.linalg.norm(d)
-                if abs(numpy.dot(d_ref,d)) > 1.0 - 10**-9: #then parallel
-                    d_rotated = rotate2D(d, numpy.pi/2)
-                    offset =  numpy.array([ x1, y1] ) - p
-                    if abs(numpy.dot(d_rotated, offset)) > 10**-6: #then not colinear
-                        return False
-        return True
-    selectionOverlay.hideSelectionGraphicsItems(hideFun)
-
-
-def distanceParallels_clickFunPreview( x, y ):
-    if dimensioning.stage == 2 :
-        dimensioning.point3 = x, y
-        debugPrint(2, 'base-line point set to x=%3.1f y=%3.1f' % (x,y))
-        dimensioning.stage = 3
-        return None, None
-    else:
-        dimScale = dimensioning._dimScale / UnitConversionFactor()
-        XML = distanceBetweenParallelsSVG( 
-            dimensioning.line1, dimensioning.line2,
-            dimensioning.point3[0], dimensioning.point3[1], 
-            x, y, scale=dimScale,  
-            **dimensioning.dimensionConstructorKWs)
-        return findUnusedObjectName('dim'), XML
-
-def distanceParallels_hoverFunPreview( x, y ):
-    if dimensioning.stage == 2 :
-        return distanceBetweenParallelsSVG( 
-            dimensioning.line1, dimensioning.line2, x, y, 
-            **dimensioning.svg_preview_KWs )
-    else:
-        dimScale = dimensioning._dimScale / UnitConversionFactor()
-        return distanceBetweenParallelsSVG( 
-            dimensioning.line1, dimensioning.line2,
-            dimensioning.point3[0], dimensioning.point3[1], 
-            x, y, scale=dimScale,  
-            **dimensioning.svg_preview_KWs )

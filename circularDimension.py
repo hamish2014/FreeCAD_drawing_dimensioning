@@ -1,64 +1,63 @@
+# This Python file uses the following encoding: utf-8
 
 from dimensioning import *
-from dimensioning import iconPath # not imported with * directive
 import selectionOverlay, previewDimension
-from dimensionSvgConstructor import circularDimensionSVG
+from dimensionSvgConstructor import *
 
-dimensioning = DimensioningProcessTracker()
+d = DimensioningProcessTracker()
+
+def circularDimensionSVG( center_x, center_y, radius, radialLine_x=None, radialLine_y=None, tail_x=None, tail_y=None, text_x=None, text_y=None, 
+                          scale=1.0, textFormat='Ø%3.3f', centerPointDia = 1, arrowL1=3, arrowL2=1, arrowW=2, strokeWidth=0.5, lineColor='blue', 
+                          textRenderer=defaultTextRenderer):
+    XML_body = [ ' <circle cx ="%f" cy ="%f" r="%f" stroke="none" fill="%s" /> ' % (center_x, center_y, centerPointDia*0.5, lineColor) ]
+    #XML_body.append( '<circle cx="%f" cy="%f" r="%f" stroke="rgb(0,0,255)" stroke-width="%1.2f" fill="none" />' % (center_x, center_y, radius, strokeWidth) )
+    if radialLine_x <> None and radialLine_y <> None:
+        theta = numpy.arctan2( radialLine_y - center_y, radialLine_x - center_x )
+        A = numpy.array([ center_x + radius*numpy.cos(theta) , center_y + radius*numpy.sin(theta) ])
+        B = numpy.array([ center_x - radius*numpy.cos(theta) , center_y - radius*numpy.sin(theta) ])
+        XML_body.append( svgLine(radialLine_x, radialLine_y, B[0], B[1], lineColor, strokeWidth) )
+        if radius > 0:
+            s = 1 if radius > arrowL1 + arrowL2 + 0.5*centerPointDia else -1
+            XML_body.append( arrowHeadSVG( A, s*directionVector(A,B), arrowL1, arrowL2, arrowW, lineColor ) )
+            XML_body.append( arrowHeadSVG( B, s*directionVector(B,A), arrowL1, arrowL2, arrowW, lineColor ) )
+        if tail_x <> None and tail_y <> None:
+            XML_body.append( svgLine( radialLine_x, radialLine_y, tail_x, radialLine_y, lineColor, strokeWidth ) )
+    if text_x <> None and text_y <> None:
+        XML_body.append( textRenderer( text_x, text_y, dimensionText(2*radius*scale,textFormat) ))
+        XML_body.append( '<!--%s-->' % (2*radius) )
+        XML_body.append( '<!--%s-->' % (textFormat) )
+    return '<g> %s </g>' % "\n".join(XML_body)
+
+def circularDimensionSVG_preview(mouseX, mouseY):
+    args = d.args + [ mouseX, mouseY ] if len(d.args) < 9 else d.args
+    dimScale = d._dimScale / UnitConversionFactor()
+    return circularDimensionSVG( *args, scale=dimScale, **d.dimensionConstructorKWs )
+
+def circularDimensionSVG_clickHandler( x, y ):
+    d.args = d.args + [ x, y ]
+    d.stage = d.stage + 1
+    if d.stage == 4 :
+        return 'createDimension:%s' % findUnusedObjectName('dim')
+
 
 def selectFun(  event, referer, elementXML, elementParms, elementViewObject ):
     x,y = elementParms['x'], elementParms['y']
-    dimensioning.point1 = x, y
     debugPrint(2, 'center selected at x=%3.1f y=%3.1f' % (x,y))
-    dimensioning.radius = elementParms['r']
-    dimensioning._dimScale = 1/elementXML.rootNode().scaling()
-    dimensioning.stage = 1
+    d.args = [x, y, elementParms['r']]
+    d._dimScale = 1/elementXML.rootNode().scaling()
+    d.stage = 1
     selectionOverlay.hideSelectionGraphicsItems()
-    previewDimension.initializePreview( dimensioning.drawingVars, clickFunPreview, hoverFunPreview,  launchControlDialog=True )
-
-def clickFunPreview( x, y ):
-    if dimensioning.stage == 1:
-        dimensioning.point2 = x,y
-        debugPrint(2, 'dimension radial direction point set to x=%3.1f y=%3.1f' % (x,y))
-        dimensioning.stage = 2
-        return None, None
-    elif dimensioning.stage == 2:
-        dimensioning.point3 = x, y
-        debugPrint(2, 'radius dimension tail defining point set to x=%3.1f y=%3.1f' % (x,y))
-        dimensioning.stage = 3
-        return None, None
-    else:
-        dimScale = dimensioning._dimScale / UnitConversionFactor()
-        XML = circularDimensionSVG( dimensioning.point1[0], dimensioning.point1[1], dimensioning.radius,
-                                    dimensioning.point2[0], dimensioning.point2[1], 
-                                    dimensioning.point3[0], dimensioning.point3[1], 
-                                    x, y, dimScale=dimScale,
-                                    **dimensioning.dimensionConstructorKWs)
-        return findUnusedObjectName('dim'), XML
-
-def hoverFunPreview( x, y):
-    dimScale = dimensioning._dimScale / UnitConversionFactor()
-    if dimensioning.stage == 1:
-        return circularDimensionSVG( dimensioning.point1[0], dimensioning.point1[1], dimensioning.radius, x, y, dimScale=dimScale, **dimensioning.svg_preview_KWs )
-    elif dimensioning.stage == 2:
-        return circularDimensionSVG( dimensioning.point1[0], dimensioning.point1[1], dimensioning.radius, 
-                                     dimensioning.point2[0], dimensioning.point2[1], x, y, dimScale=dimScale, **dimensioning.svg_preview_KWs )
-    else: 
-        return circularDimensionSVG( dimensioning.point1[0], dimensioning.point1[1], dimensioning.radius, 
-                                     dimensioning.point2[0], dimensioning.point2[1], 
-                                     dimensioning.point3[0], dimensioning.point3[1], 
-                                     x, y, dimScale=dimScale,**dimensioning.svg_preview_KWs )
-    
+    previewDimension.initializePreview( d.drawingVars, circularDimensionSVG_preview, circularDimensionSVG_clickHandler, launchControlDialog=True )
 
 maskPen =      QtGui.QPen( QtGui.QColor(0,255,0,100) )
 maskPen.setWidth(2.0)
 maskHoverPen = QtGui.QPen( QtGui.QColor(0,255,0,255) )
 maskHoverPen.setWidth(2.0)
 
-class circularDimension:
+class CircularDimension:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        dimensioning.activate(V, ['strokeWidth','arrowL1','arrowL2','arrowW','centerPointDia'], ['lineColor'], ['textRenderer'])
+        d.activate(V, ['strokeWidth','arrowL1','arrowL2','arrowW','centerPointDia'], ['lineColor'], ['textRenderer'])
         selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if not obj.Name.startswith('dim')], 
             selectFun ,
@@ -78,4 +77,4 @@ class circularDimension:
             'ToolTip': 'Creates a circular dimension'
             } 
 
-FreeCADGui.addCommand('circularDimension', circularDimension())
+FreeCADGui.addCommand('dd_circularDimension', CircularDimension())

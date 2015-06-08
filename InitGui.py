@@ -66,33 +66,33 @@ static char * linearDimension_xpm[] = {
         import noteCircle
         import toleranceAdd
         commandslist = [
-            'linearDimension',
-            'halfLinearDimension',
-            'circularDimension',
-            'radiusDimension',
-            'angularDimension',
-            'DrawingDimensioning_centerLines',
-            'DrawingDimensioning_centerLine', 
-            'noteCircle', 
-            'grabPoint',
-            'textAddDimensioning',
-            'textEditDimensioning',
-            'textMoveDimensioning',
-            'toleranceAdd', 
-            'deleteDimension', 
-            'escapeDimensioning',
+            'dd_linearDimension', #where dd is short-hand for drawing dimensioning
+            'dd_halfLinearDimension',
+            'dd_circularDimension',
+            'dd_radiusDimension',
+            'dd_angularDimension',
+            'dd_centerLines',
+            'dd_centerLine', 
+            'dd_noteCircle', 
+            'dd_grabPoint',
+            'dd_addText',
+            'dd_editText',
+            'dd_moveText',
+            'dd_addTolerance', 
+            'dd_deleteDimension', 
+            'dd_escapeDimensioning',
             ]
         self.appendToolbar('Drawing Dimensioning', commandslist)
         import unfold
         import unfold_bending_note
         import unfold_export_to_dxf
         self.appendToolbar('Drawing Dimensioning Folding', [
-                'drawingDimensioning_unfold',
-                'drawingDimensioning_bendingNote',
+                'dd_unfold',
+                'dd_bendingNote',
                 'drawingDimensioning_exportToDxf',
                 ])
         self.appendToolbar('Drawing Dimensioning Help', [
-                'drawingDimensioning_help',
+                'dd_help',
                 ])
         import weldingSymbols
         self.appendToolbar('Drawing Dimensioning Welding Symbols', weldingSymbols.weldingCmds)

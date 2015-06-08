@@ -1,6 +1,7 @@
 from dimensioning import *
-from dimensioning import iconPath, __dir__
+from dimensioning import __dir__
 import previewDimension
+from centerLines import _centerLineSVG
 import dimensionSvgConstructor
 import numpy
 from numpy import pi, sin, cos, arctan2, arcsin, arccos, dot
@@ -8,7 +9,7 @@ from numpy.linalg import norm
 dotProduct = numpy.dot
 crossProduct = numpy.cross
 
-dimensioningTracker = DimensioningProcessTracker()
+d = DimensioningProcessTracker()
 
 def unfold(faces_org):
     faces = map(FaceWrapper, faces_org)
@@ -241,7 +242,7 @@ class FoldingLine:
         self.p2 = p2
 
     def svg(self, strokeWidth, lineColor, len_dash, len_gap):
-        xml = dimensionSvgConstructor._centerLineSVG(self.p1[0], self.p1[1], self.p2[0],  self.p2[1], len_dash, len_dash, len_gap)
+        xml = _centerLineSVG(self.p1[0], self.p1[1], self.p2[0],  self.p2[1], len_dash, len_dash, len_gap)
         xml = xml.replace('path ','path style="stroke:%s;stroke-width:%1.2f" ' % (lineColor,strokeWidth))
         #debugPrint(2, xml)
         return xml
@@ -272,8 +273,7 @@ class pCircularArc:
 
 
 def projectionSvg(x,y):
-    d = dimensioningTracker
-    return  dimensioningTracker.projection.generateSvg(
+    return d.projection.generateSvg(
         x, y,
         strokeWidth= d.strokeWidth, #0.5
         lineColor= d.lineColor, #'black', 
@@ -281,19 +281,13 @@ def projectionSvg(x,y):
         foldstrokeWidth= d.foldstrokeWidth, #0.3
         len_dash= d.fold_len_gap, 
         len_gap= d.fold_len_dash,
-        scale= dimensioningTracker.svgScale, 
-        rotation= dimensioningTracker.svgRotation,
+        scale= d.svgScale, 
+        rotation= d.svgRotation,
         )
 
-def clickFunPreview( x, y ):
+def clickHandler( x, y ):
     FreeCADGui.Control.closeDialog()
-    return findUnusedObjectName('unfold'), projectionSvg(x,y)
-
-
-def hoverFunPreview( x, y):
-    prefix = '<svg width="%i" height="%i">' % (dimensioningTracker.drawingVars.width, dimensioningTracker.drawingVars.height)
-    suffix = '</svg>'
-    return prefix + projectionSvg(x, y) + suffix
+    return 'createDimension:%s' % findUnusedObjectName('unfold')
 
 
 class UnfoldCommand:
@@ -301,12 +295,11 @@ class UnfoldCommand:
         selection = FreeCADGui.Selection.getSelectionEx()
         if len(selection) == 1 and all( isinstance(s, Part.Face) for s in selection[0].SubObjects )  :
             V = getDrawingPageGUIVars() #needs to be done before dialog show, else Qt active is dialog and not freecads
-            dimensioningTracker.activate(V) #to do, implement defaults preferences, ['centerLine_width','centerLine_len_gap','centerLine_len_dash','centerLine_len_dot'], ['centerLine_color'])
-            #dimensioning.partsList = P
-            dimensioningTracker.projection = unfold( selection[0].SubObjects )
-            dimensioningTracker.taskPanelDialog =  UnfoldTaskPanel()
-            FreeCADGui.Control.showDialog( dimensioningTracker.taskPanelDialog )
-            previewDimension.initializePreview( V, clickFunPreview, hoverFunPreview )
+            d.activate(V) #to do, implement defaults preferences, ['centerLine_width','centerLine_len_gap','centerLine_len_dash','centerLine_len_dot'], ['centerLine_color'])
+            d.projection = unfold( selection[0].SubObjects )
+            d.taskPanelDialog =  UnfoldTaskPanel()
+            FreeCADGui.Control.showDialog( d.taskPanelDialog )
+            previewDimension.initializePreview( V, projectionSvg, clickHandler )
         else:
             QtGui.QMessageBox.information(  QtGui.qApp.activeWindow(), "Info", 'Please select touching faces from the same shape')
     def GetResources(self): 
@@ -315,7 +308,7 @@ class UnfoldCommand:
             'MenuText': 'Unfold faces', 
             'ToolTip': 'Unfold faces'
             } 
-FreeCADGui.addCommand('drawingDimensioning_unfold', UnfoldCommand())
+FreeCADGui.addCommand('dd_unfold', UnfoldCommand())
 
 
 class UnfoldTaskPanel:
@@ -324,8 +317,8 @@ class UnfoldTaskPanel:
         self.form = FreeCADGui.PySideUic.loadUi( os.path.join(__dir__,"unfold.ui") )
         self.form.setWindowIcon(QtGui.QIcon( os.path.join( iconPath, 'unfold.svg' ) ) )
 
-        #self.form.doubleSpinBox_scale.setValue(dimensioningTracker.svgScale)
-        #self.form.doubleSpinBox_rotation.setValue(dimensioningTracker.svgRotation)
+        #self.form.doubleSpinBox_scale.setValue(d.svgScale)
+        #self.form.doubleSpinBox_rotation.setValue(d.svgRotation)
         self.getValuesFromDialog()
         
         for groupBox in self.form.children():
@@ -340,7 +333,6 @@ class UnfoldTaskPanel:
 
 
     def getValuesFromDialog(self, notUsed=None):
-        d = dimensioningTracker
         d.svgScale = self.form.doubleSpinBox_scale.value()
         d.svgRotation = self.form.doubleSpinBox_rotation.value()
         d.strokeWidth = self.form.doubleSpinBox_lineWidth.value()
@@ -351,15 +343,9 @@ class UnfoldTaskPanel:
         d.fold_len_dash = self.form.doubleSpinBox_foldGap.value()
         
     def scaledChanged(self, newScale):
-        '''
-        form.doubleSpinBox_scale.value()
-        form.doubleSpinBox_scale.setValue(1.0)
-        form.doubleSpinBox_scale.value()
-        '''
-        #debugPrint(2, 'hello')
-        dimensioningTracker.svgScale = newScale
+        d.svgScale = newScale
     def rotationChanged(self, v):
-        dimensioningTracker.svgRotation = v
+        d.svgRotation = v
 
     def clicked(self,button):
         if button == QtGui.QDialogButtonBox.Apply:

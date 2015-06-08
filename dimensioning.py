@@ -145,13 +145,6 @@ class DimensioningProcessTracker:
             color = unsignedToRGBText(  parms.GetUnsigned(prefix+'_color', defaultTextParameters[ prefix+'_color' ] ) )
             KWs[prefix] = SvgTextRenderer(family, size, color)
         self.dimensionConstructorKWs = KWs
-        debugPrint(3, 'dimensionConstructorKWs %s' % self.dimensionConstructorKWs )
-        self.svg_preview_KWs = {
-            'svgTag' : 'svg',
-            'svgParms' : 'width="%(width)i" height="%(height)i"' % V.__dict__ 
-        }
-        self.svg_preview_KWs.update( KWs )
-
 
 unit_scheme = 'default'
 custom_unit_factor = 1.0
@@ -255,4 +248,4 @@ class helpCommand:
             'ToolTip': 'Help'
             } 
 
-FreeCADGui.addCommand('drawingDimensioning_help', helpCommand())
+FreeCADGui.addCommand('dd_help', helpCommand())

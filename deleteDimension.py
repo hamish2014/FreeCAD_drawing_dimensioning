@@ -1,14 +1,13 @@
 
 from dimensioning import *
-from dimensioning import iconPath # not imported with * directive
 import selectionOverlay 
 
-dimensioning = DimensioningProcessTracker()
+d = DimensioningProcessTracker()
 
 def deleteDimension( event, referer, elementXML, elementParms, elementViewObject ):
     debugPrint(2, 'deleting dimension %s' % elementViewObject.Name)
     App.ActiveDocument.removeObject( elementViewObject.Name )
-    recomputeWithOutViewReset(dimensioning.drawingVars)
+    recomputeWithOutViewReset(d.drawingVars)
 
 
 maskBrush  =   QtGui.QBrush( QtGui.QColor(160,0,0,100) )
@@ -20,7 +19,7 @@ maskHoverPen.setWidth(0.0)
 class DeleteDimension:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        dimensioning.activate(V)
+        d.activate(V)
         commonArgs = dict( 
             onClickFun=deleteDimension,
             sceneToAddTo = V.graphicsScene, 
@@ -48,4 +47,4 @@ class DeleteDimension:
             'ToolTip': 'Delete a dimension'
             } 
 
-FreeCADGui.addCommand('deleteDimension', DeleteDimension())
+FreeCADGui.addCommand('dd_deleteDimension', DeleteDimension())

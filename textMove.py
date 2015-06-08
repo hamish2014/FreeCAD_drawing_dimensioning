@@ -1,47 +1,39 @@
 
 from dimensioning import *
-from dimensioning import iconPath # not imported with * directive
 import selectionOverlay, previewDimension
 import XMLlib
 
-dimensioning = DimensioningProcessTracker()
+d = DimensioningProcessTracker()
 
-def moveTextSvg( x, y, svgTag='g', svgParms=''):
-    e = dimensioning.elementXML
+def moveTextSvg( x, y):
+    e = d.elementXML
     xml = e.XML[e.pStart:e.pEnd]
     xml = XMLlib.replaceParm(xml, 'x', '%f' % x )
     xml = XMLlib.replaceParm(xml, 'y', '%f' % y )
     if e.parms.has_key('transform'):
-        xml = XMLlib.replaceParm(xml, 'transform', "rotate(%s %f,%f)" % (dimensioning.textRotation,x,y) )
-    if svgTag == 'g': #then for viewResult
-        newXML = e.XML[:e.pStart] + xml + e.XML[e.pEnd:]
-    else:
-        newXML = u'''<%s %s > %s </%s> ''' % ( svgTag, svgParms, xml, svgTag )
-    return newXML
-
-def previewTextSvg( x, y):
-    return moveTextSvg( x, y, svgTag=dimensioning.svg_preview_KWs['svgTag'], svgParms=dimensioning.svg_preview_KWs['svgParms'] )
+        xml = XMLlib.replaceParm(xml, 'transform', "rotate(%s %f,%f)" % (d.textRotation,x,y) )
+    return e.XML[:e.pStart] + xml + e.XML[e.pEnd:]
 
 def placeText( x, y):
-    dimensioning.dimToEdit.ViewResult = moveTextSvg(x, y )
-    return None, dimensioning.dimToEdit.ViewResult
+    d.dimToEdit.ViewResult = moveTextSvg(x, y )
+    return 'stopPreview'
 
 def MoveDimensionText( event, referer, elementXML, elementParms, elementViewObject ):
-    dimensioning.dimToEdit = elementViewObject    
-    dimensioning.elementXML = elementXML
+    d.dimToEdit = elementViewObject    
+    d.elementXML = elementXML
     debugPrint(2, 'moving %s' % elementViewObject.Name)
     if elementXML.parms.has_key('transform'):
         transform = elementXML.parms['transform']
         t = transform[ XMLlib.findOffset(transform,'rotate(',0): ]
-        dimensioning.textRotation =  XMLlib.splitMultiSep(t, ', ')[0]
-        debugPrint(3, 'dimensioning.textRotation %s' % dimensioning.textRotation)
+        d.textRotation =  XMLlib.splitMultiSep(t, ', ')[0]
+        debugPrint(3, 'd.textRotation %s' % d.textRotation)
     else:
-        dimensioning.textRotation = None
+        d.textRotation = None
     selectionOverlay.hideSelectionGraphicsItems()
     previewDimension.initializePreview(
-            dimensioning.drawingVars,
-            placeText, 
-            previewTextSvg )
+            d.drawingVars,
+            moveTextSvg, 
+            placeText )
 
 maskBrush  =   QtGui.QBrush( QtGui.QColor(0,160,0,100) )
 maskPen =      QtGui.QPen( QtGui.QColor(0,160,0,100) )
@@ -52,7 +44,7 @@ maskHoverPen.setWidth(0.0)
 class MoveText:
     def Activated(self):
         V = getDrawingPageGUIVars() #needs to be done before dialog show, else Qt active is dialog and not freecads
-        dimensioning.activate( V )
+        d.activate( V )
         selectGraphicsItems = selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if obj.Name.startswith('dim')], 
             MoveDimensionText , 
@@ -72,6 +64,6 @@ class MoveText:
             'MenuText': msg, 
             'ToolTip': msg
             } 
-FreeCADGui.addCommand('textMoveDimensioning', MoveText())
+FreeCADGui.addCommand('dd_moveText', MoveText())
 
 

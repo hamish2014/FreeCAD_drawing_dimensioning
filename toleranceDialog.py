@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'toleranceDialog.ui'
 #
-# Created: Tue Feb 17 17:20:35 2015
+# Created: Mon Jun  8 14:50:14 2015
 #      by: pyside-uic 0.2.15 running on PySide 1.2.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -46,6 +46,8 @@ class Ui_Dialog(object):
         self.label_3.setObjectName("label_3")
         self.gridLayout.addWidget(self.label_3, 2, 0, 1, 1)
         self.scaleDoubleSpinBox = QtGui.QDoubleSpinBox(Dialog)
+        self.scaleDoubleSpinBox.setMinimum(0.05)
+        self.scaleDoubleSpinBox.setSingleStep(0.05)
         self.scaleDoubleSpinBox.setProperty("value", 0.8)
         self.scaleDoubleSpinBox.setObjectName("scaleDoubleSpinBox")
         self.gridLayout.addWidget(self.scaleDoubleSpinBox, 2, 1, 1, 1)

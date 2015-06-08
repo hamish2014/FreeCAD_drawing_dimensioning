@@ -1,7 +1,6 @@
 # This Python file uses the following encoding: utf-8
 
 from dimensioning import *
-from dimensioning import iconPath # not imported with * directive
 import subprocess
 
 def shellCmd(cmd, callDirectory=None):
@@ -17,9 +16,6 @@ def shellCmd(cmd, callDirectory=None):
 class ExportToDxfCommand:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        if not ( hasattr(os,'uname') and os.uname()[0] == 'Linux' ):
-            QtGui.QMessageBox.critical( QtGui.qApp.activeWindow(), "Not Supported.", "Export to dxf only works on Linux Systems" )
-            return
         dialog = QtGui.QFileDialog(
             QtGui.qApp.activeWindow(),
             "Enter the dxf file name"
@@ -49,8 +45,8 @@ class ExportToDxfCommand:
         return {
             #'Pixmap' : os.path.join( iconPath , 'drawLineWithArrow.svg' ) , 
             'Pixmap' : os.path.join( iconPath, 'exportToDxf.svg'),
-            'MenuText': 'export active drawing page to dxf (only works on a Linux system with inkscape installed)', 
+            'MenuText': 'shortcut command for exporting active drawing page to dxf (requires inkscape and pstoedit)', 
             } 
 
-
-FreeCADGui.addCommand('drawingDimensioning_exportToDxf', ExportToDxfCommand())
+if hasattr(os,'uname') and os.uname()[0] == 'Linux' : #this command only works on Linux systems
+    FreeCADGui.addCommand('drawingDimensioning_exportToDxf', ExportToDxfCommand())

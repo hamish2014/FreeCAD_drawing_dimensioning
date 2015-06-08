@@ -1,50 +1,77 @@
 
 from dimensioning import *
-from dimensioning import iconPath # not imported with * directive
 import selectionOverlay, previewDimension
-from dimensionSvgConstructor import centerLinesSVG, centerLineSVG
+from dimensionSvgConstructor import *
 
-dimensioning = DimensioningProcessTracker()
+d = DimensioningProcessTracker()
+
+def _centerLineSVG( x1, y1, x2, y2, len_dot, len_dash, len_gap, start_with_half_dot=False):
+    start = numpy.array( [x1, y1] )
+    end = numpy.array( [x2, y2] )
+    d = directionVector(start, end)
+    dCode = ''
+    pos = start
+    step = len_dot*0.5 if start_with_half_dot else len_dot
+    while norm(pos - start) + 10**-6 < norm(end - start):
+        dCode = dCode + 'M %f,%f' %  (pos[0], pos[1])
+        pos = pos + d*step
+        if norm(pos - start) > norm(end - start):
+            pos = end
+        dCode = dCode + ' L %f,%f ' % (pos[0], pos[1])
+        pos = pos + d*len_gap
+        step = len_dash if step < len_dash else len_dot
+    if dCode <> '':
+        return '<path d="%s"/>' % dCode
+    else:
+        return ''
+
+def _centerLinesSVG( center, topLeft, bottomRight, dimScale, centerLine_len_dot, centerLine_len_dash, centerLine_len_gap, strokeWidth, lineColor, doVertical, doHorizontal ):
+    XML_body = []
+    center = numpy.array( center ) / dimScale
+    topLeft = numpy.array( topLeft ) / dimScale
+    if bottomRight <> None: bottomRight =  numpy.array( bottomRight ) / dimScale
+    commonArgs =  centerLine_len_dot / dimScale,  centerLine_len_dash / dimScale,  centerLine_len_gap / dimScale
+    if doVertical: XML_body.append( _centerLineSVG(center[0], center[1], center[0], topLeft[1], *commonArgs ) )
+    if doHorizontal: XML_body.append( _centerLineSVG(center[0], center[1], topLeft[0], center[1], *commonArgs ) )
+    if bottomRight <> None:
+        if doVertical: XML_body.append( _centerLineSVG(center[0], center[1], center[0], bottomRight[1], *commonArgs ) )
+        if doHorizontal: XML_body.append( _centerLineSVG(center[0], center[1], bottomRight[0], center[1], *commonArgs ) )
+    return '<g transform="scale(%f,%f)" stroke="%s"  stroke-width="%f" > %s </g> ''' % ( dimScale, dimScale, lineColor, strokeWidth/ dimScale, "\n".join(XML_body) )
+
+
+def centerLinesSVG( center, topLeft, bottomRight=None, dimScale=1.0, centerLine_len_dot=2.0, centerLine_len_dash=6.0, centerLine_len_gap=2.0, centerLine_width=0.5, centerLine_color='blue'):
+    return _centerLinesSVG( center, topLeft, bottomRight, dimScale, centerLine_len_dot, centerLine_len_dash, centerLine_len_gap, centerLine_width, centerLine_color, True, True )
+
+def centerLineSVG( center, topLeft, bottomRight=None,  dimScale=1.0, centerLine_len_dot=2.0, centerLine_len_dash=6.0, centerLine_len_gap=2.0, centerLine_width=0.5, centerLine_color='blue'):
+    v = abs(center[0] - topLeft[0]) < abs(center[1] - topLeft[1]) #vertical
+    return _centerLinesSVG( center, topLeft, bottomRight, dimScale, centerLine_len_dot, centerLine_len_dash, centerLine_len_gap, centerLine_width, centerLine_color, v, not v )
+
+
+def centerLine_preview(mouseX, mouseY):
+    args = d.args + [[ mouseX, mouseY ]] if len(d.args) < 3 else d.args
+    return d.SVGFun( *args, dimScale = d.dimScale, **d.dimensionConstructorKWs )
+
+def centerLine_clickHandler( x, y ):
+    d.args = d.args + [[ x, y ]]
+    d.stage = d.stage + 1
+    if d.stage == 3:
+        return 'createDimension:%s' % findUnusedObjectName('centerLines')
 
 def selectFun(  event, referer, elementXML, elementParms, elementViewObject ):
     x,y = elementParms['x'], elementParms['y']
-    dimensioning.center = [x, y]
-    dimensioning.stage = 1
-    dimensioning.dimScale = elementXML.rootNode().scaling()
-    debugPrint(3, 'center selected at x=%3.1f y=%3.1f scale %3.1f' % (x,y, dimensioning.dimScale))
+    d.args = [[x, y]]
+    d.stage = 1
+    d.dimScale = elementXML.rootNode().scaling()
+    debugPrint(3, 'center selected at x=%3.1f y=%3.1f scale %3.1f' % (x,y, d.dimScale))
     selectionOverlay.hideSelectionGraphicsItems()
-    previewDimension.initializePreview( dimensioning.drawingVars, clickFunPreview, hoverFunPreview )
+    previewDimension.initializePreview( d.drawingVars, centerLine_preview , centerLine_clickHandler)
 
-def clickFunPreview( x, y ):
-    if dimensioning.stage == 1:
-        dimensioning.topLeft = x,y
-        debugPrint(3, 'center Lines topLeft set to x=%3.1f y=%3.1f' % (x,y))
-        dimensioning.stage = 2
-        return None, None
-    elif dimensioning.stage == 2:
-        dimensioning.bottomRight = x, y
-        debugPrint(3, 'center Lines bottomRight set to x=%3.1f y=%3.1f' % (x,y))
-        XML = dimensioning.SVGFun( dimensioning.center,
-                              dimensioning.topLeft,
-                              dimensioning.bottomRight,
-                              dimScale = dimensioning.dimScale,
-                              **dimensioning.dimensionConstructorKWs)
-        return findUnusedObjectName('centerLines'), XML
 
-def hoverFunPreview( x, y):
-    if dimensioning.stage == 1:
-        return dimensioning.SVGFun( dimensioning.center, [x, y], 
-                                    dimScale = dimensioning.dimScale,
-                                    **dimensioning.svg_preview_KWs )
-    elif dimensioning.stage == 2:
-        return dimensioning.SVGFun( dimensioning.center, dimensioning.topLeft, [x, y],
-                                    dimScale = dimensioning.dimScale,
-                                    **dimensioning.svg_preview_KWs )
 
 class CenterLines:
     def Activated(self):
         V = self.Activated_common()
-        dimensioning.SVGFun = centerLinesSVG
+        d.SVGFun = centerLinesSVG
         maskPen =      QtGui.QPen( QtGui.QColor(0,255,0,100) )
         maskPen.setWidth(2.0)
         maskHoverPen = QtGui.QPen( QtGui.QColor(0,255,0,255) )
@@ -62,7 +89,7 @@ class CenterLines:
         selectionOverlay.addProxyRectToRescaleGraphicsSelectionItems( V.graphicsScene, V.graphicsView, V.width, V.height)
     def Activated_common(self):
         V = getDrawingPageGUIVars()
-        dimensioning.activate(V, ['centerLine_width','centerLine_len_gap','centerLine_len_dash','centerLine_len_dot'], ['centerLine_color'] )
+        d.activate(V, ['centerLine_width','centerLine_len_gap','centerLine_len_dash','centerLine_len_dot'], ['centerLine_color'] )
         return V
     def GetResources(self): 
         return {
@@ -70,13 +97,13 @@ class CenterLines:
             'MenuText': 'Center Lines', 
             'ToolTip': 'Center Lines',
             } 
-FreeCADGui.addCommand('DrawingDimensioning_centerLines', CenterLines())
+FreeCADGui.addCommand('dd_centerLines', CenterLines())
 
 
 class CenterLine(CenterLines):
     def Activated(self):
         V = self.Activated_common()
-        dimensioning.SVGFun = centerLineSVG
+        d.SVGFun = centerLineSVG
         maskBrush  =   QtGui.QBrush( QtGui.QColor(0,160,0,100) )
         maskPen =      QtGui.QPen( QtGui.QColor(0,160,0,100) )
         maskPen.setWidth(0.0)
@@ -101,4 +128,4 @@ class CenterLine(CenterLines):
             'MenuText': 'Center Line', 
             'ToolTip': 'Center Line',
             } 
-FreeCADGui.addCommand('DrawingDimensioning_centerLine', CenterLine())
+FreeCADGui.addCommand('dd_centerLine', CenterLine())
