@@ -1,71 +1,53 @@
-'''
-Dialog notes
-Use Qt Designer to edit the textAddDialog.ui
-Once completed $ pyside-uic textAddDialog.ui > textAddDialog.py
-
-To test inside Freecad
-from addTextDialog import DialogWidget
-dialog = DialogWidget()
-dialogUi = addTextDialog.Ui_Dialog()
-dialogUi.setupUi(dialog)
-dialog.show()
-
-'''
-
+# This Python file uses the following encoding: utf-8
 from dimensioning import *
 import previewDimension
-import textAddDialog
+from dimensionSvgConstructor import *
 
 d = DimensioningProcessTracker()
-d.assignedPrefenceValues = False
 
-def textSVG( x, y):
-    return '<g> %s </g>' % d.textRenderer(x,y,d.text,rotation=d.rotation)
+def textSVG( x, y, text='text', rotation=0.0, textRenderer_addText= defaultTextRenderer):
+    return '<g> %s </g>' % textRenderer_addText(x,y,text,rotation=rotation)
 
-def clickEvent( x, y):
+d.registerPreference( 'textRenderer_addText', ['inherit','5', 0], 'text properties (AddText)', kind='font' )
+
+class text_widget:
+    def valueChanged( self, arg1):
+        d.text = arg1
+    def generateWidget( self, dimensioningProcess ):
+        self.lineEdit = QtGui.QLineEdit()
+        self.lineEdit.setText('text')
+        d.text = 'text'
+        self.lineEdit.textChanged.connect(self.valueChanged)
+        return self.lineEdit
+d.dialogWidgets.append( text_widget() )
+class rotation_widget:
+    def valueChanged( self, arg1):
+        d.rotation = arg1
+    def generateWidget( self, dimensioningProcess ):
+        self.spinbox = QtGui.QDoubleSpinBox()
+        self.spinbox.setValue(0)
+        d.rotation = 0
+        self.spinbox.setMinimum( -180 )
+        self.spinbox.setMaximum(  180 )
+        self.spinbox.setDecimals( 1 )
+        self.spinbox.setSingleStep( 5 )
+        self.spinbox.setSuffix(unicode('°','utf8'))
+        self.spinbox.valueChanged.connect(self.valueChanged)
+        return  DimensioningTaskDialog_generate_row_hbox('rotation', self.spinbox)
+d.dialogWidgets.append( rotation_widget() )
+
+
+def addText_preview(mouseX, mouseY):
+    return textSVG(mouseX, mouseY, d.text, d.rotation, **d.dimensionConstructorKWs )
+
+def addText_clickHandler( x, y ):
     return 'createDimension:%s' % findUnusedObjectName('dimText')
-
-class AddTextDialogWidget( QtGui.QWidget ):
-    def accept( self ):
-        debugPrint(2, 'AddTextDialogWidget accept pressed')
-        widgets = dict( [c.objectName(), c] for c in self.children() )
-        debugPrint(2, 'widgets %s' % widgets)
-        if widgets['textLineEdit'].text() == '':
-            debugPrint(1, 'Aborting placing empty text.')
-            return
-        debugPrint(2, 'Placing "%s"' % widgets['textLineEdit'].text() )
-        self.hide()
-        d.text = widgets['textLineEdit'].text()
-        widgets['textLineEdit'].setText('')
-        family = widgets['familyLineEdit'].text()
-        size = widgets['sizeLineEdit'].text()
-        fill = widgets['colorLineEdit'].text()
-        d.textRenderer = SvgTextRenderer( family, size, fill )
-        d.rotation = widgets['doubleSpinBox_rotation'].value()
-        debugPrint(3,'textRenderer created')
-        debugPrint(3,'previewDimension.initializePreview')
-        previewDimension.initializePreview(
-            d.drawingVars,
-            textSVG, 
-            clickEvent )
-
-
-dialog = AddTextDialogWidget()
-dialogUi = textAddDialog.Ui_Dialog()
-dialogUi.setupUi(dialog)
 
 class AddText:
     def Activated(self):
-        V = getDrawingPageGUIVars() #needs to be done before dialog show, else active window is dialog and not freecad
-        d.activate( V, textParms=['textRenderer'] )
-        if not d.assignedPrefenceValues:
-            tR = d.dimensionConstructorKWs['textRenderer']
-            widgets = dict( [c.objectName(), c] for c in dialog.children() )
-            widgets['sizeLineEdit'].setText( tR.font_size )
-            widgets['colorLineEdit'].setText(  tR.fill )
-            widgets['familyLineEdit'].setText( tR.font_family )
-            d.assignedPrefenceValues = True
-        dialog.show()
+        V = getDrawingPageGUIVars() 
+        d.activate( V,  dialogTitle='Add Text', dialogIconPath=os.path.join( iconPath , 'textAdd.svg' ), endFunction=self.Activated )
+        previewDimension.initializePreview( d, addText_preview, addText_clickHandler)
         
     def GetResources(self): 
         return {

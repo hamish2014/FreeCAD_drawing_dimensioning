@@ -19,7 +19,9 @@ class PreviewVars:
 preview = PreviewVars() 
 
 
-def initializePreview( drawingVars, dimensionSvgFun, dimensionClickHandler, launchControlDialog=False ):
+def initializePreview( dimensioningProcessTracker, dimensionSvgFun, dimensionClickHandler ):
+    drawingVars  = dimensioningProcessTracker.drawingVars #shorthand
+    preview.dimensioningProcessTracker = dimensioningProcessTracker
     preview.drawingVars = drawingVars
     preview.setTransform(drawingVars)
     if not hasattr(preview, 'SVG'):
@@ -76,12 +78,9 @@ def initializePreview( drawingVars, dimensionSvgFun, dimensionClickHandler, laun
     preview.rect.setZValue( 0.1 )
     drawingVars.graphicsScene.addItem( preview.rect )
     debugPrint(4, 'DimensionPreviewSvgGraphicsItem added to graphics Scene')
-    if launchControlDialog: 
-        preview.taskPanelDialog =  PreviewTaskPanel()
-        FreeCADGui.Control.showDialog( preview.taskPanelDialog )
 
 
-def removePreviewGraphicItems( recomputeActiveDocument = True ):
+def removePreviewGraphicItems( recomputeActiveDocument = True, launchEndFunction=False, closeDialog=True ):
     debugPrint(4,'removePreviewGraphicItems called, recomputeActiveDocument %s' % recomputeActiveDocument)
     preview.drawingVars.graphicsScene.removeItem( preview.SVG )
     preview.drawingVars.graphicsScene.removeItem( preview.rect )
@@ -89,9 +88,20 @@ def removePreviewGraphicItems( recomputeActiveDocument = True ):
     if recomputeActiveDocument:
         debugPrint(3,'removePreviewGraphicItems: recomputing')
         recomputeWithOutViewReset( preview.drawingVars )
-    if hasattr(preview, 'taskPanelDialog'):
+    if closeDialog and preview.dimensioningProcessTracker.taskDialog <> None:
         FreeCADGui.Control.closeDialog()
-     
+    del preview.drawingVars
+    if launchEndFunction and preview.dimensioningProcessTracker.endFunction <> None:
+        timer.start( 1 ) # 1 ms (in theory)
+
+
+def executeEndFunction():
+    'if problems try increasing time tick...'
+    timer.stop()
+    preview.dimensioningProcessTracker.endFunction()
+timer = QtCore.QTimer()
+timer.timeout.connect(executeEndFunction)
+
 
 class DimensionPreviewRect(QtGui.QGraphicsRectItem):
 
@@ -119,9 +129,9 @@ class DimensionPreviewRect(QtGui.QGraphicsRectItem):
                     for prop in ['Rotation', 'Scale', 'ViewResult', 'X', 'Y']: 
                         obj.setEditorMode(prop, 2)
                     preview.drawingVars.page.addObject( obj ) #App.ActiveDocument.getObject(viewName) )
-                    removePreviewGraphicItems( recomputeActiveDocument=True )
+                    removePreviewGraphicItems( recomputeActiveDocument=True, launchEndFunction=True )
                 elif instruction == 'stopPreview':
-                    removePreviewGraphicItems( recomputeActiveDocument=True )
+                    removePreviewGraphicItems( recomputeActiveDocument=True, launchEndFunction=True )
             else:
                 event.ignore()
         except:
@@ -139,43 +149,3 @@ class DimensionPreviewRect(QtGui.QGraphicsRectItem):
             preview.SVG.update()
         except:
             App.Console.PrintError(traceback.format_exc())
-
-
-class PreviewTaskPanel:
-    def __init__(self):
-        self.form = FreeCADGui.PySideUic.loadUi(os.path.join(__dir__,"previewDimension.ui"))
-        #self.form.setWindowIcon(QtGui.QIcon( os.path.join( iconPath, 'unfold.svg' ) ) )
-        p = App.ParamGet("User parameter:BaseApp/Preferences/Units")
-        UserSchema = p.GetInt("UserSchema")
-        self.form.label_defaultUnit.setText( 'default unit: %s' % ['mm','m','in','in'][UserSchema] )
-        self.form.comboBox_units.setCurrentIndex( dimensioning.PreviewTaskPanel_index )
-        self.form.doubleSpinBox_customScale.setValue( dimensioning.custom_unit_factor )
-        self.form.doubleSpinBox_customScale.valueChanged.connect( self.getValuesFromDialog)
-        self.form.comboBox_units.currentIndexChanged.connect(self.getValuesFromDialog)
-
-    def getValuesFromDialog(self, notUsed=None):
-        dimensioning.unit_scheme = self.form.comboBox_units.currentText()
-        dimensioning.custom_unit_factor = self.form.doubleSpinBox_customScale.value()
-        dimensioning.PreviewTaskPanel_index = self.form.comboBox_units.currentIndex()
-        
-    def scaledChanged(self, newScale):
-        '''
-        form.doubleSpinBox_scale.value()
-        form.doubleSpinBox_scale.setValue(1.0)
-        form.doubleSpinBox_scale.value()
-        '''
-        #debugPrint(2, 'hello')
-        dimensioningTracker.svgScale = newScale
-    def rotationChanged(self, v):
-        dimensioningTracker.svgRotation = v
-
-    def clicked(self,button):
-        if button == QtGui.QDialogButtonBox.Apply:
-            pass #? dont see an apply dialog
-        
-    def accept(self):
-        self.getValuesFromDialog()
-    
-    def reject(self):
-        removePreviewGraphicItems( recomputeActiveDocument = True )
-        FreeCADGui.Control.closeDialog()

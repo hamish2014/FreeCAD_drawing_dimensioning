@@ -47,6 +47,12 @@ def centerLineSVG( center, topLeft, bottomRight=None,  dimScale=1.0, centerLine_
     return _centerLinesSVG( center, topLeft, bottomRight, dimScale, centerLine_len_dot, centerLine_len_dash, centerLine_len_gap, centerLine_width, centerLine_color, v, not v )
 
 
+d.registerPreference( 'centerLine_len_dot', 3 , label='dot length', increment=0.5)
+d.registerPreference( 'centerLine_len_dash', 6 , label='dash length', increment=0.5)
+d.registerPreference( 'centerLine_len_gap', 2 , label='gap length', increment=0.5)
+d.registerPreference( 'centerLine_width', 0.32 , label='line width', increment=0.05)
+d.registerPreference( 'centerLine_color', 255 << 8, kind='color' )
+
 def centerLine_preview(mouseX, mouseY):
     args = d.args + [[ mouseX, mouseY ]] if len(d.args) < 3 else d.args
     return d.SVGFun( *args, dimScale = d.dimScale, **d.dimensionConstructorKWs )
@@ -64,13 +70,14 @@ def selectFun(  event, referer, elementXML, elementParms, elementViewObject ):
     d.dimScale = elementXML.rootNode().scaling()
     debugPrint(3, 'center selected at x=%3.1f y=%3.1f scale %3.1f' % (x,y, d.dimScale))
     selectionOverlay.hideSelectionGraphicsItems()
-    previewDimension.initializePreview( d.drawingVars, centerLine_preview , centerLine_clickHandler)
+    previewDimension.initializePreview( d, centerLine_preview , centerLine_clickHandler)
 
 
 
 class CenterLines:
     def Activated(self):
-        V = self.Activated_common()
+        V = getDrawingPageGUIVars()
+        d.activate(V, dialogTitle='Add Center Lines', dialogIconPath=os.path.join( iconPath , 'centerLines.svg' ), endFunction=self.Activated )
         d.SVGFun = centerLinesSVG
         maskPen =      QtGui.QPen( QtGui.QColor(0,255,0,100) )
         maskPen.setWidth(2.0)
@@ -87,10 +94,6 @@ class CenterLines:
             maskBrush = QtGui.QBrush() #clear
             )
         selectionOverlay.addProxyRectToRescaleGraphicsSelectionItems( V.graphicsScene, V.graphicsView, V.width, V.height)
-    def Activated_common(self):
-        V = getDrawingPageGUIVars()
-        d.activate(V, ['centerLine_width','centerLine_len_gap','centerLine_len_dash','centerLine_len_dot'], ['centerLine_color'] )
-        return V
     def GetResources(self): 
         return {
             'Pixmap' : os.path.join( iconPath , 'centerLines.svg' ) , 
@@ -102,7 +105,8 @@ FreeCADGui.addCommand('dd_centerLines', CenterLines())
 
 class CenterLine(CenterLines):
     def Activated(self):
-        V = self.Activated_common()
+        V = getDrawingPageGUIVars()
+        d.activate(V, dialogTitle='Add Center Lines', dialogIconPath=os.path.join( iconPath , 'centerLine.svg' ), endFunction=self.Activated )
         d.SVGFun = centerLineSVG
         maskBrush  =   QtGui.QBrush( QtGui.QColor(0,160,0,100) )
         maskPen =      QtGui.QPen( QtGui.QColor(0,160,0,100) )

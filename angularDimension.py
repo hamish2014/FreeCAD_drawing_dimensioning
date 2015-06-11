@@ -6,7 +6,7 @@ from dimensionSvgConstructor import *
 d = DimensioningProcessTracker()
 
 def angularDimensionSVG( line1, line2, x_baseline, y_baseline, x_text=None, y_text=None, 
-                         textFormat='%3.1f°',  gap_datum_points = 2, dimension_line_overshoot=1, arrowL1=3, arrowL2=1, arrowW=2, strokeWidth=0.5, lineColor='blue', 
+                         textFormat_angular='%3.1f°',  gap_datum_points = 2, dimension_line_overshoot=1, arrowL1=3, arrowL2=1, arrowW=2, strokeWidth=0.5, lineColor='blue', 
                          textRenderer=defaultTextRenderer):
     XML = []
     x_int, y_int = lineIntersection(line1, line2)
@@ -58,11 +58,19 @@ def angularDimensionSVG( line1, line2, x_baseline, y_baseline, x_text=None, y_te
     if x_text <> None and y_text <> None:
         v = arccos( numpy.dot(d1, d2) )/ pi * 180
         textRotation = numpy.arctan2( y_text - y_int, x_text - x_int)
-        textXML = textRenderer( x_text, y_text, dimensionText(v,textFormat), textRotation)
-        textXML = textXML + '\n <!--%s-->' % v
-        textXML = textXML + '\n <!--%s-->' % textFormat
+        textXML = textRenderer( x_text, y_text, dimensionText(v,textFormat_angular), textRotation)
         XML.append( textXML )
     return '<g> %s </g>' % '\n'.join(XML)
+
+d.registerPreference( 'textFormat_angular', '%3.1f°', 'format mask')
+d.registerPreference( 'gap_datum_points') 
+d.registerPreference( 'dimension_line_overshoot')
+d.registerPreference( 'arrowL1')
+d.registerPreference( 'arrowL2')
+d.registerPreference( 'arrowW')
+d.registerPreference( 'strokeWidth' )
+d.registerPreference( 'lineColor' )
+d.registerPreference( 'textRenderer' )
 
 def angularDimension_points_preview(mouseX, mouseY):
     args = d.args + [ mouseX, mouseY ] if len(d.args) < 6 else d.args
@@ -92,7 +100,7 @@ def selectFun( event, referer, elementXML, elementParms, elementViewObject ):
             d.args = d.args + [[x1,y1,x2,y2]]
             d.stage = 2
             selectionOverlay.hideSelectionGraphicsItems()
-            previewDimension.initializePreview( d.drawingVars, angularDimension_points_preview, angularDimension_points_clickHandler )
+            previewDimension.initializePreview( d, angularDimension_points_preview, angularDimension_points_clickHandler )
     else: #user selecting 3 points
         x, y = elementParms['x'], elementParms['y']
         debugPrint(2, 'point %i selected at x=%3.1f y=%3.1f' %(d.stage +1,x,y))
@@ -112,7 +120,7 @@ def selectFun( event, referer, elementXML, elementParms, elementViewObject ):
             d.args = [ [x_c, y_c, x1, y1], [x_c, y_c, x2, y2] ]
             d.stage = 2 #hack to allow intergation with dim from 2 line code
             selectionOverlay.hideSelectionGraphicsItems()
-            previewDimension.initializePreview( d.drawingVars,  angularDimension_points_preview, angularDimension_points_clickHandler)
+            previewDimension.initializePreview( d,  angularDimension_points_preview, angularDimension_points_clickHandler)
 
 #selection variables for angular dimensioning
 line_maskPen =      QtGui.QPen( QtGui.QColor(0,255,0,100) )
@@ -129,7 +137,7 @@ point_maskHoverPen.setWidth(0.0)
 class AngularDimension:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        d.activate(V, ['strokeWidth','arrowL1','arrowL2','arrowW','gap_datum_points', 'dimension_line_overshoot'], ['lineColor'], ['textRenderer'] )
+        d.activate(V, dialogTitle='Add Angular Dimension', dialogIconPath=os.path.join( iconPath , 'angularDimension.svg' ), endFunction=self.Activated )
         selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if not obj.Name.startswith('dim')], 
             selectFun ,

@@ -52,7 +52,6 @@ static char * linearDimension_xpm[] = {
         import importlib, os
         from dimensioning import __dir__, debugPrint, iconPath
         import linearDimension
-        import halfLinearDimension
         import deleteDimension
         import circularDimension
         import grabPointAdd
@@ -67,7 +66,6 @@ static char * linearDimension_xpm[] = {
         import toleranceAdd
         commandslist = [
             'dd_linearDimension', #where dd is short-hand for drawing dimensioning
-            'dd_halfLinearDimension',
             'dd_circularDimension',
             'dd_radiusDimension',
             'dd_angularDimension',

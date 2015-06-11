@@ -5,6 +5,13 @@ import previewDimension, selectionOverlay
 from dimensionSvgConstructor import arrowHeadSVG, numpy, directionVector
 
 d = DimensioningProcessTracker()
+d.registerPreference( 'arrowL1')
+d.registerPreference( 'arrowL2')
+d.registerPreference( 'arrowW')
+d.registerPreference( 'strokeWidth' )
+d.registerPreference( 'lineColor' )
+d.registerPreference( 'textRenderer' )
+
 maskBrush  =   QtGui.QBrush( QtGui.QColor(0,160,0,100) )
 maskPen =      QtGui.QPen( QtGui.QColor(0,160,0,100) )
 maskPen.setWidth(0.0)
@@ -15,7 +22,7 @@ weldingCmds = []
 class WeldingSymbol_prototype:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        d.activate(V, ['strokeWidth','arrowL1','arrowL2','arrowW'], ['lineColor'], ['textRenderer'] )
+        d.activate(V, dialogTitle='Add Welding Note', dialogIconPath=self.generateIcon(), endFunction=self.Activated )
         selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if not obj.Name.startswith('dim') and not obj.Name.startswith('center')], 
             self.selectFun ,
@@ -36,7 +43,7 @@ class WeldingSymbol_prototype:
         debugPrint(2, 'welding symbol to point at x=%3.1f y=%3.1f' % (x,y))
         selectionOverlay.hideSelectionGraphicsItems()
         previewDimension.initializePreview( 
-            d.drawingVars, 
+            d, 
             self.preview_svgRenderer, 
             self.preview_clickHandler )
 

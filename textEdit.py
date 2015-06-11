@@ -1,8 +1,22 @@
+'''
+Dialog notes
+Use Qt Designer to edit the textAddDialog.ui
+Once completed $ pyside-uic textAddDialog.ui > textAddDialog.py
+
+To test inside Freecad
+from addTextDialog import DialogWidget
+dialog = DialogWidget()
+dialogUi = addTextDialog.Ui_Dialog()
+dialogUi.setupUi(dialog)
+dialog.show()
+
+'''
 
 from dimensioning import *
 import selectionOverlay 
 import textAddDialog
 from textSvg import SvgTextParser
+import previewDimension
 
 d = DimensioningProcessTracker()
 
@@ -49,8 +63,12 @@ class EditTextDialogWidget( QtGui.QWidget ):
         debugPrint(3,newXML)
         d.dimToEdit.ViewResult = newXML
         recomputeWithOutViewReset(d.drawingVars)
+        if d.taskDialog <> None: #unessary check
+            FreeCADGui.Control.closeDialog()
+        if d.endFunction <> None:
+            previewDimension.preview.dimensioningProcessTracker = d
+            previewDimension.timer.start( 100 ) # 100 ms, need some time for dialog to close
         
-
 dialog = EditTextDialogWidget()
 dialogUi = textAddDialog.Ui_Dialog()
 dialogUi.setupUi(dialog)
@@ -64,7 +82,7 @@ maskHoverPen.setWidth(0.0)
 class EditText:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        d.activate( V )
+        d.activate( V, dialogTitle='Edit Text', dialogIconPath=os.path.join( iconPath , 'textEdit.svg' ), endFunction=self.Activated  )
         selectGraphicsItems = selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if obj.Name.startswith('dim')], 
             EditDimensionText , 

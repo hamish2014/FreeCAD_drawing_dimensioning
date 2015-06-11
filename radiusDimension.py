@@ -6,7 +6,7 @@ from dimensionSvgConstructor import *
 d = DimensioningProcessTracker()
 
 def radiusDimensionSVG( center_x, center_y, radius, radialLine_x=None, radialLine_y=None, tail_x=None, tail_y=None, text_x=None, text_y=None, 
-                        textFormat='R%3.3f', centerPointDia = 1, arrowL1=3, arrowL2=1, arrowW=2, strokeWidth=0.5, scale=1.0, lineColor='blue', 
+                        textFormat_radial='R%3.3f', centerPointDia = 1, arrowL1=3, arrowL2=1, arrowW=2, strokeWidth=0.5, scale=1.0, lineColor='blue', 
                         textRenderer=defaultTextRenderer):
     XML_body = [ ' <circle cx ="%f" cy ="%f" r="%f" stroke="none" fill="%s" /> ' % (center_x, center_y, centerPointDia*0.5, lineColor) ]
     if radialLine_x <> None and radialLine_y <> None:
@@ -20,15 +20,22 @@ def radiusDimensionSVG( center_x, center_y, radius, radialLine_x=None, radialLin
         if tail_x <> None and tail_y <> None:
             XML_body.append( svgLine(radialLine_x, radialLine_y, tail_x, radialLine_y, lineColor, strokeWidth) )
     if text_x <> None and text_y <> None:
-        XML_body.append( textRenderer( text_x, text_y, dimensionText(radius*scale,textFormat)) )
-        XML_body.append( '<!--%s-->' % (radius) )
-        XML_body.append( '<!--%s-->' % (textFormat) )
+        XML_body.append( textRenderer( text_x, text_y, dimensionText(radius*scale,textFormat_radial)) )
     return '<g> %s </g>' % "\n".join(XML_body)
+
+d.dialogWidgets.append( unitSelectionWidget )
+d.registerPreference( 'textFormat_radial', 'R%3.3f', 'format mask')
+d.registerPreference( 'centerPointDia')
+d.registerPreference( 'arrowL1')
+d.registerPreference( 'arrowL2')
+d.registerPreference( 'arrowW')
+d.registerPreference( 'strokeWidth')
+d.registerPreference( 'lineColor')
+d.registerPreference( 'textRenderer' )
 
 def radiusDimensionSVG_preview(mouseX, mouseY):
     args = d.args + [ mouseX, mouseY ] if len(d.args) < 9 else d.args
-    dimScale = d._dimScale / UnitConversionFactor()
-    return radiusDimensionSVG( *args, scale=dimScale, **d.dimensionConstructorKWs )
+    return radiusDimensionSVG( *args, scale=d.viewScale*d.unitConversionFactor, **d.dimensionConstructorKWs )
 
 def radiusDimensionSVG_clickHandler( x, y ):
     d.args = d.args + [ x, y ]
@@ -40,10 +47,10 @@ def selectFun(  event, referer, elementXML, elementParms, elementViewObject ):
     x,y = elementParms['x'], elementParms['y']
     debugPrint(2, 'center selected at x=%3.1f y=%3.1f' % (x,y))
     d.args = [x, y, elementParms['r']]
-    d._dimScale = 1/elementXML.rootNode().scaling()
+    d.viewScale = 1/elementXML.rootNode().scaling()
     d.stage = 1
     selectionOverlay.hideSelectionGraphicsItems()
-    previewDimension.initializePreview( d.drawingVars, radiusDimensionSVG_preview, radiusDimensionSVG_clickHandler,  launchControlDialog=True )
+    previewDimension.initializePreview( d, radiusDimensionSVG_preview, radiusDimensionSVG_clickHandler)
 
 maskPen =      QtGui.QPen( QtGui.QColor(0,255,0,100) )
 maskPen.setWidth(2.0)
@@ -53,7 +60,7 @@ maskHoverPen.setWidth(2.0)
 class RadiusDimension:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        d.activate(V, ['strokeWidth','arrowL1','arrowL2','arrowW','centerPointDia'], ['lineColor'], ['textRenderer'])
+        d.activate(V, 'Add Radial Dimension', dialogIconPath=os.path.join( iconPath , 'radiusDimension.svg' ), endFunction=self.Activated)
         selectionOverlay.generateSelectionGraphicsItems(
             [obj for obj in V.page.Group  if not obj.Name.startswith('dim')],
             selectFun ,

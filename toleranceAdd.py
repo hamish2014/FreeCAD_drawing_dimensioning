@@ -10,10 +10,48 @@ from dimensioning import *
 import previewDimension, selectionOverlay 
 import toleranceDialog
 from textEdit import maskBrush, maskPen, maskHoverPen
-from dimensionSvgConstructor import rotate2D
+from dimensionSvgConstructor import *
 
 d = DimensioningProcessTracker()
-d.assignedPrefenceValues = False
+
+def _textSVG_sub(x_offset, y_offset, text):
+    svgText = d.svgText
+    offset = rotate2D([x_offset, y_offset], svgText.rotation*numpy.pi/180)
+    x = svgText.x + offset[0]
+    y = svgText.y + offset[1]
+    return d.textRenderer(x, y, text, text_anchor='end', rotation=svgText.rotation )
+
+def textSVG( x, y, toleranceText_sizeRatio=0.8  ):
+    fontSize = float(d.svgText.font_size)*toleranceText_sizeRatio
+    d.textRenderer.font_size = fontSize
+    svgText = d.svgText
+    w = rotate2D([x - svgText.x, y - svgText.y], -svgText.rotation*numpy.pi/180)[0]
+    textXML_lower = _textSVG_sub(  w, 0.0*fontSize, d.lower )
+    textXML_upper = _textSVG_sub(  w,    -fontSize, d.upper )
+    return '<g > %s \n %s </g> ' % ( textXML_lower, textXML_upper )
+d.registerPreference( 'toleranceText_sizeRatio', 0.8, increment=0.1, label='size ratio')
+
+class boundText_widget:
+    def __init__(self, name, default):
+        self.name = name
+        self.default = default
+    def valueChanged( self, arg1):
+        setattr(d, self.name, arg1)
+    def generateWidget( self, dimensioningProcess ):
+        self.lineEdit = QtGui.QLineEdit()
+        self.lineEdit.setText(self.default)
+        setattr(d, self.name, self.default)
+        self.lineEdit.textChanged.connect(self.valueChanged)
+        return DimensioningTaskDialog_generate_row_hbox(self.name, self.lineEdit)
+d.dialogWidgets.append( boundText_widget('upper','+0.0') )
+d.dialogWidgets.append( boundText_widget('lower','-0.0') )
+
+
+def toleranceAdd_preview( mouseX, mouseY ):
+    return textSVG( mouseX, mouseY, **d.dimensionConstructorKWs )
+
+def toleranceAdd_clickHandler(x, y):
+    return 'createDimension:%s' % findUnusedObjectName('dimText')
 
 def AddToleranceToText( event, referer, elementXML, elementParms, elementViewObject ):
     try :
@@ -24,58 +62,20 @@ def AddToleranceToText( event, referer, elementXML, elementParms, elementViewObj
         d.svgText = svgText
         debugPrint(3,'svgText.width() %s' % svgText.width())
         debugPrint(3,'adding tolerance %s' % repr(elementViewObject.Name))
-        dialog.show()
+        d.textRenderer = SvgTextRenderer(
+            font_family = svgText.font_family,
+            fill = svgText.fill,
+            font_size = svgText.font_size
+            )
+        previewDimension.initializePreview(d, toleranceAdd_preview, toleranceAdd_clickHandler)
     except:
         errorMessagebox_with_traceback()
 
-class ToleranceDialogWidget( QtGui.QWidget ):
-    def accept( self ):
-        try :
-            widgets = dict( [c.objectName(), c] for c in self.children() )
-            self.hide()
-            d.upper = widgets['upperLineEdit'].text()
-            d.lower = widgets['lowerLineEdit'].text()
-            svgText =  d.svgText
-            fontSize =  widgets['scaleDoubleSpinBox'].value() * svgText.height()
-            d.textRenderer = SvgTextRenderer(
-                font_family = svgText.font_family,
-                fill = svgText.fill,
-                font_size = fontSize
-                )
-            previewDimension.initializePreview(
-                d.drawingVars,
-                textSVG, 
-                clickHandler )
-        except:
-            errorMessagebox_with_traceback()
-
-def _textSVG_sub(x_offset, y_offset, text):
-    svgText = d.svgText
-    offset = rotate2D([x_offset, y_offset], svgText.rotation*numpy.pi/180)
-    x = svgText.x + offset[0]
-    y = svgText.y + offset[1]
-    return d.textRenderer(x, y, text, text_anchor='end', rotation=svgText.rotation )
-
-def textSVG( x, y ):
-    fontSize = d.textRenderer.font_size
-    svgText = d.svgText
-    w = rotate2D([x - svgText.x, y - svgText.y], -svgText.rotation*numpy.pi/180)[0]
-    textXML_lower = _textSVG_sub(  w, 0.0*fontSize, d.lower )
-    textXML_upper = _textSVG_sub(  w,    -fontSize, d.upper )
-    return '<g > %s \n %s </g> ' % ( textXML_lower, textXML_upper )
-
-def clickHandler(x, y):
-    return 'createDimension:%s' % findUnusedObjectName('dimText')
-
-
-dialog = ToleranceDialogWidget()
-dialogUi = toleranceDialog.Ui_Dialog()
-dialogUi.setupUi(dialog)
 
 class AddTolerance:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        d.activate( V )
+        d.activate( V,  dialogTitle='Add Tolerance', dialogIconPath=os.path.join( iconPath , 'toleranceAdd.svg' ), endFunction=self.Activated  )
         selectGraphicsItems = selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if obj.Name.startswith('dim')], 
             AddToleranceToText , 

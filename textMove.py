@@ -30,10 +30,7 @@ def MoveDimensionText( event, referer, elementXML, elementParms, elementViewObje
     else:
         d.textRotation = None
     selectionOverlay.hideSelectionGraphicsItems()
-    previewDimension.initializePreview(
-            d.drawingVars,
-            moveTextSvg, 
-            placeText )
+    previewDimension.initializePreview( d, moveTextSvg, placeText )
 
 maskBrush  =   QtGui.QBrush( QtGui.QColor(0,160,0,100) )
 maskPen =      QtGui.QPen( QtGui.QColor(0,160,0,100) )
@@ -44,7 +41,7 @@ maskHoverPen.setWidth(0.0)
 class MoveText:
     def Activated(self):
         V = getDrawingPageGUIVars() #needs to be done before dialog show, else Qt active is dialog and not freecads
-        d.activate( V )
+        d.activate( V,  dialogTitle='Move Text', dialogIconPath=os.path.join( iconPath , 'textMove.svg' ), endFunction=self.Activated  )
         selectGraphicsItems = selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if obj.Name.startswith('dim')], 
             MoveDimensionText , 
