@@ -48,5 +48,4 @@ class ExportToDxfCommand:
             'MenuText': 'shortcut command for exporting active drawing page to dxf (requires inkscape and pstoedit)', 
             } 
 
-if hasattr(os,'uname') and os.uname()[0] == 'Linux' : #this command only works on Linux systems
-    FreeCADGui.addCommand('drawingDimensioning_exportToDxf', ExportToDxfCommand())
+FreeCADGui.addCommand('dd_exportToDxf', ExportToDxfCommand())

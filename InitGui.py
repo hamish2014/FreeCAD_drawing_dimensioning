@@ -84,11 +84,13 @@ static char * linearDimension_xpm[] = {
         import unfold
         import unfold_bending_note
         import unfold_export_to_dxf
-        self.appendToolbar('Drawing Dimensioning Folding', [
-                'dd_unfold',
-                'dd_bendingNote',
-                'drawingDimensioning_exportToDxf',
-                ])
+        unfold_cmds = [
+            'dd_unfold',
+            'dd_bendingNote',
+            ]
+        if hasattr(os,'uname') and os.uname()[0] == 'Linux' : #this command only works on Linux systems
+            unfold_cmds.append('dd_exportToDxf')
+        self.appendToolbar( 'Drawing Dimensioning Folding', unfold_cmds )
         self.appendToolbar('Drawing Dimensioning Help', [
                 'dd_help',
                 ])
