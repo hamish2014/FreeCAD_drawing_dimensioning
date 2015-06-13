@@ -94,8 +94,12 @@ def findCircularArcCentrePoint(r, x_1, y_1, x_2, y_2, largeArc, sweep, debug=Fal
     c,a = r,r
     b = ( ( x_2-x_1 )**2 + ( y_2-y_1 )**2 ) ** 0.5
     cos_gamma = ( a**2 + b**2 - c**2 ) / ( 2*a*b )
-    if -1 <= cos_gamma and cos_gamma < 1:
+    if -1 <= cos_gamma and cos_gamma <= 1:
         gamma = arccos( cos_gamma ) #angle + pi radians = other possible centre point
+    elif 1 < cos_gamma  and cos_gamma < 1.001: #numerical precission error case 1
+        gamma = 0
+    elif -1.001 < cos_gamma and cos_gamma <-1: #numerical precission error case 2
+        gamma = pi
     else:
         return numpy.nan, numpy.nan
     if debug: print('x1,y1 : %1.2f, %1.2f' % (x_1, y_1))

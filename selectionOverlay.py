@@ -643,11 +643,45 @@ if __name__ == "__main__":
   </g>'''
 
 
-    XML = testCase6
+    testCase7 = '''<g
+       stroke="rgb(0, 0, 0)"
+       stroke-width="0.35"
+       stroke-linecap="butt"
+       stroke-linejoin="miter"
+       fill="none"
+       transform="translate(400,200) scale(2,-2)"
+       id="g281">
+      <path
+         d="M135 25 A25 25 0 0 0 135 -25"
+         id="path283" />
+      <path
+         id="path285"
+         d=" M 135 -25 L -135 -25 " />
+      <path
+         d="M-135 -25 A25 25 0 0 0 -135 25"
+         id="path287" />
+      <path
+         id="4"
+         d=" M 135 25 L -135 25 " />
+      <path
+         d="M135 15 A15 15 0 0 0 135 -15"
+         id="path290" />
+      <path
+         id="path292"
+         d=" M 135 -15 L -135 -15 " />
+      <path
+         d="M-135 -15 A15 15 0 0 0 -135 15"
+         id="path294" />
+      <path
+         id="8"
+         d=" M 135 15 L -135 15 " />
+    </g>'''
+    
+    XML = testCase7
 
     app = QtGui.QApplication(sys.argv)
-    width = 640
-    height = 480
+    width = 800
+    height = 600
 
     graphicsScene = QtGui.QGraphicsScene(0,0,width,height)
     graphicsScene.addText("Svg_Tools.py test")
