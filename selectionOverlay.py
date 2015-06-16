@@ -110,12 +110,12 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
         KWs = {'x':x,'y':y,'r':r}
         KWs.update(extraKWs)
         postProcessGraphicsItem(graphicsItem, KWs, zValue=1.01**-r ) #smaller circles on top
-    def circlePoints( x, y, r ):
-        addSelectionPoint ( x, y, 2 ) #Circle center point
-        addSelectionPoint ( x + r, y, 2 ) #Circle right quadrant point
-        addSelectionPoint ( x - r, y, 2 ) #Circle left quadrant point
-        addSelectionPoint ( x , y + r, 2 ) #Circle top quadrant point
-        addSelectionPoint ( x , y - r, 2 ) #Circle bottom quadrant point
+    def circlePoints( x, y, rx, ry ):
+        addSelectionPoint ( x, y, 2 ) #Circle/ellipse center point
+        addSelectionPoint ( x + rx, y, 2 ) #Circle/ellipse right quadrant point
+        addSelectionPoint ( x - rx, y, 2 ) #Circle/ellipse left quadrant point
+        addSelectionPoint ( x , y + ry, 2 ) #Circle/ellipse top quadrant point
+        addSelectionPoint ( x , y - ry, 2 ) #Circle/ellipse bottom quadrant point
 
     for viewObject in viewObjects:
         if viewObject.ViewResult.strip() == '':
@@ -130,7 +130,15 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                 if doCircles: 
                     addCircle( x, y, r)
                 if doPoints: 
-                    circlePoints( x, y, r)
+                    circlePoints( x, y, r, r)
+            if element.tag == 'ellipse':
+                cx, cy = element.applyTransforms( float( element.parms['cx'] ), float( element.parms['cy'] ) )
+                rx, ry = float( element.parms['rx'] )* scaling, float( element.parms['ry'] )* scaling
+                if doCircles: 
+                    if rx == ry:
+                        addCircle( cx, cy, rx)
+                if doPoints: 
+                    circlePoints( cx, cy, rx, ry)
                 
             if element.tag == 'text' and element.parms.has_key('x'):
                 if doTextItems:
@@ -219,7 +227,7 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                                     gi.setPath(path)
                                     postProcessGraphicsItem( gi, {'x':c_x,'y':c_y,'r':r, 'largeArc':largeArc, 'sweep':sweep,  } )
                                 #if doPoints:
-                                #    circlePoints( c_x, c_y, r)
+                                #    circlePoints( c_x, c_y, r, r)
                         _pen_x, _pen_y = _end_x, _end_y
                         pen_x, pen_y = end_x, end_y
                         j = j + 8
@@ -291,7 +299,7 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                 #        if doFittedCircles:
                 #            addCircle( x, y, r , r_error=r_error )
                 #        if doPoints:
-                #            circlePoints( x, y, r)
+                #            circlePoints( x, y, r, r)
 
     return graphicItems
     
@@ -394,10 +402,7 @@ if __name__ == "__main__":
 
     testCase5 = '<g id="Ortho_0_-1"\n   transform="rotate(90,75.6667,132) translate(300,100) scale(30,30)"\n  >\n<g   stroke="rgb(0, 0, 0)"\n   stroke-width="0.0875"\n   stroke-linecap="butt"\n   stroke-linejoin="miter"\n   fill="none"\n   transform="scale(1,-1)"\n  >\n<path id= "1" d=" M 1.11022e-16 1 L 1.11022e-16 9 " />\n<path d="M1.11022e-16 1 A1 1 0 0 0 -1 -2.22045e-16" /><path id= "3" d=" M -1 -2.22045e-16 L -9 -2.22045e-16 " />\n<path d="M1.11022e-16 9 A1 1 0 0 1 -1 10" /><path id= "5" d=" M -1 10 L -9 10 " />\n<path id= "6" d=" M -1 10 L -9 10 " />\n<path id= "7" d=" M -10 1 L -10 9 " />\n<path id= "8" d=" M -10 1 L -10 9 " />\n<path d="M-10 1 A1 1 0 0 1 -9 -2.22045e-16" /><path d="M-10 1 A1 1 0 0 1 -9 -2.22045e-16" /><path d="M-10 9 A1 1 0 0 0 -9 10" /><path d="M-9 10 A1 1 0 0 1 -10 9" /></g>\n</g>\n'
 
-    testCase6 = '''<g
-     inkscape:label="Layer 1"
-     inkscape:groupmode="layer"
-     id="layer1">
+    testCase6 = '''<g transform="scale(4,4) >
     <g
        id="g542"
        transform="matrix(1.25,0,0,-1.25,-348.3393,383.537)">
@@ -676,15 +681,20 @@ if __name__ == "__main__":
          id="8"
          d=" M 135 15 L -135 15 " />
     </g>'''
-    
-    XML = testCase7
 
+    testCase8 = '''<g transform="scale(8,8)"> 
+    <g transform = "rotate(180,-118,78)"> <ellipse cx ="-118" cy ="78" rx ="2.5"  ry ="2.5"/> </g>
+    <g transform = "rotate(180,-131,78)"> <ellipse cx ="-131" cy ="78" rx ="2.5"  ry ="2.5"/> </g>
+</g>'''
+    
+    XML = testCase1
+    
     app = QtGui.QApplication(sys.argv)
     width = 800
-    height = 600
+    height = 640
 
-    graphicsScene = QtGui.QGraphicsScene(0,0,width,height)
-    graphicsScene.addText("Svg_Tools.py test")
+    graphicsScene = QtGui.QGraphicsScene()#0,0,width,height)
+    #graphicsScene.addText("Svg_Tools.py test")
     orthoViews = []
     def addOrthoView( XML ):
         o1 = QtSvg.QGraphicsSvgItem()
@@ -718,6 +728,8 @@ if __name__ == "__main__":
     )
 
     view = QtGui.QGraphicsView(graphicsScene)
+    view.setGeometry(0, 0, width, height)
+    view.fitInView( graphicsScene.itemsBoundingRect(), QtCore.Qt.KeepAspectRatio)
     view.show()
 
     sys.exit(app.exec_())
