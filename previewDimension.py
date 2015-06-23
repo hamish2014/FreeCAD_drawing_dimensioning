@@ -121,6 +121,7 @@ class DimensionPreviewRect(QtGui.QGraphicsRectItem):
                     pass
                 elif instruction.startswith('createDimension:'):
                     viewName = instruction.split(':')[1]
+                    FreeCAD.ActiveDocument.openTransaction(viewName)
                     XML = self.dimensionSvgFun( x, y )
                     debugPrint(3, XML)
                     debugPrint(2, 'creating dimension %s' % viewName)
@@ -130,6 +131,7 @@ class DimensionPreviewRect(QtGui.QGraphicsRectItem):
                         obj.setEditorMode(prop, 2)
                     preview.drawingVars.page.addObject( obj ) #App.ActiveDocument.getObject(viewName) )
                     removePreviewGraphicItems( recomputeActiveDocument=True, launchEndFunction=True )
+                    FreeCAD.ActiveDocument.commitTransaction()
                 elif instruction == 'stopPreview':
                     removePreviewGraphicItems( recomputeActiveDocument=True, launchEndFunction=True )
             else:

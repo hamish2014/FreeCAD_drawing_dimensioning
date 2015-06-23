@@ -1,7 +1,7 @@
 FreeCAD_drawing_dimensioning
 ============================
 
-Drawing dimensioning workbench for FreeCAD v0.15.
+Drawing dimensioning workbench for FreeCAD v0.15 or later.
 Take note that this workbench is experimental and still contains bugs.
 
 Intended work-flow:
@@ -19,8 +19,7 @@ Features
 
 Limitations
   * No parametric updating, if the drawing is updated the dimensions need to be redone
-  * undo and other similar features not supported
-  * only works with FreeCAD version 0.15
+  * only works with FreeCAD version 0.15+
 
 
 

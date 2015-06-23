@@ -15,7 +15,9 @@ def moveTextSvg( x, y):
     return e.XML[:e.pStart] + xml + e.XML[e.pEnd:]
 
 def placeText( x, y):
+    FreeCAD.ActiveDocument.openTransaction("move text")
     d.dimToEdit.ViewResult = moveTextSvg(x, y )
+    FreeCAD.ActiveDocument.commitTransaction()
     return 'stopPreview'
 
 def MoveDimensionText( event, referer, elementXML, elementParms, elementViewObject ):

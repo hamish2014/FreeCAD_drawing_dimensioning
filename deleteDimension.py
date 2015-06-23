@@ -6,7 +6,9 @@ d = DimensioningProcessTracker()
 
 def deleteDimension( event, referer, elementXML, elementParms, elementViewObject ):
     debugPrint(2, 'deleting dimension %s' % elementViewObject.Name)
-    App.ActiveDocument.removeObject( elementViewObject.Name )
+    FreeCAD.ActiveDocument.openTransaction("Delete %s" % elementViewObject.Name)
+    FreeCAD.ActiveDocument.removeObject( elementViewObject.Name )
+    FreeCAD.ActiveDocument.commitTransaction()
     recomputeWithOutViewReset(d.drawingVars)
     FreeCADGui.Control.closeDialog()
     if d.endFunction <> None:
@@ -16,16 +18,13 @@ def deleteDimension( event, referer, elementXML, elementParms, elementViewObject
 class deleteAllButton:
     def deleteAllDimensions( self, arg1=None):
         try :
-            reply = QtGui.QMessageBox.question(
-                QtGui.qApp.activeWindow(), "Confirm Delete All",
-                "Delete all dimension objects?\n(this action can not be undone)", 
-                QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.No)
-            if reply == QtGui.QMessageBox.Yes:
-                debugPrint(2,'Deleting all dimensioning objects')
-                #FreeCAD.ActiveDocument.openTransaction("Delete All Dim. Objects")
-                for obj in d.drawingVars.page.Group:
-                    if any( obj.Name.startswith(prefix) for prefix in ['dim','grabPoint','center','unfold']):
-                        App.ActiveDocument.removeObject( obj.Name )
+            FreeCAD.ActiveDocument.openTransaction("Delete All Dimensions")
+            debugPrint(2,'Deleting all dimensioning objects')
+            #FreeCAD.ActiveDocument.openTransaction("Delete All Dim. Objects")
+            for obj in d.drawingVars.page.Group:
+                if any( obj.Name.startswith(prefix) for prefix in ['dim','grabPoint','center','unfold']):
+                    FreeCAD.ActiveDocument.removeObject( obj.Name )
+            FreeCAD.ActiveDocument.commitTransaction()
             #FreeCAD.ActiveDocument.commitTransaction()# ah undo not working ...
             recomputeWithOutViewReset(d.drawingVars)
             FreeCADGui.Control.closeDialog()
@@ -36,6 +35,15 @@ class deleteAllButton:
         button.clicked.connect( self.deleteAllDimensions )
         return button
 d.dialogWidgets.append( deleteAllButton() )
+class UndoInfoText:
+    def generateWidget( self, dimensioningProcess ):
+        vbox = QtGui.QVBoxLayout()
+        vbox.addWidget( QtGui.QLabel('To undo a deletion:') )
+        vbox.addWidget( QtGui.QLabel('  1) Undo') )
+        vbox.addWidget( QtGui.QLabel('  2) Recompute Document') )
+        return vbox
+d.dialogWidgets.append( UndoInfoText() )
+
 
 maskBrush  =   QtGui.QBrush( QtGui.QColor(160,0,0,100) )
 maskPen =      QtGui.QPen( QtGui.QColor(160,0,0,100) )
