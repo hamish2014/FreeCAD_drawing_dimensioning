@@ -162,16 +162,15 @@ def linearDimension_parallels_hide_non_parallel(elementParms, elementViewObject)
                     offset =  numpy.array([ x1, y1] ) - p
                     if abs(numpy.dot(d_rotated, offset)) > 10**-6: #then not colinear
                         return False
-        return True
+        elif isinstance(gi,selectionOverlay.PointSelectionGraphicsItem):
+            return False
+        return True 
     selectionOverlay.hideSelectionGraphicsItems(hideFun)
 
 
 
-
-
-
 def selectDimensioningPoint( event, referer, elementXML, elementParms, elementViewObject ):
-    if isinstance(referer,selectionOverlay.PointSelectionGraphicsItem):
+    if isinstance(referer,selectionOverlay.PointSelectionGraphicsItem) and d.stage < 2:
         x, y = elementParms['x'], elementParms['y']
         referer.lockSelection()
         if d.stage == 0: #then selectPoint1
@@ -197,17 +196,24 @@ def selectDimensioningPoint( event, referer, elementXML, elementParms, elementVi
             d.viewScale = 1 / elementXML.rootNode().scaling()
             linearDimension_parallels_hide_non_parallel( elementParms, elementViewObject)
             previewDimension.initializePreview( d, linearDimension_points_preview, linearDimension_points_clickHandler )
-        else: #then distance between parallels
-            x1,y1,x2,y2 = [ elementParms[k] for k in [ 'x1', 'y1', 'x2', 'y2' ] ]
-            debugPrint(2,'distance between parallels, line2 x1=%3.1f y1=%3.1f, x2=%3.1f y2=%3.1f' % (x1,y1,x2,y2))
-            line1 = d.args
-            d.args = [ line1, [ x1,y1,x2,y2 ] ]
+        else:
+            if isinstance(referer, selectionOverlay.LineSelectionGraphicsItem): #then distance between parallels
+                x1,y1,x2,y2 = [ elementParms[k] for k in [ 'x1', 'y1', 'x2', 'y2' ] ]
+                debugPrint(2,'distance between parallels, line2 x1=%3.1f y1=%3.1f, x2=%3.1f y2=%3.1f' % (x1,y1,x2,y2))
+                line1 = d.args
+                d.args = [ line1, [ x1,y1,x2,y2 ] ]
+            else: #distance between line and point
+                line1 = d.args
+                x1,y1,x2,y2 = line1
+                dx = (x2-x1)*10**-6
+                dy = (y2-y1)*10**-6
+                debugPrint(3,'distance between line and point, dx %e dy %e' % (dx,dy))
+                x, y =  elementParms['x'], elementParms['y']
+                d.args = [ line1, [ x-dx,y-dy,x+dx,y+dy ] ]
             d.stage = 2 
             selectionOverlay.hideSelectionGraphicsItems()
             previewDimension.removePreviewGraphicItems( False, closeDialog=False )
             previewDimension.initializePreview( d, linearDimension_parallels_preview, linearDimension_parallels_clickHandler )
-
-
 
 maskBrush  =   QtGui.QBrush( QtGui.QColor(0,160,0,100) )
 maskPen =      QtGui.QPen( QtGui.QColor(0,160,0,100) )
