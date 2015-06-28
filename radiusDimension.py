@@ -6,7 +6,8 @@ from dimensionSvgConstructor import *
 d = DimensioningProcessTracker()
 
 def radiusDimensionSVG( center_x, center_y, radius, radialLine_x=None, radialLine_y=None, tail_x=None, tail_y=None, text_x=None, text_y=None, 
-                        textFormat_radial='R%3.3f', centerPointDia = 1, arrowL1=3, arrowL2=1, arrowW=2, strokeWidth=0.5, scale=1.0, lineColor='blue', 
+                        textFormat_radial='R%3.3f', comma_decimal_place=False,
+                        centerPointDia = 1, arrowL1=3, arrowL2=1, arrowW=2, strokeWidth=0.5, scale=1.0, lineColor='blue', 
                         textRenderer=defaultTextRenderer):
     XML_body = [ ' <circle cx ="%f" cy ="%f" r="%f" stroke="none" fill="%s" /> ' % (center_x, center_y, centerPointDia*0.5, lineColor) ]
     if radialLine_x <> None and radialLine_y <> None:
@@ -20,11 +21,12 @@ def radiusDimensionSVG( center_x, center_y, radius, radialLine_x=None, radialLin
         if tail_x <> None and tail_y <> None:
             XML_body.append( svgLine(radialLine_x, radialLine_y, tail_x, radialLine_y, lineColor, strokeWidth) )
     if text_x <> None and text_y <> None:
-        XML_body.append( textRenderer( text_x, text_y, dimensionText(radius*scale,textFormat_radial)) )
+        XML_body.append( textRenderer( text_x, text_y, dimensionText(radius*scale,textFormat_radial, comma=comma_decimal_place)) )
     return '<g> %s </g>' % "\n".join(XML_body)
 
 d.dialogWidgets.append( unitSelectionWidget )
 d.registerPreference( 'textFormat_radial', 'R%3.3f', 'format mask')
+d.registerPreference( 'comma_decimal_place')
 d.registerPreference( 'centerPointDia')
 d.registerPreference( 'arrowL1')
 d.registerPreference( 'arrowL2')

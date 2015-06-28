@@ -31,11 +31,13 @@ def arrowHeadSVG( tipPos, d, L1, L2, W, clr='blue'):
     return '<polygon points="%f,%f %f,%f %f,%f %f,%f" style="fill:%s;stroke:%s;stroke-width:0" />' % (tipPos[0], tipPos[1], p2[0], p2[1], p3[0], p3[1], p4[0], p4[1], clr, clr)
 
 
-def dimensionText( V, formatStr, roundingDigit=6):
+def dimensionText( V, formatStr, roundingDigit=6, comma=False):
     s1 = (formatStr % V).rstrip('0').rstrip('.')
     Vrounded = numpy.round(V, roundingDigit)
     s2 = (formatStr % Vrounded).rstrip('0').rstrip('.')
-    return s2 if len(s2) < len(s1) else s1
+    s =  s2 if len(s2) < len(s1) else s1
+    if comma: s = s.replace('.',',')
+    return s
 
 defaultTextRenderer = SvgTextRenderer(font_family='Verdana', font_size='5pt', fill="red")
 

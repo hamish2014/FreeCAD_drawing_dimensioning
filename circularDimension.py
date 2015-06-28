@@ -7,7 +7,8 @@ from dimensionSvgConstructor import *
 d = DimensioningProcessTracker()
 
 def circularDimensionSVG( center_x, center_y, radius, radialLine_x=None, radialLine_y=None, tail_x=None, tail_y=None, text_x=None, text_y=None, 
-                          scale=1.0, textFormat_circular='Ø%3.3f', centerPointDia = 1, arrowL1=3, arrowL2=1, arrowW=2, strokeWidth=0.5, lineColor='blue', 
+                          scale=1.0, textFormat_circular='Ø%3.3f', comma_decimal_place=False,
+                          centerPointDia = 1, arrowL1=3, arrowL2=1, arrowW=2, strokeWidth=0.5, lineColor='blue', 
                           textRenderer=defaultTextRenderer):
     XML_body = [ ' <circle cx ="%f" cy ="%f" r="%f" stroke="none" fill="%s" /> ' % (center_x, center_y, centerPointDia*0.5, lineColor) ]
     #XML_body.append( '<circle cx="%f" cy="%f" r="%f" stroke="rgb(0,0,255)" stroke-width="%1.2f" fill="none" />' % (center_x, center_y, radius, strokeWidth) )
@@ -23,11 +24,12 @@ def circularDimensionSVG( center_x, center_y, radius, radialLine_x=None, radialL
         if tail_x <> None and tail_y <> None:
             XML_body.append( svgLine( radialLine_x, radialLine_y, tail_x, radialLine_y, lineColor, strokeWidth ) )
     if text_x <> None and text_y <> None:
-        XML_body.append( textRenderer( text_x, text_y, dimensionText(2*radius*scale,textFormat_circular) ))
+        XML_body.append( textRenderer( text_x, text_y, dimensionText(2*radius*scale,textFormat_circular, comma=comma_decimal_place) ))
     return '<g> %s </g>' % "\n".join(XML_body)
 
 d.dialogWidgets.append( unitSelectionWidget )
 d.registerPreference( 'textFormat_circular', 'Ø%3.3f', 'format mask')
+d.registerPreference( 'comma_decimal_place')
 d.registerPreference( 'centerPointDia', 0.5, increment=0.5)
 d.registerPreference( 'arrowL1')
 d.registerPreference( 'arrowL2')

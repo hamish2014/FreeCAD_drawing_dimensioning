@@ -9,7 +9,8 @@ d = DimensioningProcessTracker() #shorthand
 # linear distance between 2 points
 #
 def linearDimensionSVG_points( x1, y1, x2, y2, x3, y3, x4=None, y4=None,
-                               scale=1.0, textFormat_linear='%3.3f',  gap_datum_points = 2, dimension_line_overshoot=1, arrowL1=3, arrowL2=1, arrowW=2, strokeWidth=0.5, lineColor='blue', 
+                               scale=1.0, textFormat_linear='%3.3f', comma_decimal_place=False,
+                               gap_datum_points = 2, dimension_line_overshoot=1, arrowL1=3, arrowL2=1, arrowW=2, strokeWidth=0.5, lineColor='blue', 
                                halfDimension_linear=False, textRenderer= defaultTextRenderer):
     lines = []
     p1 = numpy.array([ x1, y1 ])
@@ -41,7 +42,7 @@ def linearDimensionSVG_points( x1, y1, x2, y2, x3, y3, x4=None, y4=None,
     lineXML = '\n'.join( svgLine( x1, y1, x2, y2, lineColor, strokeWidth ) for  x1, y1, x2, y2 in lines )
     if x4 <> None and y4 <> None:
         v = numpy.linalg.norm(A-B)*scale
-        textXML = textRenderer( x4, y4, dimensionText(v, textFormat_linear), rotation=textRotation )
+        textXML = textRenderer( x4, y4, dimensionText(v, textFormat_linear, comma=comma_decimal_place), rotation=textRotation )
     else :
         textXML = ''
     distAB = numpy.linalg.norm(A-B)
@@ -57,6 +58,7 @@ def linearDimensionSVG_points( x1, y1, x2, y2, x3, y3, x4=None, y4=None,
 d.dialogWidgets.append( unitSelectionWidget )
 d.registerPreference( 'halfDimension_linear', False, 'compact')
 d.registerPreference( 'textFormat_linear', '%3.3f', 'format mask')
+d.registerPreference( 'comma_decimal_place', False, 'comma')
 d.registerPreference( 'gap_datum_points', 2, 'gap') 
 d.registerPreference( 'dimension_line_overshoot', 1, 'overshoot')
 d.registerPreference( 'arrowL1', 3 , increment=0.5)
@@ -84,7 +86,8 @@ def linearDimension_points_clickHandler( x, y ):
 # linear distance between parallels
 #
 def linearDimensionSVG_parallels( line1, line2, x_baseline, y_baseline, x_text=None, y_text=None, 
-                                  textFormat_linear='%3.3f', scale=1.0, gap_datum_points = 2, dimension_line_overshoot=1,
+                                  scale=1.0, textFormat_linear='%3.3f', comma_decimal_place=False,
+                                  gap_datum_points = 2, dimension_line_overshoot=1,
                                   arrowL1=3, arrowL2=1, arrowW=2, svgTag='g', svgParms='', strokeWidth=0.5, lineColor='blue',
                                   halfDimension_linear=False, #notUsed, added for compatibility with d.preferences
                                   textRenderer=defaultTextRenderer):
@@ -129,7 +132,7 @@ def linearDimensionSVG_parallels( line1, line2, x_baseline, y_baseline, x_text=N
             textRotation = textRotation - 90
         elif textRotation < -92:
             textRotation = textRotation + 90
-        textXML = textRenderer( x_text, y_text, dimensionText(dist*scale,textFormat_linear), rotation=textRotation)
+        textXML = textRenderer( x_text, y_text, dimensionText(dist*scale,textFormat_linear,comma=comma_decimal_place), rotation=textRotation)
         XML.append( textXML )
     return '<g> %s </g> ''' % '\n'.join(XML)
 
