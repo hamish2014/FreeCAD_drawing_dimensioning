@@ -64,3 +64,21 @@ def lineIntersection(line1, line2):
     #assert x1 + dx1*t1 == x2 + dx2*t2
     return x_int, y_int
 
+def textPlacement_common_procedure( A, B, text, x_text, y_text, textRotation, textRenderer, autoPlaceText, autoPlaceOffset):
+    if textRotation > 90:
+        textRotation = textRotation - 180
+    if textRotation > 88:
+        textRotation = textRotation - 180
+    elif textRotation > 12 :
+        textRotation = textRotation - 90
+    elif textRotation < -92:
+        textRotation = textRotation + 90
+    if not autoPlaceText:
+        if x_text <> None and y_text <> None:
+            return textRenderer( x_text, y_text, text, rotation=textRotation )
+        else :
+            return ''
+    else:
+        theta = (textRotation - 90)/180.0*pi
+        pos_text = (A + B)/2 + autoPlaceOffset * numpy.array([ cos(theta), sin(theta)])
+        return textRenderer( pos_text[0], pos_text[1], text, rotation=textRotation, text_anchor='middle' )

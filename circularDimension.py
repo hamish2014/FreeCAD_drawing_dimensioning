@@ -6,7 +6,7 @@ from dimensionSvgConstructor import *
 
 d = DimensioningProcessTracker()
 
-def circularDimensionSVG( center_x, center_y, radius, radialLine_x=None, radialLine_y=None, tail_x=None, tail_y=None, text_x=None, text_y=None, 
+def circularDimensionSVG( center_x, center_y, radius, radialLine_x=None, radialLine_y=None, tail_x=None, tail_y=None, text_x=None, text_y=None, autoPlaceText=False, autoPlaceOffset=2.0,
                           scale=1.0, textFormat_circular='Ø%3.3f', comma_decimal_place=False,
                           centerPointDia = 1, arrowL1=3, arrowL2=1, arrowW=2, strokeWidth=0.5, lineColor='blue', 
                           textRenderer=defaultTextRenderer):
@@ -23,13 +23,15 @@ def circularDimensionSVG( center_x, center_y, radius, radialLine_x=None, radialL
             XML_body.append( arrowHeadSVG( B, s*directionVector(B,A), arrowL1, arrowL2, arrowW, lineColor ) )
         if tail_x <> None and tail_y <> None:
             XML_body.append( svgLine( radialLine_x, radialLine_y, tail_x, radialLine_y, lineColor, strokeWidth ) )
-    if text_x <> None and text_y <> None:
-        XML_body.append( textRenderer( text_x, text_y, dimensionText(2*radius*scale,textFormat_circular, comma=comma_decimal_place) ))
+            text = dimensionText(2*radius*scale,textFormat_circular, comma=comma_decimal_place)
+            XML_body.append( textPlacement_common_procedure(numpy.array([radialLine_x, radialLine_y]), numpy.array([tail_x, radialLine_y]), text, text_x, text_y, 0, textRenderer, autoPlaceText, autoPlaceOffset) )
     return '<g> %s </g>' % "\n".join(XML_body)
 
 d.dialogWidgets.append( unitSelectionWidget )
 d.registerPreference( 'textFormat_circular', 'Ø%3.3f', 'format mask')
+d.registerPreference( 'autoPlaceText')
 d.registerPreference( 'comma_decimal_place')
+d.registerPreference( 'autoPlaceOffset')
 d.registerPreference( 'centerPointDia', 0.5, increment=0.5)
 d.registerPreference( 'arrowL1')
 d.registerPreference( 'arrowL2')
@@ -45,6 +47,8 @@ def circularDimensionSVG_preview(mouseX, mouseY):
 def circularDimensionSVG_clickHandler( x, y ):
     d.args = d.args + [ x, y ]
     d.stage = d.stage + 1
+    if d.stage == 3 and d.dimensionConstructorKWs['autoPlaceText']:
+        return 'createDimension:%s' % findUnusedObjectName('dim')
     if d.stage == 4 :
         return 'createDimension:%s' % findUnusedObjectName('dim')
 
