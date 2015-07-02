@@ -41,8 +41,10 @@ def fitCircle(X, Y):
     # Solving the linear system
     A = array([ [ Suu, Suv ], [Suv, Svv]])
     B = array([ Suuu + Suvv, Svvv + Suuv ])/2.0
-    uc, vc = linalg.solve(A, B)
-
+    try:
+        uc, vc = linalg.solve(A, B)
+    except numpy.linalg.LinAlgError:
+        return 0,0,0,numpy.inf
     xc_1 = x_m + uc
     yc_1 = y_m + vc
 
