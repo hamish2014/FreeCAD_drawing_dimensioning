@@ -131,6 +131,16 @@ def addWeldingCommand( WeldingClass ):
     FreeCADGui.addCommand(name, WeldingClass())
     weldingCmds.append(name)
 
+class WeldingGroupCommand: #for FreeCAD version 0.16 onwards
+    def GetCommands(self):
+        return tuple(weldingCmds) # a tuple of command names that you want to group
+    #def GetDefaultCommand(self): # return the index of the tuple of the default command. This method is optional and when not implemented '0' is used 
+    #    return 2
+    def GetResources(self):
+        return { 'MenuText': 'Welding/Grove Symbols command', 'ToolTip': 'Welding/Grove Symbols commands'}
+FreeCADGui.addCommand('dd_weldingGroupCommand', WeldingGroupCommand())
+    
+
 class WeldingSymbol0(WeldingSymbol_prototype):
     label='no grove symbol'
     noOfStages = 3
