@@ -228,6 +228,31 @@ class DimensioningPreference_unicode(DimensioningPreference_prototype):
         return  DimensioningTaskDialog_generate_row_hbox( self.label, textbox )
 DimensioningPreferenceClasses["<type 'unicode'>"] = DimensioningPreference_unicode
 
+class DimensioningPreference_choice(DimensioningPreference_unicode):
+    def valueChanged( self, value ):
+        self.dimensioningProcess.dimensionConstructorKWs[ self.name ] = self.combobox.currentText()
+    def getDefaultValue(self):
+        encoded_value = self.dd_parms.GetString( self.name, self.defaultValue[0].encode('utf8') ) 
+        return unicode( encoded_value, 'utf8' )
+    def revertToDefault( self ):
+        try:
+            combobox.setCurrentIndex( self.defaultValue.index(self.getDefaultValue()) )
+        except IndexError:
+            pass
+    def generateWidget( self, dimensioningProcess ):
+        self.dimensioningProcess = dimensioningProcess
+        combobox = QtGui.QComboBox()
+        for i in self.defaultValue:
+            combobox.addItem(i)
+        try:
+            combobox.setCurrentIndex( self.defaultValue.index(self.getDefaultValue()) )
+        except IndexError:
+            pass
+        combobox.currentIndexChanged.connect( self.valueChanged )
+        self.combobox = combobox
+        return  DimensioningTaskDialog_generate_row_hbox( self.label, combobox )
+DimensioningPreferenceClasses["choice"] = DimensioningPreference_choice
+
 class DimensioningPreference_boolean(DimensioningPreference_prototype):
     def valueChanged( self, arg1):
         self.dimensioningProcess.dimensionConstructorKWs[ self.name ] = self.checkbox.isChecked()

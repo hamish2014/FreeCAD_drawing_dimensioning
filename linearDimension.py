@@ -10,7 +10,7 @@ d = DimensioningProcessTracker() #shorthand
 #
 def linearDimensionSVG_points( x1, y1, x2, y2, x3, y3, x4=None, y4=None, autoPlaceText=False, autoPlaceOffset=2.0,
                                scale=1.0, textFormat_linear='%3.3f', comma_decimal_place=False,
-                               gap_datum_points = 2, dimension_line_overshoot=1, arrowL1=3, arrowL2=1, arrowW=2, strokeWidth=0.5, lineColor='blue', 
+                               gap_datum_points = 2, dimension_line_overshoot=1, arrowL1=3, arrowL2=1, arrowW=2, strokeWidth=0.5, lineColor='blue', arrow_scheme='auto',
                                halfDimension_linear=False, textRenderer= defaultTextRenderer):
     lines = []
     p1 = numpy.array([ x1, y1 ])
@@ -44,8 +44,13 @@ def linearDimensionSVG_points( x1, y1, x2, y2, x3, y3, x4=None, y4=None, autoPla
     text = dimensionText( v, textFormat_linear, comma=comma_decimal_place)
     textXML = textPlacement_common_procedure(A, B, text, x4, y4, textRotation, textRenderer, autoPlaceText, autoPlaceOffset)
     distAB = numpy.linalg.norm(A-B)
-    if distAB > 0:
-        s = 1 if distAB > 2.5*(arrowL1 + arrowL2) else -1
+    if distAB > 0 and arrow_scheme <> 'off': #then draw arrows
+        if arrow_scheme == 'auto':
+            s = 1 if distAB > 2.5*(arrowL1 + arrowL2) else -1
+        elif arrow_scheme == 'in':
+            s = 1
+        elif arrow_scheme == 'out':
+            s = -1
         arrowXML = arrowHeadSVG( B, s*directionVector(B,A), arrowL1, arrowL2, arrowW, lineColor )
         if not halfDimension_linear:
             arrowXML = arrowXML +  arrowHeadSVG( A, s*directionVector(A,B), arrowL1, arrowL2, arrowW, lineColor )
@@ -56,9 +61,9 @@ def linearDimensionSVG_points( x1, y1, x2, y2, x3, y3, x4=None, y4=None, autoPla
 d.dialogWidgets.append( unitSelectionWidget )
 d.registerPreference( 'halfDimension_linear', False, 'compact')
 d.registerPreference( 'textFormat_linear', '%3.3f', 'format mask')
+d.registerPreference( 'arrow_scheme', ['auto','in','out','off'], 'arrows', kind='choice')
 d.registerPreference( 'autoPlaceText', True, 'auto place text')
 d.registerPreference( 'comma_decimal_place', False, 'comma')
-d.registerPreference( 'autoPlaceOffset', 2, 'auto place offset')
 d.registerPreference( 'gap_datum_points', 2, 'gap') 
 d.registerPreference( 'dimension_line_overshoot', 1, 'overshoot')
 d.registerPreference( 'arrowL1', 3 , increment=0.5)
@@ -67,6 +72,8 @@ d.registerPreference( 'arrowW', 1 , increment=0.5)
 d.registerPreference( 'strokeWidth', 0.5, increment=0.05 )
 d.registerPreference( 'lineColor', 255 << 8, kind='color' )
 d.registerPreference( 'textRenderer', ['inherit','3.6',255 << 8], 'text properties', kind='font' )
+d.registerPreference( 'autoPlaceOffset', 2, 'auto place offset')
+
     
 
 def linearDimension_points_preview(mouseX, mouseY):
@@ -91,7 +98,7 @@ def linearDimension_points_clickHandler( x, y ):
 def linearDimensionSVG_parallels( line1, line2, x_baseline, y_baseline, x_text=None, y_text=None, autoPlaceText=False, autoPlaceOffset=2.0,
                                   scale=1.0, textFormat_linear='%3.3f', comma_decimal_place=False,
                                   gap_datum_points = 2, dimension_line_overshoot=1,
-                                  arrowL1=3, arrowL2=1, arrowW=2, svgTag='g', svgParms='', strokeWidth=0.5, lineColor='blue',
+                                  arrowL1=3, arrowL2=1, arrowW=2, svgTag='g', svgParms='', strokeWidth=0.5, lineColor='blue', arrow_scheme='auto',
                                   halfDimension_linear=False, #notUsed, added for compatibility with d.preferences
                                   textRenderer=defaultTextRenderer):
     XML = []
@@ -121,10 +128,15 @@ def linearDimensionSVG_parallels( line1, line2, x_baseline, y_baseline, x_text=N
     line_to_arrow_point( p3, p4, p_arrow2)
     XML.append( svgLine( p_arrow1[0], p_arrow1[1], p_arrow2[0], p_arrow2[1], lineColor, strokeWidth) )
     dist = norm(p_arrow1 - p_arrow2)
-    if dist > 0:
-        s = -1 if dist > 2.5*(arrowL1 + arrowL2) else 1
-    XML.append( arrowHeadSVG( p_arrow1,  directionVector(p_center, p_arrow1)*s, arrowL1, arrowL2, arrowW, lineColor ) )
-    XML.append( arrowHeadSVG( p_arrow2,  directionVector(p_center, p_arrow2)*s, arrowL1, arrowL2, arrowW, lineColor ) )
+    if dist > 0 and arrow_scheme <> 'off': #then draw arrows
+        if arrow_scheme == 'auto':
+            s = -1 if dist > 2.5*(arrowL1 + arrowL2) else 1
+        elif arrow_scheme == 'in':
+            s = -1
+        elif arrow_scheme == 'out':
+            s =  1
+        XML.append( arrowHeadSVG( p_arrow1,  directionVector(p_center, p_arrow1)*s, arrowL1, arrowL2, arrowW, lineColor ) )
+        XML.append( arrowHeadSVG( p_arrow2,  directionVector(p_center, p_arrow2)*s, arrowL1, arrowL2, arrowW, lineColor ) )
     textRotation = numpy.arctan2( d[1], d[0]) / numpy.pi * 180 + 90
     text = dimensionText(dist*scale,textFormat_linear,comma=comma_decimal_place)
     XML.append( textPlacement_common_procedure( p_arrow1, p_arrow2, text, x_text, y_text, textRotation, textRenderer, autoPlaceText, autoPlaceOffset) )

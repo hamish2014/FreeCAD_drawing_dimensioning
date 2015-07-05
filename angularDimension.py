@@ -6,7 +6,7 @@ from dimensionSvgConstructor import *
 d = DimensioningProcessTracker()
 
 def angularDimensionSVG( line1, line2, x_baseline, y_baseline, x_text=None, y_text=None, 
-                         textFormat_angular='%3.1f°',  gap_datum_points = 2, dimension_line_overshoot=1, arrowL1=3, arrowL2=1, arrowW=2, strokeWidth=0.5, lineColor='blue', 
+                         textFormat_angular='%3.1f°',  gap_datum_points = 2, dimension_line_overshoot=1, arrowL1=3, arrowL2=1, arrowW=2, strokeWidth=0.5, lineColor='blue',  arrow_scheme='auto',
                          textRenderer=defaultTextRenderer):
     XML = []
     x_int, y_int = lineIntersection(line1, line2)
@@ -51,9 +51,15 @@ def angularDimensionSVG( line1, line2, x_baseline, y_baseline, x_text=None, y_te
     #rX, rY, xRotation, largeArc, sweep, _end_x, _end_y =
     XML.append('<path d = "M %f %f A %f %f 0 %i %i %f %f" style="stroke:%s;stroke-width:%1.2f;fill:none" />' % (p_arrow1[0],p_arrow1[1], r_P5, r_P5, largeArc, sweep, p_arrow2[0],p_arrow2[1],lineColor, strokeWidth))
 
-    s = 1 if angle_2 > angle_1 else -1
-    XML.append( arrowHeadSVG( p_arrow1, rotate2D(d1, s*pi/2), arrowL1, arrowL2, arrowW, lineColor ) )
-    XML.append( arrowHeadSVG( p_arrow2, rotate2D(d2,-s*pi/2), arrowL1, arrowL2, arrowW, lineColor ) )
+    if arrow_scheme <> 'off': #then draw arrows
+        if arrow_scheme == 'auto':
+            s = 1 if  angle_2 > angle_1 else -1
+        elif arrow_scheme == 'in':
+            s = 1
+        elif arrow_scheme == 'out':
+            s = -1
+        XML.append( arrowHeadSVG( p_arrow1, rotate2D(d1, s*pi/2), arrowL1, arrowL2, arrowW, lineColor ) )
+        XML.append( arrowHeadSVG( p_arrow2, rotate2D(d2,-s*pi/2), arrowL1, arrowL2, arrowW, lineColor ) )
 
     if x_text <> None and y_text <> None:
         v = arccos( numpy.dot(d1, d2) )/ pi * 180
@@ -63,6 +69,7 @@ def angularDimensionSVG( line1, line2, x_baseline, y_baseline, x_text=None, y_te
     return '<g> %s </g>' % '\n'.join(XML)
 
 d.registerPreference( 'textFormat_angular', '%3.1f°', 'format mask')
+d.registerPreference( 'arrow_scheme')
 d.registerPreference( 'gap_datum_points') 
 d.registerPreference( 'dimension_line_overshoot')
 d.registerPreference( 'arrowL1')
