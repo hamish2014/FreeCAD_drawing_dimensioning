@@ -57,6 +57,7 @@ def getDrawingPageGUIVars():
 
     # raise an error explaining that the page wasn't found if the list is empty
     if len(pages) <> 1:
+        QtGui.QMessageBox.information( QtGui.qApp.activeWindow(), notDrawingPage_title, notDrawingPage_msg  )
         raise ValueError, notDrawingPage_title
 
     # get the page from the list
