@@ -440,16 +440,16 @@ class DimensioningTaskDialog:
         if iconPath <> None:
             self.form.setWindowIcon( QtGui.QIcon( iconPath ) )
 
-    def accept(self):
-        self.reject()
-
-    def reject(self):
+    def reject(self): #close button
         import previewDimension
         if hasattr(previewDimension.preview, 'drawingVars'):
             previewDimension.removePreviewGraphicItems( recomputeActiveDocument = True )
         else:
             recomputeWithOutViewReset(self.dimensiongProcess.drawingVars )
             FreeCADGui.Control.closeDialog()
+    def getStandardButtons(self): #http://forum.freecadweb.org/viewtopic.php?f=10&t=11801
+        return 0x00200000 #close button
+
 
 class DimensioningTaskDialogForm(QtGui.QWidget):
     
