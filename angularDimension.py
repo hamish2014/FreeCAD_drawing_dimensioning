@@ -6,7 +6,7 @@ from dimensionSvgConstructor import *
 d = DimensioningProcessTracker()
 
 def angularDimensionSVG( line1, line2, x_baseline, y_baseline, x_text=None, y_text=None, 
-                         textFormat_angular='%3.1f°',  gap_datum_points = 2, dimension_line_overshoot=1, arrowL1=3, arrowL2=1, arrowW=2, strokeWidth=0.5, lineColor='blue',  arrow_scheme='auto',
+                         textFormat_angular='%3.1f°', comma_decimal_place=False, gap_datum_points = 2, dimension_line_overshoot=1, arrowL1=3, arrowL2=1, arrowW=2, strokeWidth=0.5, lineColor='blue',  arrow_scheme='auto',
                          textRenderer=defaultTextRenderer):
     XML = []
     x_int, y_int = lineIntersection(line1, line2)
@@ -64,12 +64,13 @@ def angularDimensionSVG( line1, line2, x_baseline, y_baseline, x_text=None, y_te
     if x_text <> None and y_text <> None:
         v = arccos( numpy.dot(d1, d2) )/ pi * 180
         textRotation = numpy.arctan2( y_text - y_int, x_text - x_int)
-        textXML = textRenderer( x_text, y_text, dimensionText(v,textFormat_angular), textRotation)
+        textXML = textRenderer( x_text, y_text, dimensionText(v,textFormat_angular, comma=comma_decimal_place), textRotation)
         XML.append( textXML )
     return '<g> %s </g>' % '\n'.join(XML)
 
 d.registerPreference( 'textFormat_angular', '%3.1f°', 'format mask')
 d.registerPreference( 'arrow_scheme')
+d.registerPreference( 'comma_decimal_place' )
 d.registerPreference( 'gap_datum_points') 
 d.registerPreference( 'dimension_line_overshoot')
 d.registerPreference( 'arrowL1')

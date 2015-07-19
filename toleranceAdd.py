@@ -14,22 +14,24 @@ from dimensionSvgConstructor import *
 
 d = DimensioningProcessTracker()
 
-def _textSVG_sub(x_offset, y_offset, text):
+def _textSVG_sub(x_offset, y_offset, text, comma_decimal_place ):
     svgText = d.svgText
     offset = rotate2D([x_offset, y_offset], svgText.rotation*numpy.pi/180)
     x = svgText.x + offset[0]
     y = svgText.y + offset[1]
-    return d.textRenderer(x, y, text, text_anchor='end', rotation=svgText.rotation )
+    return d.textRenderer(x, y, text if not comma_decimal_place else text.replace('.',','),
+                          text_anchor='end', rotation=svgText.rotation )
 
-def textSVG( x, y, toleranceText_sizeRatio=0.8  ):
+def textSVG( x, y, toleranceText_sizeRatio=0.8, comma_decimal_place=False ):
     fontSize = float(d.svgText.font_size)*toleranceText_sizeRatio
     d.textRenderer.font_size = fontSize
     svgText = d.svgText
     w = rotate2D([x - svgText.x, y - svgText.y], -svgText.rotation*numpy.pi/180)[0]
-    textXML_lower = _textSVG_sub(  w, 0.0*fontSize, d.lower )
-    textXML_upper = _textSVG_sub(  w,    -fontSize, d.upper )
+    textXML_lower = _textSVG_sub(  w, 0.0*fontSize, d.lower, comma_decimal_place )
+    textXML_upper = _textSVG_sub(  w,    -fontSize, d.upper, comma_decimal_place )
     return '<g > %s \n %s </g> ' % ( textXML_lower, textXML_upper )
 d.registerPreference( 'toleranceText_sizeRatio', 0.8, increment=0.1, label='size ratio')
+d.registerPreference( 'comma_decimal_place')
 
 class boundText_widget:
     def __init__(self, name, default):
