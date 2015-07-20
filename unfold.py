@@ -347,14 +347,8 @@ class UnfoldTaskPanel:
     def rotationChanged(self, v):
         d.svgRotation = v
 
-    def clicked(self,button):
-        if button == QtGui.QDialogButtonBox.Apply:
-            pass #? dont see an apply dialog
-            #self.transferTo()
-            #self.obj.Proxy.execute(self.obj) 
-        
-    def accept(self):
-        pass #need to figure out how to remove this button...
+    def getStandardButtons(self): #http://forum.freecadweb.org/viewtopic.php?f=10&t=11801
+        return 0x00400000
     
     def reject(self):
         previewDimension.removePreviewGraphicItems( recomputeActiveDocument = True )
@@ -390,5 +384,28 @@ def rotation_required_to_rotate_a_vector_to_be_aligned_to_another_vector( v, v_r
         axis = normalize(c)
         angle = arccos2( dotProduct( v, v_ref ))
         return axis, angle
-    else: #no rotation required
-        return numpy.array([1.0, 0, 0]), 0.0
+    else: #no rotation required OR vector needs to be flipped ...
+        debugPrint(3,"rotation_required_to_rotate_a_vector_to_be_aligned_to_another_vector,  norm(c)==0")
+        if numpy.array_equal( v, v_ref ):
+            return numpy.array([1.0, 0, 0]), 0.0
+        else:
+            a, e = axis_to_azimuth_and_elevation_angles(*v_ref)
+            axis = azimuth_and_elevation_angles_to_axis(a, e + pi/2)
+            return axis, pi
+            
+
+def azimuth_and_elevation_angles_to_axis( a, e):
+    u_z = sin(e)
+    u_x = cos(e)*cos(a)
+    u_y = cos(e)*sin(a)
+    return numpy.array([ u_x, u_y, u_z ])
+def axis_to_azimuth_and_elevation_angles( u_x, u_y, u_z ):
+    return arctan2( u_y, u_x), arcsin2(u_z)
+
+def arcsin2( v, allowableNumericalError=10**-1 ):
+    if -1 <= v and v <= 1:
+        return arcsin(v)
+    elif abs(v) -1 < allowableNumericalError:
+        return pi/2 if v > 0 else -pi/2
+    else:
+        raise ValueError,"arcsin2 called with invalid input of %s" % v
