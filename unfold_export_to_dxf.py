@@ -31,9 +31,14 @@ class ExportToDxfCommand:
             if os.path.exists(eps_fn):
                 raise RuntimeError,"eps file (%s) exists, aborting operation" % eps_fn
             V.page.PageResult
-            shellCmd('inkscape -f %s -E %s' % (V.page.PageResult, eps_fn))
+            shellCmd('inkscape -f %s -E %s' % (V.page.PageResult, eps_fn)) #circle maintained after this step
             try:
-                shellCmd("pstoedit -dt -f 'dxf:-polyaslines -mm' %s %s" % (eps_fn, dxf_fn) ) 
+                shellCmd("pstoedit -dt -f 'dxf:-polyaslines -mm' -flat 0.01 %s %s" % (eps_fn, dxf_fn) )
+                # man pstoedit
+                # -dt: Draw text - Text is drawn as polygons
+                # -f "format[:options]" target output format recognized by pstoedit.
+                # -flat [flatness factor] If the output format does not support curves in the way PostScript does or if the -nc option is specified, all curves are approximated by lines. Using the -flat option  one  can  control  this approximation. This parameter is directly converted to a PostScript setflat command. Higher numbers, e.g. 10 give rougher, lower numbers, e.g. 0.1 finer approximations. #I the default is 1
+                
                 QtGui.QMessageBox.information(  QtGui.qApp.activeWindow(), "Success", "%s successfully created" % dxf_fn )
             except RuntimeError, msg:
                 QtGui.QMessageBox.critical( QtGui.qApp.activeWindow(), "pstoedit failed.", "%s\n\n suggestion: relaunch FreeCAD from BASH and try again." % msg )
