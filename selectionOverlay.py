@@ -73,7 +73,7 @@ class PathSelectionGraphicsItem( QtGui.QGraphicsPathItem, CircleSelectionGraphic
 graphicItems = [] #storing selection graphics items here as to protect against the garbage collector
 
 def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sceneToAddTo=None, clearPreviousSelectionItems=True, 
-                                    doPoints=False, doTextItems=False, doLines=False, doCircles=False, doFittedCircles=False, doPathEndPoints=False, doMidPoints=False, doSelectViewObjectPoints=True,
+                                    doPoints=False, doTextItems=False, doLines=False, doCircles=False, doFittedCircles=False, doPathEndPoints=False, doMidPoints=False, doSelectViewObjectPoints=False,
                                     pointWid=1.0 , maskPen=defaultMaskPen , maskBrush=defaultMaskBrush, maskHoverPen=defaultMaskHoverPen ):
     if clearPreviousSelectionItems:         
         if sceneToAddTo <> None:
@@ -249,7 +249,7 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                             _x1, _y1, _end_x, _end_y = map( float, parms[j+1:j+1 + 4] ) 
                             j = j + 5
                             P = [ [pen_x, pen_y], element.applyTransforms(_x1, _y1), element.applyTransforms(_end_x, _end_y) ]
-                        if doFittedCircles or True:
+                        if doFittedCircles:
                             x, y, r, r_error = fitCircle_to_path([P])
                             #print('fittedCircle: x, y, r, r_error', x, y, r, r_error)
                             if r_error < 10**-4:
