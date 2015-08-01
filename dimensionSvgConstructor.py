@@ -30,11 +30,16 @@ def arrowHeadSVG( tipPos, d, L1, L2, W, clr='blue'):
     p4 = numpy.dot( R, [ L1,   -W/2.0 ]) + tipPos
     return '<polygon points="%f,%f %f,%f %f,%f %f,%f" style="fill:%s;stroke:%s;stroke-width:0" />' % (tipPos[0], tipPos[1], p2[0], p2[1], p3[0], p3[1], p4[0], p4[1], clr, clr)
 
+def remove_tailing_zeros(s):
+    if '.' in s:
+        return s.rstrip('0').rstrip('.')
+    else:
+        return s
 
 def dimensionText( V, formatStr, roundingDigit=6, comma=False):
-    s1 = (formatStr % V).rstrip('0').rstrip('.')
+    s1 = remove_tailing_zeros(formatStr % V)
     Vrounded = numpy.round(V, roundingDigit)
-    s2 = (formatStr % Vrounded).rstrip('0').rstrip('.')
+    s2 = remove_tailing_zeros(formatStr % Vrounded)
     s =  s2 if len(s2) < len(s1) else s1
     if comma: s = s.replace('.',',')
     return s
