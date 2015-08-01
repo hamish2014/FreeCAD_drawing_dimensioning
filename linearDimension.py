@@ -235,9 +235,10 @@ line_maskHoverPen.setWidth(2.0)
 line_maskBrush = QtGui.QBrush() #clear
 
 class LinearDimensionCommand:
+    iconPath = os.path.join( iconPath,'linearDimension.svg' )
     def Activated(self):
         V = getDrawingPageGUIVars()
-        d.activate( V, dialogTitle='Add Linear Dimension', dialogIconPath=os.path.join( iconPath , 'linearDimension.svg' ), endFunction=self.Activated )
+        d.activate( V, dialogTitle='Add Linear Dimension', dialogIconPath = self.iconPath, endFunction = self.Activated )
 
         commonArgs = dict( 
             onClickFun=selectDimensioningPoint,
@@ -274,9 +275,11 @@ class LinearDimensionCommand:
         
     def GetResources(self): 
         return {
-            'Pixmap' : os.path.join( iconPath , 'linearDimension.svg' ) , 
+            'Pixmap' : self.iconPath , 
             'MenuText': 'Linear Dimension', 
             'ToolTip': 'Creates a linear dimension'
             } 
 
 FreeCADGui.addCommand('dd_linearDimension', LinearDimensionCommand())
+
+
