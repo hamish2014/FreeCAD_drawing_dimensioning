@@ -53,7 +53,7 @@ def getDrawingPageGUIVars():
     # To find the page we are on, we get all the pages which have the same label as
     # the current object. In theory there should therefore only be one page in the list
     # returned by getObjectsByLabel, so we'll just take the first in the list
-    pages = App.ActiveDocument.getObjectsByLabel( subWinMW.objectName() )
+    pages = App.ActiveDocument.getObjectsByLabel( subWinMW.objectName().encode('utf8'))
 
     # raise an error explaining that the page wasn't found if the list is empty
     if len(pages) <> 1:
