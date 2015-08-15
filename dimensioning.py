@@ -530,6 +530,8 @@ def recomputeWithOutViewReset( drawingVars ):
     #centerOn approach did not work rather using scroll bars.
     h_scrollValue = gV.horizontalScrollBar().value()
     v_scrollValue = gV.verticalScrollBar().value()
+    import selectionOverlay
+    selectionOverlay.hideSelectionGraphicsItems()    
     drawingVars.page.touch()
     App.ActiveDocument.recompute()
     gV.scale( scale , scale )
