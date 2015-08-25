@@ -29,21 +29,18 @@ Linux Installation Instructions
 To use this workbench clone this git repository under your FreeCAD MyScripts directory, and install the pyside and numpy python libraries.
 On a Linux Debian based system such as Ubuntu, installation can be done through BASH as follows
 
-  $ sudo apt-get install git python-numpy python-pyside
-
-  $ mkdir ~/.FreeCAD/Mod
-
-  $ cd ~/.FreeCAD/Mod
-
-  $ git clone https://github.com/hamish2014/FreeCAD_drawing_dimensioning.git
-
+```bash
+$ sudo apt-get install git python-numpy python-pyside
+$ mkdir ~/.FreeCAD/Mod
+$ cd ~/.FreeCAD/Mod
+$ git clone https://github.com/hamish2014/FreeCAD_drawing_dimensioning.git
+```
 
 Once installed, use git to easily update to the latest version:
-
-  $ cd ~/.FreeCAD/Mod/FreeCAD_drawing_dimensioning
-
-  $ git pull
-
+```bash
+$ cd ~/.FreeCAD/Mod/FreeCAD_drawing_dimensioning
+$ git pull
+```
 Windows Installation Instructions
 ---------------------------------
 
