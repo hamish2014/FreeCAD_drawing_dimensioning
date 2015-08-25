@@ -303,12 +303,18 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
 
     return graphicItems
     
-def hideSelectionGraphicsItems( hideFunction=None  ):
-    for gi in graphicItems:
-        if hideFunction == None:
-            gi.hide()
-        elif hideFunction(gi):
-            gi.hide()
+def hideSelectionGraphicsItems( hideFunction=None, deleteFromGraphicItemsList = True ):
+    delList = []
+    for ind, gi in enumerate(graphicItems):
+        if hideFunction == None or hideFunction(gi):
+            try:
+                gi.hide()
+            except RuntimeError, msg:
+                App.Console.PrintError('hideSelectionGraphicsItems unable to hide graphicItem, RuntimeError msg %s' % str(msg))
+            if deleteFromGraphicItemsList:
+                delList.append( ind )
+    for delInd in reversed(delList):
+        del graphicItems[delInd]
 
 
 #import FreeCAD
