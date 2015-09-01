@@ -2,7 +2,7 @@ import numpy
 import FreeCAD as App
 import FreeCAD, FreeCADGui, Part, os
 from PySide import QtGui, QtCore, QtSvg
-from textSvg import SvgTextRenderer, SvgTextParser
+from svgLib_dd import SvgTextRenderer, SvgTextParser
 import traceback
 
 __dir__ = os.path.dirname(__file__)

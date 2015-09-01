@@ -15,7 +15,7 @@ dialog.show()
 from dimensioning import *
 import selectionOverlay 
 import textAddDialog
-from textSvg import SvgTextParser
+from svgLib_dd import SvgTextParser
 import previewDimension
 
 d = DimensioningProcessTracker()

@@ -5,7 +5,7 @@ This library provides a crude hack to get around this problem.
 Specifically, DrawingObject.ViewResults are parsed as to create QGraphicsItems to handle selection.
 '''
 from XMLlib import SvgXMLTreeNode
-from circleLib import fitCircle_to_path, findCircularArcCentrePoint, pointsAlongCircularArc
+from svgLib_dd import svgPath
 import sys, numpy, traceback
 from PySide import QtGui, QtCore, QtSvg
 
@@ -146,135 +146,36 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                 elif doSelectViewObjectPoints:
                     addSelectionPoint( *element.applyTransforms( float( element.parms['x'] ), float( element.parms['y'] ) ) )
 
-            if element.tag == 'path': #https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/d
-                #print(element.XML)
-                fitData = []
-                dParmsXML = element.parms['d']
-                #<spacing corrections>
-                i = 0
-                while i < len(dParmsXML)-1:
-                    if dParmsXML[i] in 'MmLlACcQZz,' and dParmsXML[i+1] in '-.0123456789':
-                        dParmsXML = dParmsXML[:i+1] + ' ' + dParmsXML[i+1:]
-                    i = i + 1
-                #</spacing corrections>
-                parms = dParmsXML.replace(',',' ').strip().split()
-                _pen_x = 0
-                _pen_y = 0
-                j = 0
-                pathDescriptor = None
-                while j < len(parms):
-                    #print(parms[j:])
-                    if parms[j] in list('MmLlACcQZz,'):
-                        pathDescriptor = parms[j]
-                    else: #using previous pathDescriptor
-                        if pathDescriptor == None:
-                            raise RuntimeError, 'pathDescriptor == None! unable to parse path "%s" with d parms %s' % (element.XML[element.pStart: element.pEnd], parms)
-                        parms.insert(j, pathDescriptor.replace('m','l').replace('M','L'))
-
-                    if parms[j] == 'M' or parms[j] == 'm':
-                        if parms[j] == 'M':
-                            _pen_x, _pen_y = float(parms[j+1]), float(parms[j+2])
-                        else:
-                            _pen_x = _pen_x + float(parms[j+1])
-                            _pen_y = _pen_y + float(parms[j+2])
-                        pen_x, pen_y = element.applyTransforms( _pen_x, _pen_y )
-                        _path_start_x , _path_start_y = _pen_x, _pen_y
-                        path_start_x , path_start_y = pen_x, pen_y
-                        j = j + 3                        
-                    elif parms[j] in ['L','l','Z','z']:
-                        if  parms[j] == 'L' or parms[j] == 'l':
-                            if parms[j] == 'L':
-                                _end_x, _end_y = float(parms[j+1]), float(parms[j+2])
-                            else:
-                                _end_x = _pen_x + float(parms[j+1])
-                                _end_y = _pen_y + float(parms[j+2])
-                            end_x, end_y = element.applyTransforms( _end_x, _end_y )
-                            j = j + 3
-                        else: #parms[j] == 'Z':
-                            _end_x, _end_y = _path_start_x , _path_start_y
-                            end_x, end_y = path_start_x , path_start_y
-                            j = j + 1
-                        if doPoints:
-                            addSelectionPoint ( pen_x, pen_y )
-                            addSelectionPoint ( end_x, end_y )
-                        if doLines:
-                            graphicsItem = LineSelectionGraphicsItem( pen_x, pen_y, end_x, end_y )
-                            postProcessGraphicsItem(graphicsItem, {'x1':pen_x,'y1':pen_y,'x2':end_x,'y2':end_y})
-                        if doMidPoints:
-                            addSelectionPoint( (pen_x+end_x)/2, (pen_y+end_y)/2 )
-                        _pen_x, _pen_y = _end_x, _end_y
-                        pen_x, pen_y = end_x, end_y
-                    elif parms[j] == 'A':
-                        # The arc command begins with the x and y radius and ends with the ending point of the arc. 
-                        # Between these are three other values: x axis rotation, large arc flag and sweep flag.
-                        rX, rY, xRotation, largeArc, sweep, _end_x, _end_y = map( float, parms[j+1:j+1 + 7] )
-                        end_x, end_y = element.applyTransforms( _end_x, _end_y )
-                        if doPoints:
-                            addSelectionPoint ( pen_x, pen_y )
-                            addSelectionPoint ( end_x, end_y )
-                        if rX==rY :
-                            _c_x, _c_y = findCircularArcCentrePoint( rX, _pen_x, _pen_y, _end_x, _end_y, largeArc==1, sweep==1 ) #do in untranformed co-ordinates as to preserve sweep flag
-                            if not numpy.isnan(_c_x): #if all went well findCircularArcCentrePoint
-                                c_x, c_y = element.applyTransforms( _c_x, _c_y )
-                                r = rX * scaling
-                                if doCircles: 
-                                    #addCircle( c_x, c_y, r , largeArc=largeArc, sweep=sweep)
-                                    gi = PathSelectionGraphicsItem()
-                                    path = QtGui.QPainterPath(QtCore.QPointF(pen_x, pen_y))
-                                    #path.arcTo(c_x - r, c_y -r , 2*r, 2*r, angle_1, angle_CCW) #dont know what is up with this function so trying something else.
-                                    for _p in pointsAlongCircularArc(rX, _pen_x, _pen_y, _end_x, _end_y, largeArc==1, sweep==1, noPoints=12):
-                                        path.lineTo(* element.applyTransforms(*_p) )
-                                    gi.setPath(path)
-                                    postProcessGraphicsItem( gi, {'x':c_x,'y':c_y,'r':r, 'largeArc':largeArc, 'sweep':sweep,  } )
-                                #if doPoints:
-                                #    circlePoints( c_x, c_y, r, r)
-                        _pen_x, _pen_y = _end_x, _end_y
-                        pen_x, pen_y = end_x, end_y
-                        j = j + 8
-                    elif parms[j] == 'C' or parms[j] == 'c' or parms[j] =='Q': #Bézier curve 
-                        if parms[j] == 'C' or parms[j] == 'c':
-                            #cubic Bézier curve from the current point to (x,y) using 
-                            # (x1,y1) as the control point at the beginning of the curve and (x2,y2) as the control point at the end of the curve.
-                            if parms[j] == 'C':
-                                _x1, _y1, _x2, _y2, _end_x, _end_y = map( float, parms[j+1:j+1 + 6] ) 
-                            else: #parms[j] == 'c':
-                                _x1, _y1, _x2, _y2, _end_x, _end_y = numpy.array(map( float, parms[j+1:j+1 + 6] )) + numpy.array([_pen_x,_pen_y]*3)
-                            P = [ [pen_x, pen_y], element.applyTransforms(_x1, _y1), element.applyTransforms(_x2, _y2), element.applyTransforms(_end_x, _end_y) ]
-                            j = j + 7
-                        elif parms[j] == 'Q': # quadratic Bézier curve from the current point to (x,y) using (x1,y1) as the control point. 
-                            # Q (uppercase) indicates that absolute coordinates will follow; 
-                            # q (lowercase) indicates that relative coordinates will follow. 
-                            # Multiple sets of coordinates may be specified to draw a polybézier. 
-                            # At the end of the command, the new current point becomes the final (x,y) coordinate pair used in the polybézier.
-                            _x1, _y1, _end_x, _end_y = map( float, parms[j+1:j+1 + 4] ) 
-                            j = j + 5
-                            P = [ [pen_x, pen_y], element.applyTransforms(_x1, _y1), element.applyTransforms(_end_x, _end_y) ]
-                        if doFittedCircles:
-                            x, y, r, r_error = fitCircle_to_path([P])
-                            #print('fittedCircle: x, y, r, r_error', x, y, r, r_error)
-                            if r_error < 10**-4:
-                                gi = PathSelectionGraphicsItem()
-                                path = QtGui.QPainterPath(QtCore.QPointF(pen_x, pen_y))
-                                if len(P) == 4:
-                                    path.cubicTo( QtCore.QPointF(*P[1]), QtCore.QPointF(*P[2]), QtCore.QPointF(*P[3]) )
-                                else:
-                                    path.quadTo( QtCore.QPointF(*P[1]), QtCore.QPointF(*P[2]) )
-                                gi.setPath(path)
-                                postProcessGraphicsItem( gi, {'x':x,'y':y,'r':r} )
-
-                        end_x, end_y = P[-1]
-                        if doPoints:
-                            addSelectionPoint ( pen_x, pen_y )
-                            addSelectionPoint ( end_x, end_y )
-                        #fitData.append( P )
-                        _pen_x, _pen_y = _end_x, _end_y
-                        pen_x, pen_y = end_x, end_y
-                    else:
-                        raise RuntimeError, 'unable to parse path "%s" with d parms %s' % (element.XML[element.pStart: element.pEnd], parms)
-                if j > 0 and doPathEndPoints:
-                    addSelectionPoint ( pen_x, pen_y )
-                if j > 0 and doSelectViewObjectPoints and SelectViewObjectPoint_loc == None:
-                    SelectViewObjectPoint_loc = pen_x, pen_y
+            if element.tag == 'path': 
+                path = svgPath( element )
+                if doPoints:
+                    for p in path.points:
+                         addSelectionPoint( p.x, p.y )
+                if doLines:
+                    for line in path.lines:
+                        x1, y1, x2, y2 = line.x1, line.y1, line.x2, line.y2
+                        graphicsItem = LineSelectionGraphicsItem( x1, y1, x2, y2 )
+                        postProcessGraphicsItem(graphicsItem, {'x1':x1,'y1':y1,'x2':x2,'y2':y2} )
+                if doMidPoints:
+                    for line in path.lines:
+                        addSelectionPoint( *line.midPoint() )
+                if doCircles:
+                    for arc in path.arcs:
+                        if arc.circular:
+                            gi = PathSelectionGraphicsItem()
+                            gi.setPath( arc.svgPath() )
+                            postProcessGraphicsItem( gi, {'x': arc.c_x,'y': arc.c_y,'r': arc.r*scaling, 'largeArc': arc.largeArc, 'sweep': arc.sweep,  } )
+                if doFittedCircles:
+                    for bezierCurve in path.bezierCurves:
+                        x, y, r, r_error = bezierCurve.fitCircle()
+                        if r_error < 10**-4:
+                            gi = PathSelectionGraphicsItem()
+                            gi.setPath( bezierCurve.svgPath() )
+                            postProcessGraphicsItem( gi, {'x':x,'y':y,'r':r*scaling} )
+                if doPathEndPoints and len(path.points) > 0:
+                    addSelectionPoint ( path.points[-1].x,  path.points[-1].y )
+                if doSelectViewObjectPoints and SelectViewObjectPoint_loc == None and len(path.points) > 0:
+                    SelectViewObjectPoint_loc = path.points[-1].x,  path.points[-1].y
 
             if element.tag == 'line':
                 x1, y1 = element.applyTransforms( float( element.parms['x1'] ), float( element.parms['y1'] ) )
@@ -288,7 +189,7 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                 if doMidPoints:
                     addSelectionPoint( (x1+x2)/2, (y1+y2)/2 )
                 if doSelectViewObjectPoints and SelectViewObjectPoint_loc == None: #second check to textElementes preference
-                    SelectViewObjectPoint_loc = x2,y2
+                    SelectViewObjectPoint_loc = x2, y2
 
         if doSelectViewObjectPoints and SelectViewObjectPoint_loc <> None:
             addSelectionPoint( *SelectViewObjectPoint_loc )

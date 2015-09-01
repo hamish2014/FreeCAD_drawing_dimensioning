@@ -65,6 +65,13 @@ static char * linearDimension_xpm[] = {
         import centerLines
         import noteCircle
         import toleranceAdd
+        if hasattr(os,'uname') and os.uname()[1].startswith('antoine'):
+            import drawing_wb_shortcuts
+            self.appendToolbar('Drawing workbench shortcuts', [
+                    'dd_new_drawing_page',
+                    'dd_Drawing_OrthoViews',                    
+                    ] )
+
         commandslist = [
             'dd_linearDimension', #where dd is short-hand for drawing dimensioning
             'dd_linearDimensionStack',

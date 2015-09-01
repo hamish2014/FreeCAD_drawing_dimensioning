@@ -7,7 +7,7 @@ library containing commonly used SVGs construction functions
 import numpy
 from numpy import dot, pi, arctan2, sin, cos, arccos
 from numpy.linalg import norm
-from textSvg import SvgTextRenderer
+from svgLib_dd import SvgTextRenderer
 
 def directionVector( A, B ):
     if norm(B-A) == 0:
