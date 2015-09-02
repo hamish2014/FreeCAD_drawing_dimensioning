@@ -75,7 +75,7 @@ def export_via_dxfwrite(  dxf_fn, V):
     XML_tree =  SvgXMLTreeNode( pageSvg,0)
     def yT(y): #y transform
         return 210-y
-
+    warningsShown = []
     SelectViewObjectPoint_loc = None
     for element in XML_tree.getAllElements():
         clr_text = None        
@@ -128,11 +128,11 @@ def export_via_dxfwrite(  dxf_fn, V):
             p = SvgPolygon( element )
             for line in p.lines:
                 drawing.add( dxf.line( (line.x1, yT(line.y1)), (line.x2,yT(line.y2)), color=color_code) ) 
-        else:
+        elif not element.tag in warningsShown:
             FreeCAD.Console.PrintWarning('dxf_export: Warning export of %s elements not supported, ignoring...\n' % element.tag )
-
-    #drawing.add(dxf.text('Test', insert=(0, 0.2), layer='TEXTLAYER'))
+            warningsShown.append(element.tag)
     drawing.save()
+    FreeCAD.Console.PrintMessage("dxf_export: %s successfully created\n" % dxf_fn)
 
 
 
