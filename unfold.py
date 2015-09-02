@@ -264,7 +264,14 @@ class pCircularArc:
         if self.points[0] <> self.points[-1]:
             r = self.radius
             largeArc = False #abs(dEnd - dStart) >= pi #given the construction method
-            sweep = True #given the construction method
+            #determine sweep flag
+            p1, p2 = self.points[:2]
+            angle1 = arctan2( p1.y-self.center.y , p1.x-self.center.x )
+            angle2 = arctan2( p2.y-self.center.y , p2.x-self.center.x )
+            if abs(angle1 - angle2) < pi/2: # has not crossed pi/2 or -pi/2 mark
+                sweep = angle1 < angle2
+            else:
+                sweep = angle1 < 0
             return ' '.join( ['<path d = "M %f %f A %f %f 0 %i %i %f %f" style="stroke:%s;stroke-width:%1.2f;fill:none" />' % (p1.x, p1.y,r,r,largeArc,sweep, p2.x, p2.y, lineColor, strokeWidth ) for p1,p2 in zip(self.points[:-1], self.points[1:]) ] )
         else:
             return '<circle cx="%f" cy="%f" r="%f" stroke="%s" stroke-width="%1.2f" fill="none" />' % (self.center.x, self.center.y, self.radius, lineColor,  strokeWidth)

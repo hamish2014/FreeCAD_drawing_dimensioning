@@ -29,7 +29,10 @@ class SvgTextParser:
     def __init__(self, xml):
         p_header_end = xml.find('>') 
         self.header = xml[:p_header_end]
-        self.text = unicode(xml[ p_header_end+1:-len('</text>') ],'utf8')
+        try:
+            self.text = unicode(xml[ p_header_end+1:-len('</text>') ],'utf8')
+        except TypeError:
+            self.text = unicode(xml[ p_header_end+1:-len('</text>') ])
         self.parms = {}
         h = self.header
         p = h.find('=')
