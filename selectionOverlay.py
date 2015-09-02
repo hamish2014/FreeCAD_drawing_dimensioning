@@ -5,7 +5,7 @@ This library provides a crude hack to get around this problem.
 Specifically, DrawingObject.ViewResults are parsed as to create QGraphicsItems to handle selection.
 '''
 from XMLlib import SvgXMLTreeNode
-from svgLib_dd import svgPath
+from svgLib_dd import SvgPath
 import sys, numpy, traceback
 from PySide import QtGui, QtCore, QtSvg
 
@@ -147,7 +147,7 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                     addSelectionPoint( *element.applyTransforms( float( element.parms['x'] ), float( element.parms['y'] ) ) )
 
             if element.tag == 'path': 
-                path = svgPath( element )
+                path = SvgPath( element )
                 if doPoints:
                     for p in path.points:
                          addSelectionPoint( p.x, p.y )

@@ -5,3 +5,4 @@ crudeDebugger_output/*
 .syncthing.*
 \#*
 testCases_selectionOverlay/
+dxfwrite/
