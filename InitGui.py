@@ -96,9 +96,8 @@ static char * linearDimension_xpm[] = {
         unfold_cmds = [
             'dd_unfold',
             'dd_bendingNote',
+            'dd_exportToDxf'
             ]
-        if hasattr(os,'uname') and os.uname()[0] == 'Linux' : #this command only works on Linux systems
-            unfold_cmds.append('dd_exportToDxf')
         self.appendToolbar( 'Drawing Dimensioning Folding', unfold_cmds )
         import weldingSymbols
         if int( FreeCAD.Version()[1] > 15 ) and  int( FreeCAD.Version()[2].split()[0] ) > 5165:
