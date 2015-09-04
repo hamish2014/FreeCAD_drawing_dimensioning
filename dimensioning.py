@@ -4,6 +4,7 @@ import FreeCAD, FreeCADGui, Part, os
 from PySide import QtGui, QtCore, QtSvg
 from svgLib_dd import SvgTextRenderer, SvgTextParser
 import traceback
+from grid_dd import gridOptionsGroupBox, dimensioningGrid
 
 __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
@@ -126,6 +127,7 @@ class DimensioningProcessTracker:
             FreeCADGui.Control.showDialog( self.taskDialog )
         else:
             self.taskDialog = None
+        dimensioningGrid.initialize( drawingVars )
 
     def registerPreference( self, name, defaultValue=None, label=None, kind='guess', **extraKWs):
         if not dimensioningPreferences.has_key(name):
@@ -378,6 +380,7 @@ class UnitSelectionWidget:
     def __init__(self):
         self.unitSelected_combobox_index = 0
         self.customScaleValue = 1.0
+        self.dd_parms = App.ParamGet("User parameter:BaseApp/Preferences/Mod/Drawing_Dimensioning")
     def settingsChanged(self, notUsed=False):
         unit_text = self.unitSelected_combobox.currentText()
         self.unitSelected_combobox_index = self.unitSelected_combobox.currentIndex()
@@ -398,9 +401,20 @@ class UnitSelectionWidget:
             self.customScaleValue = v
         self.dimensioningProcess.unitConversionFactor = 1.0/v if v <> 0 else 1.0
 
+    def groupBoxToggled( self, checked):
+        self.dd_parms.SetBool("show_unit_options", checked)
+        self.groupbox.setMaximumHeight(1000 if checked else 18)
+
     def generateWidget(self, dimensioningProcess):
         self.dimensioningProcess = dimensioningProcess
-        groupbox = QtGui.QGroupBox("Units")
+        groupbox = QtGui.QGroupBox("Unit Options")
+        groupbox.setCheckable( True ) 
+        groupbox.toggled.connect( self.groupBoxToggled )
+        self.groupbox = groupbox
+        checked = self.dd_parms.GetBool("show_unit_options",True)
+        groupbox.setChecked(checked)
+        #self.groupBoxToggled( checked )
+        #groupbox.setCheckState( QtCore.Qt.CheckState.Checked )
         vbox = QtGui.QVBoxLayout()
         unitSelected = QtGui.QComboBox()
         unitSelected.addItem('Edit->Preference->Unit')
@@ -462,7 +476,7 @@ class DimensioningTaskDialogForm(QtGui.QWidget):
         
     def initUI(self):
         vbox = QtGui.QVBoxLayout()
-        for parm in self.dd_parameters:
+        for parm in self.dd_parameters + [gridOptionsGroupBox]:
             w = parm.generateWidget(self.dd_dimensiongProcess )
             if isinstance(w, QtGui.QLayout):
                 vbox.addLayout( w )
@@ -505,8 +519,6 @@ class DimensioningTaskDialogForm(QtGui.QWidget):
         for pref in self.dd_preferences:
             pref.revertToDefault()
         debugPrint(3,'revertToDefault successfully completed')
-
-
 
 
 

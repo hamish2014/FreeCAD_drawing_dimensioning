@@ -2,6 +2,7 @@
 from dimensioning import *
 from dimensioning import __dir__ # not imported with * directive
 import dimensioning
+from grid_dd import *
 
 class PreviewVars:
     def __init__(self):
@@ -61,6 +62,7 @@ def initializePreview( dimensioningProcessTracker, dimensionSvgFun, dimensionCli
         preview.SVG_initialization_height = drawingVars.height
         preview.SVG.setSharedRenderer( preview.SVGRenderer )
         preview.SVG.setTransform( drawingVars.transform )
+        preview.SVG.setZValue( 0.09 )
     preview.removedQtItems = False
     debugPrint(4, 'adding SVG')
     preview.SVGRenderer.load( QtCore.QByteArray( '''<svg width="%i" height="%i"> </svg>''' % (drawingVars.width, drawingVars.height) ) )
@@ -116,7 +118,8 @@ class DimensionPreviewRect(QtGui.QGraphicsRectItem):
             if event.button() == QtCore.Qt.MouseButton.LeftButton:
                 x, y =  preview.applyTransform( event.scenePos() )
                 debugPrint(3, 'mousePressEvent: x %f, y %f' % (x, y) )
-                instruction = self.dimensionClickHandler(x,y)
+                x, y= applyGridRounding( x, y)
+                instruction = self.dimensionClickHandler( x, y )
                 if instruction == None:
                     pass
                 elif instruction.startswith('createDimension:'):
@@ -143,6 +146,7 @@ class DimensionPreviewRect(QtGui.QGraphicsRectItem):
         try:
             x, y = preview.applyTransform( event.scenePos() )
             debugPrint(4, 'hoverMoveEvent: x %f, y %f' % (x, y) )
+            x, y= applyGridRounding( x, y)
             XML = '<svg width="%i" height="%i"> %s </svg>' % (preview.drawingVars.width, preview.drawingVars.height, self.dimensionSvgFun( x, y ))
             if isinstance(XML, unicode): 
                 XML = XML.encode('utf8')
@@ -151,3 +155,4 @@ class DimensionPreviewRect(QtGui.QGraphicsRectItem):
             preview.SVG.update()
         except:
             App.Console.PrintError(traceback.format_exc())
+
