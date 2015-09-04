@@ -54,7 +54,7 @@ maskHoverPen.setWidth(0.0)
 class DeleteDimension:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        d.activate(V, dialogTitle='Delete Dimension', dialogIconPath=os.path.join( iconPath , 'deleteDimension.svg' ), endFunction=self.Activated)
+        d.activate(V, dialogTitle='Delete Dimension', dialogIconPath=os.path.join( iconPath , 'deleteDimension.svg' ), endFunction=self.Activated, grid=False)
         commonArgs = dict( 
             onClickFun=deleteDimension,
             sceneToAddTo = V.graphicsScene, 

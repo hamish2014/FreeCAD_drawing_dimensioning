@@ -110,13 +110,15 @@ class DimensioningProcessTracker:
     def __init__(self):
         self.dialogWidgets = []
         self.preferences = []
-    def activate( self, drawingVars, dialogTitle=None, dialogIconPath=None, endFunction=None):
+    def activate( self, drawingVars, dialogTitle=None, dialogIconPath=None, endFunction=None, grid=True):
         self.drawingVars = drawingVars
         self.endFunction = endFunction
         extraWidgets = []
         if self.endFunction <> None:
             endFunction_parm_name = 'repeat_' + str(endFunction).split()[2]
             extraWidgets.append( RepeatCheckBox(self, endFunction_parm_name) )
+            if grid:
+               extraWidgets.append( gridOptionsGroupBox )
         self.stage = 0
         KWs = {}
         for pref in self.preferences:
@@ -127,7 +129,8 @@ class DimensioningProcessTracker:
             FreeCADGui.Control.showDialog( self.taskDialog )
         else:
             self.taskDialog = None
-        dimensioningGrid.initialize( drawingVars )
+        if grid:
+            dimensioningGrid.initialize( drawingVars )
 
     def registerPreference( self, name, defaultValue=None, label=None, kind='guess', **extraKWs):
         if not dimensioningPreferences.has_key(name):
@@ -476,7 +479,7 @@ class DimensioningTaskDialogForm(QtGui.QWidget):
         
     def initUI(self):
         vbox = QtGui.QVBoxLayout()
-        for parm in self.dd_parameters + [gridOptionsGroupBox]:
+        for parm in self.dd_parameters:
             w = parm.generateWidget(self.dd_dimensiongProcess )
             if isinstance(w, QtGui.QLayout):
                 vbox.addLayout( w )
