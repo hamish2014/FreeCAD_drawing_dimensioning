@@ -65,10 +65,9 @@ static char * linearDimension_xpm[] = {
         import centerLines
         import noteCircle
         import toleranceAdd
-        if hasattr(os,'uname') and os.uname()[1].startswith('antoine'):
-            import drawing_wb_shortcuts
-            self.appendToolbar('Drawing workbench shortcuts', [
-                    'dd_new_drawing_page',
+        from drawing_wb_shortcuts import newpageShortcuts
+        self.appendToolbar('Drawing workbench shortcuts', newpageShortcuts + [
+                    'dd_new_drawing_page_preferences',
                     'dd_Drawing_OrthoViews',                    
                     ] )
 
