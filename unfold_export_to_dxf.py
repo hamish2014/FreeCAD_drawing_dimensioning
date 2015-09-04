@@ -24,8 +24,7 @@ class ExportToDxfCommand:
         #menuText = 'shortcut command for exporting active drawing page to dxf (requires inkscape and pstoedit)'
         menuText = 'alternative dxf export command which uses the dxfwrite python library'
         return {
-            #'Pixmap' : os.path.join( iconPath , 'drawLineWithArrow.svg' ) , 
-            'Pixmap' : os.path.join( iconPath, 'exportToDxf.svg'),
+            'Pixmap' : ':/dd/icons/exportToDxf.svg',
             'MenuText': menuText, 
             } 
 

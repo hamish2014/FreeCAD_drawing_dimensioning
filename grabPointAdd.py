@@ -24,7 +24,7 @@ def grabPoint_clickHandler( x, y):
 class AddGrabPoint:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        d.activate( V, dialogTitle='Add Grab Point', dialogIconPath=os.path.join( iconPath , 'grabPointAdd.svg' ), endFunction=self.Activated )
+        d.activate( V, dialogTitle='Add Grab Point', dialogIconPath=':/dd/icons/grabPointAdd.svg', endFunction=self.Activated )
         d.preview = True
         previewDimension.initializePreview(
             d,
@@ -33,7 +33,7 @@ class AddGrabPoint:
         
     def GetResources(self): 
         return {
-            'Pixmap' : os.path.join( iconPath , 'grabPointAdd.svg' ) , 
+            'Pixmap' : ':/dd/icons/grabPointAdd.svg' , 
             'MenuText': 'Add grab point to draw a free dimension', 
             'ToolTip': 'Add grab point to draw a free dimension'
             } 

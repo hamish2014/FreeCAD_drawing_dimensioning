@@ -46,12 +46,12 @@ def addText_clickHandler( x, y ):
 class AddText:
     def Activated(self):
         V = getDrawingPageGUIVars() 
-        d.activate( V,  dialogTitle='Add Text', dialogIconPath=os.path.join( iconPath , 'textAdd.svg' ), endFunction=self.Activated )
+        d.activate( V,  dialogTitle='Add Text', dialogIconPath= ':/dd/icons/textAdd.svg', endFunction=self.Activated )
         previewDimension.initializePreview( d, addText_preview, addText_clickHandler)
         
     def GetResources(self): 
         return {
-            'Pixmap' : os.path.join( iconPath , 'textAdd.svg' ) , 
+            'Pixmap' : ':/dd/icons/textAdd.svg' , 
             'MenuText': 'Add text to drawing', 
             'ToolTip': 'Add text to drawing'
             } 

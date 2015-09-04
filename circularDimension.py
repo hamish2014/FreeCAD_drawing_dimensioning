@@ -78,7 +78,7 @@ maskHoverPen.setWidth(2.0)
 class CircularDimension:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        d.activate(V, dialogTitle='Add Circular Dimension', dialogIconPath=os.path.join( iconPath , 'circularDimension.svg' ), endFunction=self.Activated  )
+        d.activate(V, dialogTitle='Add Circular Dimension', dialogIconPath=':/dd/icons/circularDimension.svg', endFunction=self.Activated  )
         selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if not obj.Name.startswith('dim')], 
             selectFun ,
@@ -93,7 +93,7 @@ class CircularDimension:
 
     def GetResources(self): 
         return {
-            'Pixmap' : os.path.join( iconPath , 'circularDimension.svg' ) , 
+            'Pixmap' : ':/dd/icons/circularDimension.svg' , 
             'MenuText': 'Circular Dimension', 
             'ToolTip': 'Creates a circular dimension'
             } 

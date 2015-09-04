@@ -7,7 +7,10 @@ import traceback
 from grid_dd import gridOptionsGroupBox, dimensioningGrid
 
 __dir__ = os.path.dirname(__file__)
-iconPath = os.path.join( __dir__, 'Resources', 'icons' )
+iconPath = os.path.join( __dir__, 'Gui','Resources', 'icons' )
+path_dd_resources =  os.path.join( os.path.dirname(__file__), 'Gui', 'Resources', 'dd_resources.rcc')
+resourcesLoaded = QtCore.QResource.registerResource(path_dd_resources)
+assert resourcesLoaded
 
 def debugPrint( level, msg ):
     if level <= debugPrint.level:
@@ -604,7 +607,7 @@ class helpCommand:
 - https://www.youtube.com/watch?v=ztMTLp4wZx4 '''  )
     def GetResources(self): 
         return {
-            'Pixmap' : os.path.join( iconPath , 'help.svg' ) , 
+            'Pixmap' : ':/dd/icons/help.svg', 
             'MenuText': 'Help', 
             'ToolTip': 'Help'
             } 

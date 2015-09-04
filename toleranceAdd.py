@@ -77,7 +77,7 @@ def AddToleranceToText( event, referer, elementXML, elementParms, elementViewObj
 class AddTolerance:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        d.activate( V,  dialogTitle='Add Tolerance', dialogIconPath=os.path.join( iconPath , 'toleranceAdd.svg' ), endFunction=self.Activated  )
+        d.activate( V,  dialogTitle='Add Tolerance', dialogIconPath=':/dd/icons/toleranceAdd.svg', endFunction=self.Activated  )
         selectGraphicsItems = selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if obj.Name.startswith('dim')], 
             AddToleranceToText , 
@@ -92,7 +92,7 @@ class AddTolerance:
         
     def GetResources(self): 
         return {
-            'Pixmap' : os.path.join( iconPath , 'toleranceAdd.svg' ) , 
+            'Pixmap' : ':/dd/icons/toleranceAdd.svg' , 
             'MenuText': 'Add tolerance super and subscript to dimension', 
             } 
 FreeCADGui.addCommand('dd_addTolerance', AddTolerance())

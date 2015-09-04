@@ -145,7 +145,7 @@ point_maskHoverPen.setWidth(0.0)
 class AngularDimension:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        d.activate(V, dialogTitle='Add Angular Dimension', dialogIconPath=os.path.join( iconPath , 'angularDimension.svg' ), endFunction=self.Activated )
+        d.activate(V, dialogTitle='Add Angular Dimension', dialogIconPath=':/dd/icons/angularDimension.svg', endFunction=self.Activated )
         selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if not obj.Name.startswith('dim')], 
             selectFun ,
@@ -171,7 +171,7 @@ class AngularDimension:
         
     def GetResources(self): 
         return {
-            'Pixmap' : os.path.join( iconPath , 'angularDimension.svg' ) , 
+            'Pixmap' : ':/dd/icons/angularDimension.svg', 
             'MenuText': 'Angular Dimension', 
             'ToolTip': 'Creates a angular dimension'
             } 

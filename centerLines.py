@@ -91,7 +91,7 @@ def selectFun(  event, referer, elementXML, elementParms, elementViewObject ):
 class CenterLines:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        d.activate(V, dialogTitle='Add Center Lines', dialogIconPath=os.path.join( iconPath , 'centerLines.svg' ), endFunction=self.Activated )
+        d.activate(V, dialogTitle='Add Center Lines', dialogIconPath=':/dd/icons/centerLines.svg', endFunction=self.Activated )
         d.SVGFun = centerLinesSVG
         maskPen =      QtGui.QPen( QtGui.QColor(0,255,0,100) )
         maskPen.setWidth(2.0)
@@ -110,7 +110,7 @@ class CenterLines:
         selectionOverlay.addProxyRectToRescaleGraphicsSelectionItems( V.graphicsScene, V.graphicsView, V.width, V.height)
     def GetResources(self): 
         return {
-            'Pixmap' : os.path.join( iconPath , 'centerLines.svg' ) , 
+            'Pixmap' : ':/dd/icons/centerLines.svg', 
             'MenuText': 'Center Lines', 
             'ToolTip': 'Center Lines',
             } 
@@ -125,7 +125,7 @@ line_maskBrush = QtGui.QBrush() #clear
 class CenterLine(CenterLines):
     def Activated(self):
         V = getDrawingPageGUIVars()
-        d.activate(V, dialogTitle='Add Center Lines', dialogIconPath=os.path.join( iconPath , 'centerLine.svg' ), endFunction=self.Activated )
+        d.activate(V, dialogTitle='Add Center Lines', dialogIconPath=':/dd/icons/centerLine.svg', endFunction=self.Activated )
         d.SVGFun = centerLineSVG
         maskBrush  =   QtGui.QBrush( QtGui.QColor(0,160,0,100) )
         maskPen =      QtGui.QPen( QtGui.QColor(0,160,0,100) )
@@ -158,7 +158,7 @@ class CenterLine(CenterLines):
 
     def GetResources(self): 
         return {
-            'Pixmap' : os.path.join( iconPath , 'centerLine.svg' ) , 
+            'Pixmap' : ':/dd/icons/centerLine.svg', 
             'MenuText': 'Center Line', 
             'ToolTip': 'Center Line',
             } 

@@ -1,6 +1,5 @@
 
 from dimensioning import *
-from dimensioning import iconPath # not imported with * directive
 import selectionOverlay, previewDimension
 from dimensionSvgConstructor import *
 
@@ -8,20 +7,22 @@ d = DimensioningProcessTracker()
 
 def noteCircleSVG( start_x, start_y, radialLine_x=None, radialLine_y=None, tail_x=None, tail_y=None,
                    noteCircleText= '0', strokeWidth=0.5, lineColor='blue', noteCircle_radius=4.5, noteCircle_fill='white',
-                   textRenderer=defaultTextRenderer):
+                   textRenderer_noteCircle=defaultTextRenderer):
     XML_body = [ ]
     if radialLine_x <> None and radialLine_y <> None:
         XML_body.append( svgLine(radialLine_x, radialLine_y, start_x, start_y, lineColor, strokeWidth) )
         if tail_x <> None and tail_y <> None:
             XML_body.append( svgLine(radialLine_x, radialLine_y, tail_x, radialLine_y, lineColor, strokeWidth) )
             XML_body.append(' <circle cx ="%f" cy ="%f" r="%f" stroke="%s" fill="%s" /> ' % (tail_x, radialLine_y, noteCircle_radius, lineColor, noteCircle_fill) )
-            XML_body.append( textRenderer( tail_x - 1.5, radialLine_y + 1.5, noteCircleText ) )
+            XML_body.append( textRenderer_noteCircle( tail_x - 1.5, radialLine_y + 1.5, noteCircleText ) )
     return '<g> %s </g>' % '\n'.join(XML_body)
 
 d.registerPreference( 'strokeWidth')
 d.registerPreference( 'lineColor' )
 d.registerPreference( 'noteCircle_radius', 4.5, increment=0.5, label='radius')
 d.registerPreference( 'noteCircle_fill', RGBtoUnsigned(255, 255, 255), kind='color', label='fill' )
+d.registerPreference( 'textRenderer_noteCircle', ['inherit','5', 150<<16], 'text properties (Note Circle)', kind='font' )
+
 class NoteCircleText_widget:
     def __init__(self):
         self.counter = 1
@@ -65,7 +66,7 @@ maskHoverPen.setWidth(0.0)
 class NoteCircle:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        d.activate(V, dialogTitle='Add Note Circle', dialogIconPath=os.path.join( iconPath , 'noteCircle.svg' ), endFunction=self.Activated )
+        d.activate(V, dialogTitle='Add Note Circle', dialogIconPath=':/dd/icons/noteCircle.svg', endFunction=self.Activated )
         #d.SVGFun = noteCircleSVG
         selectionOverlay.generateSelectionGraphicsItems(
             [obj for obj in V.page.Group  if not obj.Name.startswith('dim') and not obj.Name.startswith('center')],
@@ -82,7 +83,7 @@ class NoteCircle:
 
     def GetResources(self):
         return {
-            'Pixmap' : os.path.join( iconPath , 'noteCircle.svg' ) ,
+            'Pixmap' : ':/dd/icons/noteCircle.svg' ,
             'MenuText': 'Notation',
             'ToolTip': 'Creates a notation indicator'
             }

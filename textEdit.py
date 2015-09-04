@@ -82,7 +82,7 @@ maskHoverPen.setWidth(0.0)
 class EditText:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        d.activate( V, dialogTitle='Edit Text', dialogIconPath=os.path.join( iconPath , 'textEdit.svg' ), endFunction=self.Activated, grid=False  )
+        d.activate( V, dialogTitle='Edit Text', dialogIconPath= ':/dd/icons/textEdit.svg', endFunction=self.Activated, grid=False  )
         selectGraphicsItems = selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if obj.Name.startswith('dim')], 
             EditDimensionText , 
@@ -98,7 +98,7 @@ class EditText:
     def GetResources(self): 
         msg = "Edit a dimension's text"
         return {
-            'Pixmap' : os.path.join( iconPath , 'textEdit.svg' ) , 
+            'Pixmap' : ':/dd/icons/textEdit.svg', 
             'MenuText': msg, 
             'ToolTip': msg
             } 

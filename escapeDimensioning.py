@@ -9,7 +9,7 @@ class EscapeDimensioning:
         
     def GetResources(self): 
         return {
-            'Pixmap' : os.path.join( iconPath , 'escape.svg' ) , 
+            'Pixmap' : ':/dd/icons/escape.svg' , 
             'MenuText': 'escape Dimensioning', 
             'ToolTip': 'escape Dimensioning'
             } 

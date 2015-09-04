@@ -74,7 +74,7 @@ maskHoverPen.setWidth(2.0)
 class RadiusDimension:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        d.activate(V, 'Add Radial Dimension', dialogIconPath=os.path.join( iconPath , 'radiusDimension.svg' ), endFunction=self.Activated)
+        d.activate(V, 'Add Radial Dimension', dialogIconPath=':/dd/icons/radiusDimension.svg', endFunction=self.Activated)
         selectionOverlay.generateSelectionGraphicsItems(
             [obj for obj in V.page.Group  if not obj.Name.startswith('dim')],
             selectFun ,
@@ -89,7 +89,7 @@ class RadiusDimension:
 
     def GetResources(self):
         return {
-            'Pixmap' : os.path.join( iconPath , 'radiusDimension.svg' ) ,
+            'Pixmap' : ':/dd/icons/radiusDimension.svg',
             'MenuText': 'Radius Dimension',
             'ToolTip': 'Creates a radius dimension'
             }

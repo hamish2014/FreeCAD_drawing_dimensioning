@@ -43,7 +43,7 @@ maskHoverPen.setWidth(0.0)
 class MoveText:
     def Activated(self):
         V = getDrawingPageGUIVars() #needs to be done before dialog show, else Qt active is dialog and not freecads
-        d.activate( V,  dialogTitle='Move Text', dialogIconPath=os.path.join( iconPath , 'textMove.svg' ), endFunction=self.Activated  )
+        d.activate( V,  dialogTitle='Move Text', dialogIconPath=':/dd/icons/textMove.svg', endFunction=self.Activated  )
         selectGraphicsItems = selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if obj.Name.startswith('dim')], 
             MoveDimensionText , 
@@ -59,7 +59,7 @@ class MoveText:
     def GetResources(self): 
         msg = "Move a dimension's text"
         return {
-            'Pixmap' : os.path.join( iconPath , 'textMove.svg' ) , 
+            'Pixmap' : ':/dd/icons/textMove.svg' , 
             'MenuText': msg, 
             'ToolTip': msg
             } 

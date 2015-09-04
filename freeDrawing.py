@@ -1,5 +1,4 @@
 from dimensioning import *
-from dimensioning import iconPath # not imported with * directive
 import previewDimension
 import textAddDialog
 
@@ -40,7 +39,7 @@ class lineFreeDrawing:
         
     def GetResources(self): 
         return {
-            'Pixmap' : os.path.join( iconPath , 'drawLine.svg' ) , 
+            'Pixmap' : ':/dd/icons/drawLine.svg', 
             'MenuText': 'Draw a line' 
             } 
 FreeCADGui.addCommand('DrawingDimensioning_drawLine', lineFreeDrawing())
@@ -95,7 +94,7 @@ class ArrowWithTail_Drawing:
         
     def GetResources(self): 
         return {
-            'Pixmap' : os.path.join( iconPath , 'drawLineWithArrow.svg' ) , 
+            'Pixmap' : ':/dd/icons/drawLineWithArrow.svg', 
             'MenuText': 'Draw an arrow with a tail', 
             } 
 FreeCADGui.addCommand('DrawingDimensioning_drawArrowWithTail', ArrowWithTail_Drawing())

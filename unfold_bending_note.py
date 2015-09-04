@@ -33,7 +33,7 @@ maskHoverPen.setWidth(0.0)
 class BendingNoteCommand:
     def Activated(self):
         V = getDrawingPageGUIVars()
-        d.activate(V, dialogTitle='Add Bend Note', dialogIconPath=os.path.join( iconPath, 'bendingNote.svg'), endFunction=self.Activated )
+        d.activate(V, dialogTitle='Add Bend Note', dialogIconPath=':/dd/icons/bendingNote.svg', endFunction=self.Activated )
         selectionOverlay.generateSelectionGraphicsItems( 
             [obj for obj in V.page.Group  if not obj.Name.startswith('dim') and not obj.Name.startswith('center')], 
             self.selectFun ,
@@ -126,7 +126,7 @@ class BendingNoteCommand:
 
     def GetResources(self): 
         return {
-            'Pixmap' : os.path.join( iconPath, 'bendingNote.svg'),
+            'Pixmap' : ':/dd/icons/bendingNote.svg',
             'MenuText': 'bending note', 
             } 
 

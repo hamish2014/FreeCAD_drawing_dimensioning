@@ -110,7 +110,7 @@ line_maskHoverPen.setWidth(2.0)
 line_maskBrush = QtGui.QBrush() #clear
 
 class LinearDimensionStackCommand:
-    iconPath = os.path.join( iconPath,'linearDimensionStack.svg' )
+    iconPath = ':/dd/icons/linearDimensionStack.svg'
     def Activated(self):
         V = getDrawingPageGUIVars()
         d.activate( V, dialogTitle='Add Linear Dimension Stack', dialogIconPath = self.iconPath, endFunction = self.Activated )

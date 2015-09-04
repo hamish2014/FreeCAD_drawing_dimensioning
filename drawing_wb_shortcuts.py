@@ -7,7 +7,7 @@ class TaskDialog_pagePreferences:
     def __init__(self ):
         self.form = Form_pagePreferences()
         self.form.setWindowTitle('drawing shortcut settings')    
-        self.form.setWindowIcon( QtGui.QIcon( os.path.join( iconPath , 'drawing-shortcut-settings.svg')))
+        self.form.setWindowIcon( QtGui.QIcon(':/dd/icons/drawing-shortcut-settings.svg'))
                        
     def accept(self):
         parms.SetString( 'shortcut_page_templates', self.form.Templates_textEdit.toPlainText() )
@@ -136,7 +136,7 @@ class NewPagePreferencesCommand:
         FreeCADGui.Control.showDialog( self.taskDialog )
     def GetResources(self): 
         return {
-            'Pixmap' : os.path.join( iconPath , 'drawing-shortcut-settings.svg' ) , 
+            'Pixmap' : ':/dd/icons/drawing-shortcut-settings.svg' , 
             'MenuText': 'Change the settings for new drawing page shortcuts', 
             } 
 
@@ -160,10 +160,10 @@ class NewPageShorcut:
             } 
 
 newpageShortcuts = []
-templateFns = [ s.strip() for s in parms.GetString( 'shortcut_page_templates').split('\n') if s.strip() > 0 ]
+templateFns = [ s.strip() for s in parms.GetString( 'shortcut_page_templates').split('\n') if len(s.strip()) > 0 ]
 for i, templateFn in enumerate(templateFns[:4]):
     cmd_name = 'dd_new_drawing_page_%i' % (i+1)
-    FreeCADGui.addCommand(cmd_name, NewPageShorcut(templateFn,  os.path.join( iconPath , 'new-drawing-page-%i.svg' %(i+1) ) ) )
+    FreeCADGui.addCommand(cmd_name, NewPageShorcut(templateFn,  ':/dd/icons/new-drawing-page-%i.svg' %(i+1) ) )
     newpageShortcuts.append( cmd_name )
 
 class DrawingOrthoViewsCommand:
@@ -171,7 +171,7 @@ class DrawingOrthoViewsCommand:
         FreeCADGui.runCommand('Drawing_OrthoViews')
     def GetResources(self): 
         return {
-            'Pixmap' : os.path.join( iconPath , 'drawing-orthoviews.svg' ) , 
+            'Pixmap' : ':/dd/icons/drawing-orthoviews.svg' , 
             'MenuText': 'Shortcut to Drawing-OrthoViews Command', 
             } 
 

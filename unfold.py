@@ -311,7 +311,7 @@ class UnfoldCommand:
             QtGui.QMessageBox.information(  QtGui.qApp.activeWindow(), "Info", 'Please select touching faces from the same shape')
     def GetResources(self): 
         return {
-            'Pixmap' : os.path.join( iconPath, 'unfold.svg' ) , 
+            'Pixmap' : ':/dd/icons/unfold.svg', 
             'MenuText': 'Unfold faces', 
             'ToolTip': 'Unfold faces'
             } 
@@ -321,8 +321,8 @@ FreeCADGui.addCommand('dd_unfold', UnfoldCommand())
 class UnfoldTaskPanel:
     'based on FreeCAD_sf_master/src/Mod/PartDesign/InvoluteGearFeature.py'
     def __init__(self):
-        self.form = FreeCADGui.PySideUic.loadUi( os.path.join(__dir__,"unfold.ui") )
-        self.form.setWindowIcon(QtGui.QIcon( os.path.join( iconPath, 'unfold.svg' ) ) )
+        self.form = FreeCADGui.PySideUic.loadUi( ':/dd/ui/unfold.ui' )
+        self.form.setWindowIcon( QtGui.QIcon( ':/dd/icons/unfold.svg' ) )
 
         #self.form.doubleSpinBox_scale.setValue(d.svgScale)
         #self.form.doubleSpinBox_rotation.setValue(d.svgRotation)
