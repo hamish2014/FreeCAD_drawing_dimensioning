@@ -33,6 +33,8 @@ class SvgTextParser:
             self.text = unicode(xml[ p_header_end+1:-len('</text>') ],'utf8')
         except TypeError:
             self.text = unicode(xml[ p_header_end+1:-len('</text>') ])
+        #import FreeCAD
+        #FreeCAD.Console.PrintMessage(self.text)
         self.parms = {}
         h = self.header
         p = h.find('=')
@@ -57,7 +59,10 @@ class SvgTextParser:
         self.transform = self.parms.get('transform')
         if self.transform <> None:
             t = self.transform
-            self.rotation = float(t[t.find('rotate(')+len('rotate('):].split()[0])
+            if 'rotate(' in t:
+                self.rotation = float(t[t.find('rotate(')+len('rotate('):].split()[0])
+            else:
+                self.rotation = 0
         else:
             self.rotation = 0
         self.text_anchor = self.parms.get('text-anchor','inherit')

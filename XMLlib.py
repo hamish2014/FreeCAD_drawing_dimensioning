@@ -137,7 +137,8 @@ class SvgXMLTreeNode:
                     sx, sy = scaleParms[0], scaleParms[0]
             if 'matrix(' in self.header: #"matrix(1.25,0,0,-1.25,-348.3393,383.537)"
                 sx, shear_1, shear_2, sy, tx, ty = map(float, extractParms(self.header, 0, 'matrix(', ', ', ')'))
-                assert shear_1 == 0 and shear_2 == 0
+                if not shear_1 == 0 and shear_2 == 0:
+                    raise NotImplementedError, " not shear_1 == 0 and shear_2 == 0! header %s" % self.header 
         p = numpy.array( [sx*x + tx, sy*y + ty] )
         point = dot(R, p-r_o) +r_o
         if self.parent <> None:
