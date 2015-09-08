@@ -171,7 +171,7 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                         if r_error < 10**-4:
                             gi = PathSelectionGraphicsItem()
                             gi.setPath( bezierCurve.svgPath() )
-                            postProcessGraphicsItem( gi, {'x':x,'y':y,'r':r*scaling} )
+                            postProcessGraphicsItem( gi, {'x':x,'y':y,'r':r} )
                 if doPathEndPoints and len(path.points) > 0:
                     addSelectionPoint ( path.points[-1].x,  path.points[-1].y )
                 if doSelectViewObjectPoints and SelectViewObjectPoint_loc == None and len(path.points) > 0:
