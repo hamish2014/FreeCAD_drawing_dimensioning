@@ -28,8 +28,8 @@ def unsignedToRGBText(v):
 
 #/end of duplicated code
 default_grid_clr = RGBtoUnsigned(170,170,255)
-default_grid_spacing = 2
-default_grid_display_period = 10
+default_grid_spacing = 1
+default_grid_display_period = 20
 default_grid_line_width = 0.15
 
 
