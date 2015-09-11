@@ -118,6 +118,8 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
         addSelectionPoint ( x , y - ry, 2 ) #Circle/ellipse bottom quadrant point
 
     for viewObject in viewObjects:
+        if not hasattr(viewObject, 'ViewResult'):
+            continue
         if viewObject.ViewResult.strip() == '':
             continue
         XML_tree =  SvgXMLTreeNode(viewObject.ViewResult,0)
