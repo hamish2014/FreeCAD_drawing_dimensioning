@@ -213,7 +213,8 @@ def hideSelectionGraphicsItems( hideFunction=None, deleteFromGraphicItemsList = 
             try:
                 gi.hide()
             except RuntimeError, msg:
-                App.Console.PrintError('hideSelectionGraphicsItems unable to hide graphicItem, RuntimeError msg %s' % str(msg))
+                import FreeCAD
+                FreeCAD.Console.PrintError('hideSelectionGraphicsItems unable to hide graphicItem, RuntimeError msg %s\n' % str(msg))
             if deleteFromGraphicItemsList:
                 delList.append( ind )
     for delInd in reversed(delList):
