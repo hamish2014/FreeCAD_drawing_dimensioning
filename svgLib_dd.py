@@ -2,8 +2,8 @@
 import sys, numpy, copy
 from PySide import QtGui, QtSvg, QtCore
 from XMLlib import SvgXMLTreeNode
-from circleLib import fitCircle_to_path, findCircularArcCentrePoint, pointsAlongCircularArc, fitCircle
-from numpy import arctan2, pi, linspace, dot, sin, cos
+from circleLib import fitCircle_to_path, findCircularArcCentrePoint, pointsAlongCircularArc, fitCircle, arccos2
+from numpy import arctan2, pi, linspace, dot, sin, cos, array, cross
 from numpy.linalg import norm
 
 class SvgTextRenderer:
@@ -110,11 +110,12 @@ class SvgPath:
         self.lines = []
         self.arcs = []
         self.bezierCurves = []
+        self.elements = [] # for preserving order of path elements, pen movements are not considered elements since they do not result in a direct visual effect
         dParmsXML_org = element.parms['d'].replace(',',' ')
         #<spacing corrections>
         dParmsXML = ''
         for a,b in zip(dParmsXML_org[:-1], dParmsXML_org[1:]):
-            if a in 'MmLlACcQZzHhVv':
+            if a in 'MmLlAaCcQZzHhVv':
                 if len(dParmsXML) > 0 and dParmsXML[-1] <> ' ':
                     dParmsXML = dParmsXML + ' '
                 dParmsXML = dParmsXML + a
@@ -124,7 +125,7 @@ class SvgPath:
                 dParmsXML = dParmsXML + a + ' '
             else:
                 dParmsXML = dParmsXML + a
-        if b in 'MmLlACcQZzHhVv' and dParmsXML[-1] <> ' ':
+        if b in 'MmLlAaCcQZzHhVv' and dParmsXML[-1] <> ' ':
             dParmsXML = dParmsXML + ' '
         dParmsXML = dParmsXML + b
         #<spacing corrections>
@@ -135,7 +136,7 @@ class SvgPath:
         pathDescriptor = None
         while j < len(parms):
             #print(parms[j:])
-            if parms[j] in list('MmLlACcQZzHhVv,'):
+            if parms[j] in list('MmLlAaCcQZzHhVv,'):
                 pathDescriptor = parms[j]
             else: #using previous pathDescriptor
                 if pathDescriptor == None:
@@ -183,16 +184,24 @@ class SvgPath:
                     end_x, end_y = path_start_x , path_start_y
                     j = j + 1
                 self.lines.append( SvgPathLine( pen_x, pen_y, end_x, end_y ) )
+                self.elements.append( self.lines[-1] )
                 _pen_x, _pen_y = _end_x, _end_y
                 pen_x, pen_y = end_x, end_y
 
-            elif parms[j] == 'A':
+            elif parms[j] == 'A' or parms[j] == 'a':
                 # The arc command begins with the x and y radius and ends with the ending point of the arc. 
                 # Between these are three other values: x axis rotation, large arc flag and sweep flag.
                 rX, rY, xRotation, largeArc, sweep, _end_x, _end_y = map( float, parms[j+1:j+1 + 7] )
+                #print(_end_x, _end_y)
+                if parms[j] == 'a':
+                    _end_x = _pen_x + _end_x
+                    _end_y = _pen_y + _end_y
+                    #print(_end_x, _end_y)
                 end_x, end_y = element.applyTransforms( _end_x, _end_y )
-                self.points.append( SvgPathPoint(_end_x, _end_y, end_x, end_y) )
-                self.arcs.append( SvgPathArc( element, _pen_x, _pen_y,  rX, rY, xRotation, largeArc, sweep, _end_x, _end_y ) )
+                if not ( _pen_x == _end_x and _pen_y == _end_y ) and rX <> 0 and rY <> 0:
+                    self.points.append( SvgPathPoint(_end_x, _end_y, end_x, end_y) )
+                    self.arcs.append( SvgPathArc( element, _pen_x, _pen_y,  rX, rY, xRotation, largeArc, sweep, _end_x, _end_y ) )
+                    self.elements.append(self.arcs[-1])
                 _pen_x, _pen_y = _end_x, _end_y
                 pen_x, pen_y = end_x, end_y
                 j = j + 8
@@ -216,6 +225,7 @@ class SvgPath:
                     j = j + 5
                     P = [ [pen_x, pen_y], element.applyTransforms(_x1, _y1), element.applyTransforms(_end_x, _end_y) ]
                 self.bezierCurves.append( SvgPathBezierCurve(P) )
+                self.elements.append(self.bezierCurves[-1])
                 end_x, end_y = P[-1]
                 self.points.append(  SvgPathPoint(_end_x, _end_y, end_x, end_y) )
                 
@@ -240,75 +250,182 @@ class SvgPathLine:
         return (self.x1 + self.x2)/2, (self.y1 + self.y2)/2
 
 class SvgPathArc:
+    '''
+    http://www.w3.org/TR/SVG/paths.html#PathDataEllipticalArcCommands
+    #seems to be more accurate then https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/d#Arcto
+
+    The elliptical arc command draws a section of an ellipse which meets the following constraints:
+
+    -  the arc starts at the current point
+    -  the arc ends at point (x, y)
+    -  the ellipse has the two radii (rx, ry)
+    -  the x-axis of the ellipse is rotated by x-axis-rotation relative to the x-axis of the current coordinate system.
+
+    For most situations, there are actually four different arcs (two different ellipses, each with two different arc sweeps) that satisfy these constraints. 
+    large-arc-flag and sweep-flag indicate which one of the four arcs are drawn, as follows:
+
+    Of the four candidate arc sweeps, two will represent an arc sweep of greater than or equal to 180 degrees (the "large-arc"), and two will represent an arc sweep of less than or equal to 180 degrees (the "small-arc"). 
+    If large-arc-flag is '1', then one of the two larger arc sweeps will be chosen; otherwise, if large-arc-flag is '0', one of the smaller arc sweeps will be chosen.
+    If sweep-flag is '1', then the arc will be drawn in a "positive-angle" direction (i.e., the ellipse formula x=cx+rx*cos(theta) and y=cy+ry*sin(theta) is evaluated such that theta starts at an angle corresponding to the current point and increases positively until the arc reaches (x,y)). 
+    A value of 0 causes the arc to be drawn in a "negative-angle" direction (i.e., theta starts at an angle value corresponding to the current point and decreases until the arc reaches (x,y)).
+    '''
+
     def __init__(self, element, _pen_x, _pen_y, rX, rY, xRotation, largeArc, sweep, _end_x, _end_y ):
-        self.element = element
-        self._pen_x = float(_pen_x)
-        self._pen_y = float(_pen_y)
-        self.rX = rX
-        self.rY = rY
+        """
+        3 coordinate systems
+          circular coordinates - in this coordinate system, the elipse is circular and unrotated
+          elements coordinates - circular coordinates * elipse transformation (x*rX and y*Ry, then rotate to generate the elipse)
+          global coordinates - elements coordinates * upper element transformations
+        """
+        assert not ( _pen_x == _end_x and _pen_y == _end_y )
+        assert rX <> 0
+        assert rY <> 0
+        self._pen_x = _pen_x
+        self._pen_y = _pen_y
+        self._end_x = _end_x
+        self._end_y = _end_y
+        self.scaling = element.scaling2() #scaling between element and global coordinates
+        self.rX = rX #in elements coordinates
+        self.rY = rY #in elements coordinates
         self.xRotation = xRotation
         self.largeArc = largeArc
         self.sweep = sweep
-        self._end_x = float(_end_x)
-        self._end_y = float(_end_y)
-        self.circular = False # and not eliptical
-        if rX == rY:
-            _c_x, _c_y = findCircularArcCentrePoint( rX, _pen_x, _pen_y, _end_x, _end_y, largeArc==1, sweep==1 ) #do in untranformed co-ordinates as to preserve sweep flag
-            if not numpy.isnan(_c_x): 
-                self.circular = True
-                self.c_x, self.c_y = element.applyTransforms( _c_x, _c_y )
-                self.r = rX
-    def svgPath( self ):
-        element, _pen_x, _pen_y, rX, rY, xRotation, largeArc, sweep, _end_x, _end_y = self.element, self._pen_x, self._pen_y, self.rX, self.rY, self.xRotation, self.largeArc, self.sweep, self._end_x, self._end_y
-        assert rX == rY
-        path = QtGui.QPainterPath(QtCore.QPointF( * element.applyTransforms(_pen_x, _pen_y ) ) )
-        #path.arcTo(c_x - r, c_y -r , 2*r, 2*r, angle_1, angle_CCW) #dont know what is up with this function so trying something else.
-        for _p in pointsAlongCircularArc(rX, _pen_x, _pen_y, _end_x, _end_y, largeArc==1, sweep==1, noPoints=12):
-            path.lineTo(* element.applyTransforms(*_p) )
+        #finding center in circular coordinates 
+        # X = T_ellipse dot Y
+        # where T_ellipse = [[c -s],[s, c]] dot [[ rX 0],[0 rY]], X is element coordinates, and Y is circular coordinates
+        ##import FreeCAD
+        ##FreeCAD.Console.PrintMessage( 'Xrotation %f\n' % (self.xRotation))
+        c = cos( xRotation*pi/180)
+        s = sin( xRotation*pi/180)
+        T_ellipse = dot( array([[c,-s] ,[s,c]]), array([[ rX, 0], [0, rY] ]))
+        self.T_ellipse = T_ellipse
+        #FreeCAD.Console.PrintMessage( 'T %s\n' % (T))
+        x1,y1 = numpy.linalg.solve(T_ellipse, [_pen_x, _pen_y])
+        x2,y2 = numpy.linalg.solve(T_ellipse, [_end_x, _end_y])
+        c_x_Y, c_y_Y = findCircularArcCentrePoint( 1, x1, y1, x2, y2, largeArc==1, sweep==1 )
+        self.center_circular = array([c_x_Y, c_y_Y])
+        #now determining dtheta in circular coordinates
+        #a,b = 1,1
+        c = ( ( x2-x1 )**2 + ( y2-y1 )**2 ) ** 0.5
+        dtheta = arccos2( ( 1 + 1 - c**2 ) / ( 2 ) ) #cos rule
+        #print(x2,x1,y2,y1,c)
+        #print(dtheta)
+        assert dtheta >= 0
+        if largeArc:
+            dtheta = 2*pi - dtheta
+        if not sweep: # If sweep-flag is '1', then the arc will be drawn in a "positive-angle" direction
+            dtheta = -dtheta
+        self.dtheta = dtheta
+        self.theta_start =  arctan2( y1 - c_y_Y, x1 - c_x_Y)
+        self.T_element, self.c_element = element.Transforms()
+        #print(self.valueAt(0), element.applyTransforms(_pen_x, _pen_y))
+        #print(self.valueAt(1), element.applyTransforms(_end_x, _end_y))
+        self.startPoint = self.valueAt(0)
+        self.endPoint = self.valueAt(1)
+        self.center = self.applyTransforms( self.center_circular )
+        self.circular = rX == rY
+        if self.circular:
+            self.r = rX
+
+    def applyTransforms(self, p):
+        'position in circular coordinates -> position in elements coordinates -> position in global coordinates'
+        return dot( self.T_element, dot(self.T_ellipse, p) ) +  self.c_element
+                 
+    def valueAt(self, t):
+        #position in circular coordinates
+        theta = self.theta_start + t*self.dtheta
+        p_c = self.center_circular + array([cos(theta), sin(theta)])
+        return self.applyTransforms( p_c )
+    def valueAt_element(self, t):
+        theta = self.theta_start + t*self.dtheta
+        p_c = self.center_circular + array([cos(theta), sin(theta)])
+        return dot(self.T_ellipse, p_c )
+
+    def length(self):
+        if self.circular:
+            return abs(self.dtheta) * self.rX * self.scaling
+        else:
+            raise NotImplementedError, "arc.length for ellipsoidal arcs not implemented"
+
+    def tangentAt( self, t):
+        offset = pi/2 if self.dtheta >= 0 else -pi/2
+        theta =  self.theta_start + self.dtheta*t + offset
+        p0_ = self.valueAt( t )
+        p1_ = p0_ + array([cos(theta), sin(theta)])
+        p0 = self.applyTransforms( p0_ )
+        p1 = self.applyTransforms( p1_ )
+        dP = p1 - p0
+        dP = dP / norm(dP)
+        return dP
+    def t_of_position( self, pos ):
+        pos_element = numpy.linalg.solve( self.T_element, pos - self.c_element )
+        A = numpy.linalg.solve(self.T_ellipse, pos_element)
+        B = self.center_circular
+        C = B + array([cos(self.theta_start), sin(self.theta_start)])
+        AB = (A - B) / norm(A-B)
+        BC = C - B
+        theta = arccos2(dot(AB,BC))
+        D = array([ A[0] - B[0], A[1] - B[1], 0.0 ])
+        E = array([ A[0] - C[0], A[1] - C[1], 0.0 ])
+        F = cross(D,E)
+        if F[2] < 0:
+            theta = -theta
+        #print(theta, self.dtheta, theta / self.dtheta )
+        return theta / self.dtheta
+    def flip( self):
+        self.theta_start = self.theta_start + self.dtheta
+        self.dtheta = -self.dtheta
+        self.sweep = not self.sweep
+        self._pen_x, self._pen_y, self._end_x, self._end_y = self._end_x, self._end_y, self._pen_x, self._pen_y
+        self.startPoint = self.valueAt(0)
+        self.endPoint = self.valueAt(1)
+        self.center = self.applyTransforms( self.center_circular )
+
+    def svg( self, strokeColor='blue', strokeWidth=0.3, fill= 'none'):
+        transform_txt = 'matrix(%f %f %f %f %f %f)' % (
+            self.T_element[0,0], self.T_element[0,1], self.T_element[1,0], self.T_element[1,1], self.c_element[0], self.c_element[1]
+            )
+        return '<path transform="%s" stroke = "%s" stroke-width = "%f" fill = "none" d = "M %f %f A %f %f %f %i %i %f %f"/>' % (
+            transform_txt,
+            strokeColor,
+            strokeWidth / self.scaling,
+            self._pen_x, self._pen_y,
+            self.rX, self.rY,
+            self.xRotation,
+            self.largeArc,
+            self.sweep,
+            self._end_x, self._end_y,
+            )
+
+    def QPainterPath( self, n=12 ):
+        path = QtGui.QPainterPath( QtCore.QPointF( *self.valueAt(0) ) )
+        #path.arcTo #dont know what is up with this function so trying something else.
+        for t in numpy.linspace(0,1,n)[1:]:
+            path.lineTo(*self.valueAt(t))
         return path
+
     def dxfwrite_arc_parms(self, yT):
         'returns [ [radius=1.0, center=(0., 0.), startangle=0., endangle=360.], [...], ...]'
-        element = self.element
-        x_c, y_c = self.c_x, yT(self.c_y)
-        n = 12
-        pen_x, pen_y = element.applyTransforms(self._pen_x, self._pen_y)
-        X = [ pen_x ]
-        Y = [ pen_y ]
-        for _p in pointsAlongCircularArc(self.rX, self._pen_x, self._pen_y, self._end_x, self._end_y, self.largeArc==1, self.sweep==1, noPoints=n):
-            x,y = element.applyTransforms( *_p )
+        x_c, y_c = self.applyTransforms(self.center_circular)
+        y_c = yT(y_c)
+        X = []
+        Y = []
+        for t in numpy.linspace(0, 1.0, 13):
+            x, y = self.valueAt(t)
             X.append( x )
-            Y.append( y )
+            Y.append( yT(y) )
         #end_x, end_y = element.applyTransforms(self._end_x, self._end_y)
         #import FreeCAD
         #FreeCAD.Console.PrintMessage( 'X %s pen_x %f end_x %f\n' % (X, pen_x, end_x))
         #FreeCAD.Console.PrintMessage( 'Y %s pen_y %f end_y %f\n' % (Y, pen_y, end_y))
         #for i in range(len(X) -1):
         #    drawing.add( dxf.line( (X[i], yT(Y[i])), (X[i+1],yT(Y[i+1]) ) ) )
-        Y = map( yT, Y )
         return dxfwrite_arc_parms( X, Y, x_c, y_c)
     def approximate_via_lines(self, n=12):
-        '''Transform between X elements cordinate (before parent element tranforms) and Y (circular rX == 1 and rY == 1, x_c,y_c = (?,?) is 
-        X = T dot Y
-        where T = [[c -s],[s, c]] dot [[ rX 0],[0 rY]]
-        '''
-        #import FreeCAD
-        #FreeCAD.Console.PrintMessage( 'arc.approximate_via_line __dict__ %s\n' % (self.__dict__))
-        #FreeCAD.Console.PrintMessage( 'Xrotation %f\n' % (self.xRotation))
-        c = cos(self.xRotation*pi/180)
-        s = sin(self.xRotation*pi/180)
-        T = dot( numpy.array([[c,-s] ,[s,c]]), numpy.array([[ self.rX, 0], [0, self.rY] ]))
-        #FreeCAD.Console.PrintMessage( 'T %s\n' % (T))
-        x1,y1 = numpy.linalg.solve(T, [self._pen_x, self._pen_y])
-        x2,y2 = numpy.linalg.solve(T, [self._end_x, self._end_y])
-        c_x_Y, c_y_Y = findCircularArcCentrePoint( 1, x1, y1, x2, y2, self.largeArc==1, self.sweep==1 )
-        #FreeCAD.Console.PrintMessage( 'c_x_Y %f, c_y_Y %f\n' % (c_x_Y, c_y_Y))
-        #FreeCAD.Console.PrintMessage( 'norm([x1 - c_x_Y, y1 - c_y_Y]) = %f\n' % ( norm([x1 - c_x_Y, y1 - c_y_Y]) ) )
-        pen_x, pen_y =  self.element.applyTransforms( self._pen_x, self._pen_y )       
-        X = [ pen_x ]
-        Y = [ pen_y ]
-        for _p in pointsAlongCircularArc(1, x1, y1, x2, y2, self.largeArc==1, self.sweep==1, noPoints=n):
-            p_element = dot(T, _p)
-            x,y = self.element.applyTransforms( *p_element )
+        X = []
+        Y = []
+        for t in numpy.linspace(0, 1.0, n):
+            x, y = self.valueAt(t)
             X.append( x )
             Y.append( y )
         lines = []
@@ -360,7 +477,7 @@ class SvgPathBezierCurve:
     def fitCircle( self ):
         'returns x, y, r, r_error'
         return fitCircle_to_path([self.P])
-    def svgPath( self ):
+    def QPainterPath( self ):
         P = self.P
         path = QtGui.QPainterPath(QtCore.QPointF(*P[0]))
         if len(P) == 4:
@@ -369,7 +486,7 @@ class SvgPathBezierCurve:
             path.quadTo( QtCore.QPointF(*P[1]), QtCore.QPointF(*P[2]) )
         return path
     def points_along_curve( self, no=12):
-        T = linspace(0,1,points_per_segment)
+        T = linspace(0, 1, no)
         if len(self.P) == 4: #then cubic Bezier
             p0, p1, p2, p3 = self.P
             t0 =    T**0 * (1-T)**3

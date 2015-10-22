@@ -84,7 +84,7 @@ def export_via_dxfwrite(  dxf_fn, V):
             for part in element.parms['style'].split(';'):
                 if part.startswith('stroke:rgb('):
                     clr_text = part[ len('stroke:'):]
-        if clr_text == None or clr_text =='none'  :
+        if clr_text == None or clr_text =='none' or not clr_text.startswith('rgb(') :
             color_code = 0
         else:
             #FreeCAD.Console.PrintMessage( "color text: %s\n" % clr_text )

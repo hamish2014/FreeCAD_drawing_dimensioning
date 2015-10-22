@@ -74,7 +74,7 @@ class SvgXMLTreeNode:
         else:
             self.header = XML[ pStart: self.children[0].pStart ]
             self.footer = XML[ self.children[-1].pEnd : self.pEnd ]
-        self.header = self.header.replace('\n','')
+        self.header = self.header.replace('\n','').replace('\t',' ')
         self.footer = self.footer.replace('\n','')
         self.tag = self.header.split()[0][1:]
         if self.tag.startswith('!--'): #comment special case
@@ -145,6 +145,55 @@ class SvgXMLTreeNode:
             return self.parent.applyTransforms(*point)
         else:
             return point[0], point[1]
+
+    def Transforms( self, cumalative=True, T=None, c=None):
+        'y = dot(T,x) + c'
+        if T==None:
+            T = numpy.eye(2)
+            c = numpy.zeros(2)
+        R = numpy.eye(2)
+        r_o = numpy.zeros(2)
+        tx, ty = 0, 0
+        sx, sy = 1.0, 1.0
+            
+        if 'transform=' in self.header:
+            if 'matrix(' in self.header: #"matrix(1.25,0,0,-1.25,-348.3393,383.537)"
+                t_11, t_12, t_21, t22, c1, c2 = map(float, extractParms(self.header, 0, 'matrix(', ', ', ')'))
+                T_e = numpy.array([[ t_11, t_12], [t_21, t22]])
+                c_e = numpy.array([c1,c2])
+                T = dot( T_e, T )
+                c = dot( T_e, c) + c_e
+            if 'translate(' in self.header:
+                tx, ty = map(float, extractParms(self.header, 0, 'translate(', ', ', ')'))
+                
+            if 'scale(' in self.header:
+                scaleParms = map(float, extractParms(self.header, 0, 'scale(', ', ', ')'))
+                if len(scaleParms) == 2:
+                    sx, sy = scaleParms
+                else:
+                    sx, sy = scaleParms[0], scaleParms[0]
+            if 'rotate(' in self.header:
+                rotateParms = map(float, extractParms(self.header, 0, 'rotate(', ', ', ')'))
+                if len(rotateParms) == 3:
+                    rotateDegrees, rx, ry = rotateParms
+                else:
+                    assert len(rotateParms) == 1
+                    rotateDegrees, rx, ry = rotateParms[0], 0.0, 0.0
+                rads = numpy.pi * rotateDegrees / 180
+                R = numpy.array([ [ cos(rads), -sin(rads)], [ sin(rads), cos(rads)] ])
+                r_o = numpy.array([ rx, ry])
+        T_e = numpy.array([[ sx, 0.0], [0.0, sy]])
+        c_e = numpy.array([tx,ty])
+        T = dot( T_e, T )
+        c = dot( T_e, c) + c_e
+        # z = dot(R, y - r_o) + r_o
+        # z = dot(R, dot(T,x) + c - r_o) + r_o
+        T = dot(R,T)
+        c = dot(R,c) - dot(R,r_o) + r_o
+        if self.parent <> None and cumalative:
+            return self.parent.Transforms(T=T, c=c)
+        else:
+            return T, c
 
     def scaling(self):
         sx = 1.0
