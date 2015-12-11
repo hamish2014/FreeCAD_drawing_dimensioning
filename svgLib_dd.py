@@ -6,6 +6,18 @@ from circleLib import fitCircle_to_path, findCircularArcCentrePoint, pointsAlong
 from numpy import arctan2, pi, linspace, dot, sin, cos, array, cross
 from numpy.linalg import norm
 
+try:
+    import FreeCAD
+    def warningPrintFun( warningMsg ):
+        FreeCAD.Console.PrintWarning(warningMsg + '\n')
+except ImportError:
+    def warningPrintFun( warningMsg ):
+        print(warningMsg)
+def printWarning(level, msg):
+    if level <= printWarning.level:
+        warningPrintFun( msg )
+printWarning.level = 2
+
 class SvgTextRenderer:
     def __init__(self, font_family='inherit', font_size='inherit', fill='rgb(0,0,0)'):
         self.font_family = font_family
@@ -200,8 +212,11 @@ class SvgPath:
                 end_x, end_y = element.applyTransforms( _end_x, _end_y )
                 if not ( _pen_x == _end_x and _pen_y == _end_y ) and rX <> 0 and rY <> 0:
                     self.points.append( SvgPathPoint(_end_x, _end_y, end_x, end_y) )
-                    self.arcs.append( SvgPathArc( element, _pen_x, _pen_y,  rX, rY, xRotation, largeArc, sweep, _end_x, _end_y ) )
-                    self.elements.append(self.arcs[-1])
+                    try:
+                        self.arcs.append( SvgPathArc( element, _pen_x, _pen_y,  rX, rY, xRotation, largeArc, sweep, _end_x, _end_y ) )
+                        self.elements.append(self.arcs[-1])
+                    except SvgParseError, msg:
+                        printWarning( 2, 'failed to parse arc: msg %s' % msg )
                 _pen_x, _pen_y = _end_x, _end_y
                 pen_x, pen_y = end_x, end_y
                 j = j + 8
@@ -248,6 +263,9 @@ class SvgPathLine:
         self.y2 = y2
     def midPoint(self):
         return (self.x1 + self.x2)/2, (self.y1 + self.y2)/2
+
+class SvgParseError(Exception):
+    pass
 
 class SvgPathArc:
     '''
@@ -310,7 +328,8 @@ class SvgPathArc:
         dtheta = arccos2( ( 1 + 1 - c**2 ) / ( 2 ) ) #cos rule
         #print(x2,x1,y2,y1,c)
         #print(dtheta)
-        assert dtheta >= 0
+        if not dtheta >= 0:
+            raise SvgParseError, "dtheta not >=  0, dtheta %e. locals %s" % (dtheta, locals())
         if largeArc:
             dtheta = 2*pi - dtheta
         if not sweep: # If sweep-flag is '1', then the arc will be drawn in a "positive-angle" direction
