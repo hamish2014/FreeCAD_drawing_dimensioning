@@ -100,8 +100,11 @@ def export_via_dxfwrite(  dxf_fn, V):
             drawing.add( dxf.line( (x1, yT(y1)), (x2, yT(y2)), color=color_code ) )
         elif element.tag == 'text' and element.parms.has_key('x'):
             x,y = element.applyTransforms( float( element.parms['x'] ), float( element.parms['y'] ) )
-            t = SvgTextParser(element.XML[element.pStart: element.pEnd ] )
-            drawing.add(dxf.text( t.text, insert=(x, yT(y)), height=t.height()*0.8, rotation=t.rotation, layer='TEXTLAYER', color=color_code) )
+            try:
+                t = SvgTextParser(element.XML[element.pStart: element.pEnd ] )
+                drawing.add(dxf.text( t.text, insert=(x, yT(y)), height=t.height()*0.8, rotation=t.rotation, layer='TEXTLAYER', color=color_code) )
+            except ValueError, msg:
+                FreeCAD.Console.PrintWarning('dxf_export: unable to convert text element "%s": %s, ignoring...\n' % (element.XML[element.pStart: element.pEnd ], str(msg) ) )
         elif element.tag == 'path': 
             #FreeCAD.Console.PrintMessage(element.parms['d']+'\n')
             path = SvgPath( element )
