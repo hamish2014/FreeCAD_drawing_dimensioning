@@ -17,6 +17,7 @@ class DrawingDimensioningWorkbench (Workbench):
         import radiusDimension
         import centerLines
         import noteCircle
+        import centerView
         import toleranceAdd
         from drawing_wb_shortcuts import newpageShortcuts
         #self.appendToolbar('Drawing workbench shortcuts', newpageShortcuts + [
@@ -54,6 +55,7 @@ class DrawingDimensioningWorkbench (Workbench):
         unfold_cmds = [
             'dd_unfold',
             'dd_bendingNote',
+            'dd_centerView',
             'dd_exportToDxf'
             ]
         self.appendToolbar( 'Drawing Dimensioning Folding', unfold_cmds )
