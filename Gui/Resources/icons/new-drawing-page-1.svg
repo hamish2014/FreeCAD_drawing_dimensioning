@@ -14,7 +14,7 @@
    height="48.000000px"
    id="svg249"
    sodipodi:version="0.32"
-   inkscape:version="0.91 r"
+   inkscape:version="0.91 r13725"
    sodipodi:docname="new-drawing-page-1.svg"
    inkscape:export-filename="/home/jimmac/gfx/novell/pdes/trunk/docs/BIGmime-text.png"
    inkscape:export-xdpi="240.00000"
@@ -260,17 +260,17 @@
      borderopacity="0.32941176"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="6.8206341"
-     inkscape:cx="-36.680453"
-     inkscape:cy="-8.2888336"
+     inkscape:zoom="13.641268"
+     inkscape:cx="5.1003691"
+     inkscape:cy="22.045529"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:grid-bbox="true"
      inkscape:document-units="px"
      inkscape:window-width="1920"
-     inkscape:window-height="1056"
+     inkscape:window-height="1053"
      inkscape:window-x="0"
-     inkscape:window-y="24"
+     inkscape:window-y="0"
      inkscape:showpageshadow="false"
      inkscape:window-maximized="1" />
   <metadata
@@ -431,7 +431,7 @@
        style="fill:none;fill-opacity:0.75;fill-rule:evenodd;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:0.20467828" />
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:22.5px;line-height:125%;font-family:'Nimbus Sans L';-inkscape-font-specification:'Nimbus Sans L';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:22.5px;line-height:125%;font-family:'Nimbus Sans L';-inkscape-font-specification:'Nimbus Sans L';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1;"
        x="7.4946008"
        y="36.669544"
        id="text4195"
@@ -440,7 +440,7 @@
          id="tspan4197"
          x="7.4946008"
          y="36.669544"
-         style="font-size:30px;fill:#fee90b;fill-opacity:1">1</tspan></text>
+         style="font-size:30px;fill:#fee90b;fill-opacity:1;stroke:#000000;stroke-opacity:1;stroke-linejoin:round;">1</tspan></text>
   </g>
   <g
      inkscape:groupmode="layer"
