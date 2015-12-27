@@ -19,10 +19,16 @@ class DrawingDimensioningWorkbench (Workbench):
         import noteCircle
         import toleranceAdd
         from drawing_wb_shortcuts import newpageShortcuts
-        self.appendToolbar('Drawing workbench shortcuts', newpageShortcuts + [
-                    'dd_new_drawing_page_preferences',
-                    'dd_Drawing_OrthoViews',                    
-                    ] )
+        #self.appendToolbar('Drawing workbench shortcuts', newpageShortcuts + [
+        #            'dd_new_drawing_page_preferences',
+        #            'dd_Drawing_OrthoViews',                    
+        #            ] )
+        # copy the Drawing toolbar
+        import DrawingGui
+        self.appendToolbar('Drawing workbench shortcuts',["Drawing_NewPage",
+                    "Drawing_NewView","Drawing_OrthoViews","Drawing_OpenBrowserView",
+                    "Drawing_Annotation","Drawing_Clip","Drawing_Symbol",
+                    "Drawing_DraftView","Drawing_ExportPage"])
 
         commandslist = [
             'dd_linearDimension', #where dd is short-hand for drawing dimensioning
