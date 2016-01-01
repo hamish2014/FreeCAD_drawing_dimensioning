@@ -14,8 +14,8 @@
    height="32px"
    id="svg3085"
    version="1.1"
-   inkscape:version="0.48.4 r9939"
-   sodipodi:docname="addText.svg">
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="textAdd.svg">
   <defs
      id="defs3087">
     <linearGradient
@@ -214,17 +214,17 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="22.627417"
-     inkscape:cx="12.73868"
-     inkscape:cy="13.467454"
+     inkscape:zoom="11.313709"
+     inkscape:cx="12.152689"
+     inkscape:cy="8.913646"
      inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:grid-bbox="true"
      inkscape:document-units="px"
      inkscape:window-width="1920"
-     inkscape:window-height="1056"
+     inkscape:window-height="1053"
      inkscape:window-x="0"
-     inkscape:window-y="24"
+     inkscape:window-y="0"
      inkscape:window-maximized="1" />
   <metadata
      id="metadata3090">
@@ -242,34 +242,31 @@
      id="layer1"
      inkscape:label="Layer 1"
      inkscape:groupmode="layer">
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-miterlimit:4;stroke-opacity:0;stroke-dasharray:none"
-       id="rect3027"
-       width="30.980116"
-       height="31.068504"
-       x="0.57452428"
-       y="0.53374827" />
     <text
        xml:space="preserve"
-       style="font-size:18px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
-       x="13.513862"
-       y="27.581459"
+       style="font-style:normal;font-weight:normal;font-size:16.24077797px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1.00970721;stroke-linejoin:round;stroke-opacity:1"
+       x="16.552629"
+       y="25.09248"
        id="text3849"
-       sodipodi:linespacing="125%"><tspan
+       sodipodi:linespacing="125%"
+       transform="scale(0.8984224,1.1130622)"><tspan
          sodipodi:role="line"
          id="tspan3851"
-         x="13.513862"
-         y="27.581459">xt</tspan></text>
+         x="16.552629"
+         y="25.09248"
+         style="font-weight:bold;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1.00970721;stroke-linejoin:round;stroke-opacity:1">xt</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:32px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
-       x="1.9003491"
-       y="27.73484"
+       style="font-style:normal;font-weight:normal;font-size:30.54513931px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.9545356;stroke-opacity:1;stroke-linejoin:round;"
+       x="1.0649016"
+       y="26.545982"
        id="text3018"
-       sodipodi:linespacing="125%"><tspan
+       sodipodi:linespacing="125%"
+       transform="scale(0.94729872,1.0556332)"><tspan
          sodipodi:role="line"
          id="tspan3020"
-         x="1.9003491"
-         y="27.73484">T</tspan></text>
+         x="1.0649016"
+         y="26.545982"
+         style="font-weight:bold;stroke-width:0.9545356;stroke-linejoin:round;">T</tspan></text>
   </g>
 </svg>
