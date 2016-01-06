@@ -307,7 +307,6 @@ class Proxy_unfold( Proxy_DimensionObject_prototype ):
         obj.Y = d.placement_y
         obj.Scale = d.svgScale
         obj.Rotation = d.svgRotation
-        self.measureable = True
         obj.Proxy = self
 
     def execute( self, obj ):
