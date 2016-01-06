@@ -3,6 +3,7 @@
 import FreeCAD,FreeCADGui,os,re
 from XMLlib import SvgXMLTreeNode
 from svgLib_dd import SvgPath
+from dimensioning import debugPrint
 
 
 def getPoints(svg):
@@ -51,9 +52,9 @@ def getCenterPoint(viewObject):
         if p[0] > xmax:
             xmax = p[0]
         if p[1] < ymin:
-            xmin = p[1]
+            ymin = p[1]
         if p[1] > ymax:
-            xmax = p[1]
+            ymax = p[1]
     x = xmin + (xmax-xmin)/2
     y = ymin + (ymax-ymin)/2
     return (x,y)
@@ -103,11 +104,11 @@ class CenterView:
                         if pagedims:
                             viewcenter = getCenterPoint(obj)
                             if viewcenter:
-                                print "current center point:",viewcenter
-                                print "page center:",(pagedims[0]/2,pagedims[1]/2)
+                                debugPrint( 2, "current center point: %3.3f, %3.3f" % viewcenter )
+                                debugPrint( 2, "page center: %3.3f, %3.3f" % (pagedims[0]/2, pagedims[1]/2) )
                                 dx = pagedims[0]/2 - viewcenter[0]
                                 dy = pagedims[1]/2 - viewcenter[1]
-                                print "delta:",(dx,dy)
+                                debugPrint( 2, "delta: %3.3f, %3.3f" % (dx, dy) )
                                 FreeCAD.ActiveDocument.openTransaction("Center View")
                                 obj.X = obj.X+dx
                                 obj.Y = obj.Y+dy
