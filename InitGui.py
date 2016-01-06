@@ -41,8 +41,8 @@ class DrawingDimensioningWorkbench (Workbench):
             'dd_noteCircle', 
             'dd_grabPoint',
             'dd_addText',
-            'dd_editText',
-            'dd_moveText',
+ #           'dd_editText',   # no longer available to user, else to complicated! In particular multiple avenues available to user
+ #           'dd_moveText',   # therefore sticking with the FreeCAD way of doing things
             'dd_addTolerance', 
             'dd_deleteDimension', 
             'dd_escapeDimensioning',

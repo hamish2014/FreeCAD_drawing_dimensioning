@@ -3,13 +3,14 @@ from dimensioning import *
 import selectionOverlay, previewDimension
 from dimensionSvgConstructor import *
 
+
 d = DimensioningProcessTracker() #shorthand
 
 #
 # linear distance between 2 points
 #
 def linearDimensionSVG_points( x1, y1, x2, y2, x3, y3, x4=None, y4=None, autoPlaceText=False, autoPlaceOffset=2.0,
-                               scale=1.0, textFormat_linear='%3.3f', comma_decimal_place=False,
+                               scale=1.0, textFormat_linear='%(value)3.3f', comma_decimal_place=False,
                                gap_datum_points = 2, dimension_line_overshoot=1, arrowL1=3, arrowL2=1, arrowW=2, strokeWidth=0.5, lineColor='blue', arrow_scheme='auto',
                                halfDimension_linear=False, textRenderer= defaultTextRenderer):
     lines = []
@@ -60,7 +61,7 @@ def linearDimensionSVG_points( x1, y1, x2, y2, x3, y3, x4=None, y4=None, autoPla
 
 d.dialogWidgets.append( unitSelectionWidget )
 d.registerPreference( 'halfDimension_linear', False, 'compact')
-d.registerPreference( 'textFormat_linear', '%3.3f', 'format mask')
+d.registerPreference( 'textFormat_linear', '%(value)3.3f', 'format mask')
 d.registerPreference( 'arrow_scheme', ['auto','in','out','off'], 'arrows', kind='choice')
 d.registerPreference( 'autoPlaceText', True, 'auto place text')
 d.registerPreference( 'comma_decimal_place', False, 'comma')
@@ -77,18 +78,17 @@ d.registerPreference( 'autoPlaceOffset', 2, 'auto place offset')
     
 
 def linearDimension_points_preview(mouseX, mouseY):
-    args = d.args + [ mouseX, mouseY ] if len(d.args) < 8 else d.args
-    return linearDimensionSVG_points( *args, scale= d.viewScale*d.unitConversionFactor, **d.dimensionConstructorKWs )
+    selections = d.selections + [ PlacementClick( mouseX, mouseY ) ] if len(d.selections) < d.max_selections else d.selections
+    return linearDimensionSVG_points( *selections_to_svg_fun_args(selections), scale= d.viewScale*d.unitConversionFactor, **d.dimensionConstructorKWs )
 
 def linearDimension_points_clickHandler( x, y ):
-    d.args = d.args + [ x, y ]
-    d.stage = d.stage + 1
-    if d.stage == 3:
-        if d.dimensionConstructorKWs['autoPlaceText']:
-            return 'createDimension:%s' % findUnusedObjectName('dim')
-        else:
-            selectionOverlay.hideSelectionGraphicsItems() # for distance between parallels case
-    elif d.stage == 4 :
+    d.selections.append( PlacementClick( x, y ) )
+    if isinstance( d.selections[0], LineSelection ):
+        selectionOverlay.hideSelectionGraphicsItems()
+    if len(d.selections) == d.max_selections - 1 and d.dimensionConstructorKWs['autoPlaceText']:
+        d.selections.append( PlacementClick( x, y ) ) #to avoid crash when autoPlaceText switched off
+        return 'createDimension:%s' % findUnusedObjectName('dim')
+    elif len(d.selections) == d.max_selections :
         return 'createDimension:%s' % findUnusedObjectName('dim')
 
 
@@ -96,7 +96,7 @@ def linearDimension_points_clickHandler( x, y ):
 # linear distance between parallels
 #
 def linearDimensionSVG_parallels( line1, line2, x_baseline, y_baseline, x_text=None, y_text=None, autoPlaceText=False, autoPlaceOffset=2.0,
-                                  scale=1.0, textFormat_linear='%3.3f', comma_decimal_place=False,
+                                  scale=1.0, textFormat_linear='%(value)3.3f', comma_decimal_place=False,
                                   gap_datum_points = 2, dimension_line_overshoot=1,
                                   arrowL1=3, arrowL2=1, arrowW=2, svgTag='g', svgParms='', strokeWidth=0.5, lineColor='blue', arrow_scheme='auto',
                                   halfDimension_linear=False, #notUsed, added for compatibility with d.preferences
@@ -143,16 +143,23 @@ def linearDimensionSVG_parallels( line1, line2, x_baseline, y_baseline, x_text=N
     return '<g> %s </g> ''' % '\n'.join(XML)
 
 def linearDimension_parallels_preview(mouseX, mouseY):
-    args = d.args + [ mouseX, mouseY ] if len(d.args) < 6 else d.args
-    return linearDimensionSVG_parallels( *args, scale= d.viewScale*d.unitConversionFactor, **d.dimensionConstructorKWs )
+    selections = d.selections + [ PlacementClick( mouseX, mouseY ) ] if  len(d.selections) < d.max_selections else d.selections
+    return linearDimensionSVG_parallels( *selections_to_svg_fun_args(selections), scale= d.viewScale*d.unitConversionFactor, **d.dimensionConstructorKWs )
 
 def linearDimension_parallels_clickHandler( x, y ):
-    d.args = d.args + [ x, y ]
-    d.stage = d.stage + 1
-    if d.stage == 3 and d.dimensionConstructorKWs['autoPlaceText']:
+    d.selections.append( PlacementClick( x, y ) )
+    if len(d.selections) == d.max_selections - 1 and d.dimensionConstructorKWs['autoPlaceText']:
+        d.selections.append( PlacementClick( x, y ) ) #avoid crash when auto place turned off
         return 'createDimension:%s' % findUnusedObjectName('dim')
-    elif d.stage == 4 :
+    elif len(d.selections) == d.max_selections :
         return 'createDimension:%s' % findUnusedObjectName('dim')
+
+
+class Proxy_linearDimension( Proxy_DimensionObject_prototype ):
+     def dimensionProcess( self ):
+         return d
+d.ProxyClass = Proxy_linearDimension
+
 
 def linearDimension_parallels_hide_non_parallel(elementParms, elementViewObject):
     x1,y1,x2,y2 = [ elementParms[k] for k in [ 'x1', 'y1', 'x2', 'y2' ] ]
@@ -178,48 +185,43 @@ def linearDimension_parallels_hide_non_parallel(elementParms, elementViewObject)
 
 
 def selectDimensioningPoint( event, referer, elementXML, elementParms, elementViewObject ):
-    if isinstance(referer,selectionOverlay.PointSelectionGraphicsItem) and d.stage < 2:
-        x, y = elementParms['x'], elementParms['y']
-        referer.lockSelection()
-        if d.stage == 0: #then selectPoint1
-            d.args =  [x,y]
-            debugPrint(2, 'point1 set to x=%3.1f y=%3.1f' % (x,y))
-            d.stage = 1
+    referer.lockSelection()
+    d.viewScale = 1 / elementXML.rootNode().scaling()
+    viewInfo = selectionOverlay.DrawingsViews_info[elementViewObject.Name]
+    if isinstance(referer,selectionOverlay.PointSelectionGraphicsItem) :
+        if len( d.selections) == 0:
+            d.selections.append( PointSelection( elementParms, elementXML, viewInfo ) )
             selectionOverlay.hideSelectionGraphicsItems(
                 lambda gi: isinstance(gi,  selectionOverlay.LineSelectionGraphicsItem)
                 )
-        else:
-            d.args = d.args + [x,y]
-            debugPrint(2, 'point2 set to x=%3.1f y=%3.1f' % (x,y))
-            d.stage = 2 
-            d.viewScale = 1 / elementXML.rootNode().scaling()
+        elif isinstance( d.selections[0], PointSelection ):
+            d.selections.append( PointSelection( elementParms, elementXML, viewInfo ) )
+            d.max_selections = 4
             selectionOverlay.hideSelectionGraphicsItems()
+            d.proxy_svgFun = linearDimensionSVG_points
             previewDimension.initializePreview( d, linearDimension_points_preview, linearDimension_points_clickHandler )
-    else:#then line
-        if d.stage == 0: 
-            x1,y1,x2,y2 = [ elementParms[k] for k in [ 'x1', 'y1', 'x2', 'y2' ] ]
-            debugPrint(2,'selecting line x1=%3.1f y1=%3.1f, x2=%3.1f y2=%3.1f' % (x1,y1,x2,y2))
-            d.args = [ x1,y1,x2,y2 ]
-            d.stage = 2 
-            d.viewScale = 1 / elementXML.rootNode().scaling()
+        else : #first selection was a line
+            d.selections[0].condensed_args = True
+            d.selections.append( PointLinePertubationSelection( elementParms, elementXML, viewInfo, d.selections[0] ) )
+            d.max_selections = 4
+            selectionOverlay.hideSelectionGraphicsItems()
+            d.proxy_svgFun = linearDimensionSVG_parallels
+            previewDimension.removePreviewGraphicItems( False, closeDialog=False ) #required since previewDimension.initializePreview called when line selected
+            previewDimension.initializePreview( d, linearDimension_parallels_preview, linearDimension_parallels_clickHandler )
+    else: #then line slected
+        if len( d.selections ) == 0: 
+            d.selections.append( LineSelection( elementParms, elementXML, viewInfo) )
+            d.selections[0].condensed_args = False
+            d.max_selections = 3
             linearDimension_parallels_hide_non_parallel( elementParms, elementViewObject)
+            d.proxy_svgFun = linearDimensionSVG_points
             previewDimension.initializePreview( d, linearDimension_points_preview, linearDimension_points_clickHandler )
         else:
-            if isinstance(referer, selectionOverlay.LineSelectionGraphicsItem): #then distance between parallels
-                x1,y1,x2,y2 = [ elementParms[k] for k in [ 'x1', 'y1', 'x2', 'y2' ] ]
-                debugPrint(2,'distance between parallels, line2 x1=%3.1f y1=%3.1f, x2=%3.1f y2=%3.1f' % (x1,y1,x2,y2))
-                line1 = d.args
-                d.args = [ line1, [ x1,y1,x2,y2 ] ]
-            else: #distance between line and point
-                line1 = d.args
-                x1,y1,x2,y2 = line1
-                dx = (x2-x1)*10**-6
-                dy = (y2-y1)*10**-6
-                debugPrint(3,'distance between line and point, dx %e dy %e' % (dx,dy))
-                x, y =  elementParms['x'], elementParms['y']
-                d.args = [ line1, [ x-dx,y-dy,x+dx,y+dy ] ]
-            d.stage = 2 
+            d.selections[0].condensed_args = True
+            d.selections.append( LineSelection( elementParms, elementXML, viewInfo) )
+            d.max_selections = 4
             selectionOverlay.hideSelectionGraphicsItems()
+            d.proxy_svgFun = linearDimensionSVG_parallels
             previewDimension.removePreviewGraphicItems( False, closeDialog=False )
             previewDimension.initializePreview( d, linearDimension_parallels_preview, linearDimension_parallels_clickHandler )
 
@@ -234,14 +236,20 @@ line_maskHoverPen = QtGui.QPen( QtGui.QColor(0,255,0,255) )
 line_maskHoverPen.setWidth(2.0)
 line_maskBrush = QtGui.QBrush() #clear
 
+
+
 class LinearDimensionCommand:
-    iconPath = ':/dd/icons/linearDimension.svg'
+    def __init__(self):
+        self.iconPath = ':/dd/icons/linearDimension.svg'
+        self.toolTip = 'Add Linear Dimension'
+        self.onClickFun = selectDimensioningPoint
+        self.d = d
+
     def Activated(self):
         V = getDrawingPageGUIVars()
-        d.activate( V, dialogTitle='Add Linear Dimension', dialogIconPath = self.iconPath, endFunction = self.Activated )
-
+        self.d.activate( V, dialogTitle = self.toolTip, dialogIconPath = self.iconPath, endFunction = self.Activated )
         commonArgs = dict( 
-            onClickFun=selectDimensioningPoint,
+            onClickFun= self.onClickFun,
             transform = V.transform,
             sceneToAddTo = V.graphicsScene, 
             pointWid=1.0,
@@ -250,21 +258,22 @@ class LinearDimensionCommand:
             maskBrush = maskBrush
             )
         selectionOverlay.generateSelectionGraphicsItems( 
-            [obj for obj in V.page.Group  if not obj.Name.startswith('dim') and not obj.Name.startswith('center')],
+            dimensionableObjects( V.page ), 
             doPoints=True, 
             **commonArgs
             )
+        from centerLines import Proxy_CenterLines
         selectionOverlay.generateSelectionGraphicsItems( 
-            [obj for obj in V.page.Group if obj.Name.startswith('center')], 
+            [ obj for obj in V.page.Group if hasattr(obj, 'Proxy') and isinstance( obj.Proxy, Proxy_CenterLines )], 
             clearPreviousSelectionItems = False,
             doPathEndPoints=True, 
             **commonArgs
             )
         selectionOverlay.generateSelectionGraphicsItems( 
-            [obj for obj in V.page.Group  if not obj.Name.startswith('dim') and not obj.Name.startswith('center')],
+            dimensionableObjects( V.page ), 
             clearPreviousSelectionItems = False,
             doLines=True, 
-            onClickFun=selectDimensioningPoint,
+            onClickFun= self.onClickFun,
             transform = V.transform,
             sceneToAddTo = V.graphicsScene, 
             maskPen= line_maskPen, 
@@ -275,9 +284,9 @@ class LinearDimensionCommand:
         
     def GetResources(self): 
         return {
-            'Pixmap' : self.iconPath , 
-            'MenuText': 'Linear Dimension', 
-            'ToolTip': 'Creates a linear dimension'
+            'Pixmap' : self.iconPath, 
+            'MenuText': self.toolTip, 
+            'ToolTip':  self.toolTip
             } 
 
 FreeCADGui.addCommand('dd_linearDimension', LinearDimensionCommand())

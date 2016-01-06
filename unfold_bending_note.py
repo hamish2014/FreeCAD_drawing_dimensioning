@@ -21,6 +21,11 @@ class angleText_widget:
         d.angleText = self.default
         self.lineEdit.textChanged.connect(self.valueChanged)
         return DimensioningTaskDialog_generate_row_hbox('angle text:', self.lineEdit)
+    def add_properties_to_dimension_object( self, obj ):
+        obj.addProperty("App::PropertyString", 'angleText', 'Parameters')
+        obj.angleText = d.angleText.encode('utf8') 
+    def get_values_from_dimension_object( self, obj, KWs ):
+        KWs['angleText'] = obj.angleText #should be unicode
 d.dialogWidgets.append( angleText_widget() )
 
 
@@ -34,8 +39,9 @@ class BendingNoteCommand:
     def Activated(self):
         V = getDrawingPageGUIVars()
         d.activate(V, dialogTitle='Add Bend Note', dialogIconPath=':/dd/icons/bendingNote.svg', endFunction=self.Activated )
+        from grabPointAdd import  Proxy_grabPoint
         selectionOverlay.generateSelectionGraphicsItems( 
-            [obj for obj in V.page.Group  if not obj.Name.startswith('dim') and not obj.Name.startswith('center')], 
+            dimensionableObjects( V.page ) + [obj for obj in V.page.Group if hasattr(obj,'Proxy') and isinstance( obj.Proxy, Proxy_grabPoint) ], 
             self.selectFun ,
             transform = V.transform,
             sceneToAddTo = V.graphicsScene, 
@@ -48,45 +54,29 @@ class BendingNoteCommand:
         selectionOverlay.addProxyRectToRescaleGraphicsSelectionItems( V.graphicsScene, V.graphicsView, V.width, V.height)
 
     def selectFun(self, event, referer, elementXML, elementParms, elementViewObject ):
-        x,y = elementParms['x'], elementParms['y']
-        d.dArgs = [x,y]
-        d.stage = 1
-        debugPrint(2, 'welding symbol to point at x=%3.1f y=%3.1f' % (x,y))
+        viewInfo = selectionOverlay.DrawingsViews_info[elementViewObject.Name]
+        d.selections = [ PointSelection( elementParms, elementXML, viewInfo) ]
         selectionOverlay.hideSelectionGraphicsItems()
         previewDimension.initializePreview( 
             d, 
             self.preview_svgRenderer, 
             self.preview_clickHandler )
 
-    noOfStages = 3
-
     def preview_clickHandler( self, x, y ):
-        d.stage = d.stage + 1
-        if d.stage == self.noOfStages:
-            return 'createDimension:%s' % findUnusedObjectName('dimUnfold')
-        else:
-            d.dArgs = d.dArgs + [x,y]
+        d.selections.append( PlacementClick( x, y) )
+        if len(d.selections) == 3:
+            return 'createDimension:%s' % findUnusedObjectName('bendNote')
 
     def preview_svgRenderer(self,  x, y):
+        s =  d.selections + [ PlacementClick( x, y) ] if len(d.selections) < 3 else d.selections
         return self.generateSvg( 
-            *(d.dArgs + [x, y]), 
-            angleText = d.angleText,
+            *selections_to_svg_fun_args(s),  
+             angleText = d.angleText,    
              **d.dimensionConstructorKWs 
              )
 
     def svgLine(self, x1, y1, x2, y2, clr=None):
         return '<line x1="%f" y1="%f" x2="%f" y2="%f" style="stroke:%s;stroke-width:%1.2f" />' % (x1, y1, x2, y2, self.svg_lineColor if clr==None else clr, self.svg_strokeWidth ) 
-
-    def svgCircularArc(self, cx, cy, r, dStart, dEnd): #with d denoting degrees
-        largeArc = abs(dEnd - dStart) >= 180
-        sweep = dEnd > dStart
-        theta1 = dStart * numpy.pi/180
-        theta2 = dEnd   * numpy.pi/180
-        x1 = cx + r * numpy.cos(theta1)
-        y1 = cy + r * numpy.sin(theta1)
-        x2 = cx + r * numpy.cos(theta2)
-        y2 = cy + r * numpy.sin(theta2)
-        return '<path d = "M %f %f A %f %f 0 %i %i %f %f" style="stroke:%s;stroke-width:%1.2f;fill:none" />' % (x1,y1,r,r,largeArc,sweep, x2,y2, self.svg_lineColor, self.svg_strokeWidth ) 
 
     def generateSvg(self,  c_x, c_y, radialLine_x=None, radialLine_y=None, tail_x=None, tail_y=None, angleText='90°',
                     arrowL1=3,arrowL2=1,arrowW=2, strokeWidth=0.5,  lineColor='blue', textRenderer=None):
@@ -129,6 +119,17 @@ class BendingNoteCommand:
             'Pixmap' : ':/dd/icons/bendingNote.svg',
             'MenuText': 'bending note', 
             } 
+bendingNoteCommand = BendingNoteCommand()
+FreeCADGui.addCommand('dd_bendingNote', bendingNoteCommand)
 
+class Proxy_bendNote( Proxy_DimensionObject_prototype ):
+     def dimensionProcess( self ):
+         return d
+d.ProxyClass = Proxy_bendNote
 
-FreeCADGui.addCommand('dd_bendingNote', BendingNoteCommand())
+class Command_svg_fun_wrapper: #to make instance method pickalble!
+    def __init__(self, command ):
+        self.command = command
+    def __call__(self, *args, **KWS):
+        return self.command.generateSvg( *args, **KWS)
+d.proxy_svgFun = Command_svg_fun_wrapper(bendingNoteCommand)

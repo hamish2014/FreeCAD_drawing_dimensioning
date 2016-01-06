@@ -2,9 +2,8 @@
 from dimensioning import *
 import previewDimension
 
-d = DimensioningProcessTracker()
 
-def grabPointDrawSVG( x, y, preview): # draw a cross
+def grabPointDrawSVG( x, y, preview=False): # draw a cross
     if preview:
         return '''<g>
 <line x1="%s" y1="%s" x2="%s" y2="%s" style="stroke:rgb(0,0,0);stroke-width:0.2" />
@@ -15,17 +14,22 @@ def grabPointDrawSVG( x, y, preview): # draw a cross
 
     
 def grabPoint_preview( x, y):
-    return grabPointDrawSVG( x, y, d.preview)
+    return grabPointDrawSVG( x, y, preview=True)
 
 def grabPoint_clickHandler( x, y):
-    d.preview = False
+    d.selections = [ PlacementClick( x, y) ]
     return  'createDimension:%s' % findUnusedObjectName('grabPoint')
+
+class Proxy_grabPoint( Proxy_DimensionObject_prototype ):
+     def dimensionProcess( self ):
+         return d
+d = DimensioningProcessTracker( grabPointDrawSVG )
+d.ProxyClass = Proxy_grabPoint
 
 class AddGrabPoint:
     def Activated(self):
         V = getDrawingPageGUIVars()
         d.activate( V, dialogTitle='Add Grab Point', dialogIconPath=':/dd/icons/grabPointAdd.svg', endFunction=self.Activated )
-        d.preview = True
         previewDimension.initializePreview(
             d,
             grabPoint_preview, 

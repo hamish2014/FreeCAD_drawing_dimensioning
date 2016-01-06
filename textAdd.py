@@ -19,6 +19,11 @@ class text_widget:
         d.text = 'text'
         self.lineEdit.textChanged.connect(self.valueChanged)
         return self.lineEdit
+    def add_properties_to_dimension_object( self, obj ):
+        obj.addProperty("App::PropertyString", 'text', 'Parameters')
+        obj.text = d.text.encode('utf8') 
+    def get_values_from_dimension_object( self, obj, KWs ):
+        KWs['text'] =  obj.text #should be unicode
 d.dialogWidgets.append( text_widget() )
 class rotation_widget:
     def valueChanged( self, arg1):
@@ -34,6 +39,11 @@ class rotation_widget:
         self.spinbox.setSuffix(unicode('°','utf8'))
         self.spinbox.valueChanged.connect(self.valueChanged)
         return  DimensioningTaskDialog_generate_row_hbox('rotation', self.spinbox)
+    def add_properties_to_dimension_object( self, obj ):
+        obj.addProperty("App::PropertyAngle", 'rotation', 'Parameters')
+        obj.rotation = d.rotation 
+    def get_values_from_dimension_object( self, obj, KWs ):
+        KWs['rotation'] =  obj.rotation #should be unicode
 d.dialogWidgets.append( rotation_widget() )
 
 
@@ -41,7 +51,15 @@ def addText_preview(mouseX, mouseY):
     return textSVG(mouseX, mouseY, d.text, d.rotation, **d.dimensionConstructorKWs )
 
 def addText_clickHandler( x, y ):
-    return 'createDimension:%s' % findUnusedObjectName('dimText')
+    d.selections = [ PlacementClick( x, y) ]
+    return 'createDimension:%s' % findUnusedObjectName('text')
+
+class Proxy_textAdd( Proxy_DimensionObject_prototype ):
+     def dimensionProcess( self ):
+         return d
+d.ProxyClass = Proxy_textAdd
+d.proxy_svgFun = textSVG
+
 
 class AddText:
     def Activated(self):

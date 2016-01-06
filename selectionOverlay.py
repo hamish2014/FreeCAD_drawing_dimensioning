@@ -71,6 +71,8 @@ class PathSelectionGraphicsItem( QtGui.QGraphicsPathItem, CircleSelectionGraphic
 
 
 graphicItems = [] #storing selection graphics items here as to protect against the garbage collector
+DrawingsViews_info = {}
+
 
 def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sceneToAddTo=None, clearPreviousSelectionItems=True, 
                                     doPoints=False, doTextItems=False, doLines=False, doCircles=False, doFittedCircles=False, doPathEndPoints=False, doMidPoints=False, doSelectViewObjectPoints=False, doEllipses=False, doArcCenters=True,
@@ -122,8 +124,11 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
             continue
         if viewObject.ViewResult.strip() == '':
             continue
+        DrawingsViews_info[viewObject.Name] = DrawingViewInfo( viewObject )
+        viewInfo = DrawingsViews_info[viewObject.Name] #shorthand
         XML_tree =  SvgXMLTreeNode(viewObject.ViewResult,0)
         scaling = XML_tree.scaling()
+        viewInfo.scale = scaling
         SelectViewObjectPoint_loc = None
         for element in XML_tree.getAllElements():
             if element.tag == 'circle':
@@ -133,6 +138,7 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                     addCircle( x, y, r)
                 if doPoints: 
                     circlePoints( x, y, r, r)
+                viewInfo.updateBounds_ellipse( x, y, r, r )
             if element.tag == 'ellipse':
                 cx, cy = element.applyTransforms( float( element.parms['cx'] ), float( element.parms['cy'] ) )
                 rx, ry = float( element.parms['rx'] )* scaling, float( element.parms['ry'] )* scaling
@@ -143,6 +149,7 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                     raise NotImplemented
                 if doPoints: 
                     circlePoints( cx, cy, rx, ry)
+                viewInfo.updateBounds_ellipse( cx, cy, rx, ry )
                 
             if element.tag == 'text' and element.parms.has_key('x'):
                 if doTextItems:
@@ -152,9 +159,11 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
 
             if element.tag == 'path': 
                 path = SvgPath( element )
-                if doPoints:
-                    for p in path.points:
-                         addSelectionPoint( p.x, p.y )
+                for p in path.points:
+                    if doPoints:
+                        addSelectionPoint( p.x, p.y )
+                    viewInfo.updateBounds( p.x, p.y )
+
                 if doLines:
                     for line in path.lines:
                         x1, y1, x2, y2 = line.x1, line.y1, line.x2, line.y2
@@ -193,6 +202,9 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                 if doPoints:
                     addSelectionPoint ( x1, y1 )
                     addSelectionPoint ( x2, y2 )
+                viewInfo.updateBounds( x1, y1 )
+                viewInfo.updateBounds( x1, y2 )
+
                 if doLines:
                     graphicsItem = LineSelectionGraphicsItem( x1, y1, x2, y2 )
                     postProcessGraphicsItem(graphicsItem, {'x1':x1,'y1':y1,'x2':x2,'y2':y2})
@@ -266,6 +278,65 @@ def addProxyRectToRescaleGraphicsSelectionItems( graphicsScene, graphicsView, wi
     graphicsScene.addItem( rect )
     rect.hoverMoveEvent( QtGui.QGraphicsSceneWheelEvent() ) # adjust scale
     garbageCollectionProtector.append( rect )
+
+
+class DrawingViewInfo:
+    def __init__(self, drawingView, calculateBounds=False ):
+        self.name = drawingView.Name
+        #self.scale =  drawingView.Scale #not always correct for center line objects.
+        self.drawing_x = drawingView.X
+        self.drawing_y = drawingView.Y
+        self.XML_length = len(drawingView.ViewResult)
+        if calculateBounds:
+            XML_tree = SvgXMLTreeNode(drawingView.ViewResult, 0)
+            scaling = XML_tree.scaling()
+            self.scale = scaling
+            for element in XML_tree.getAllElements():
+                if element.tag == 'circle':
+                    x, y = element.applyTransforms( float( element.parms['cx'] ), float( element.parms['cy'] ) )
+                    r =  float( element.parms['r'] )* scaling
+                    self.updateBounds_ellipse( x, y, r, r )
+                if element.tag == 'ellipse':
+                    cx, cy = element.applyTransforms( float( element.parms['cx'] ), float( element.parms['cy'] ) )
+                    rx, ry = float( element.parms['rx'] )* scaling, float( element.parms['ry'] )* scaling
+                    self.updateBounds_ellipse( cx, cy, rx, ry )
+                if element.tag == 'path': 
+                    path = SvgPath( element )
+                    for p in path.points:
+                        self.updateBounds( p.x, p.y )
+                if element.tag == 'line':
+                    x1, y1 = element.applyTransforms( float( element.parms['x1'] ), float( element.parms['y1'] ) )
+                    x2, y2 = element.applyTransforms( float( element.parms['x2'] ), float( element.parms['y2'] ) )
+                    self.updateBounds( x1, y1 )
+                    self.updateBounds( x1, y2 )
+
+
+    def updateBounds( self, x, y): #svg bounds ...
+        if not hasattr( self, 'x_min'):
+            self.x_min = x
+            self.x_max = x
+            self.y_min = y
+            self.y_max = y
+        else:
+            self.x_min = min( self.x_min, x)
+            self.x_max = max( self.x_max, x)
+            self.y_min = min( self.y_min, y)
+            self.y_max = max( self.y_max, y)
+
+    def updateBounds_ellipse( self, cx, cy, rx, ry):
+        if not hasattr( self, 'x_min'):
+            self.x_min = cx - rx
+            self.x_max = cx + rx
+            self.y_min = cy - ry
+            self.y_max = cy + ry
+        else:
+            self.x_min = min( self.x_min, cx - rx)
+            self.x_max = max( self.x_max, cx + rx)
+            self.y_min = min( self.y_min, cy - ry)
+            self.y_max = max( self.y_max, cy + ry)
+
+
+
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:

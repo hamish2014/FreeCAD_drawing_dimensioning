@@ -293,9 +293,31 @@ def projectionSvg(x,y):
         )
 
 def clickHandler( x, y ):
+    d.placement_x = x
+    d.placement_y = y
     FreeCADGui.Control.closeDialog()
     return 'createDimension:%s' % findUnusedObjectName('unfold')
 
+
+class Proxy_unfold( Proxy_DimensionObject_prototype ):
+    def __init__(self, obj, selections, svgFun):
+        self.selections = [] #to be compdabile with Proxy_DimensionObject_prototype
+        self.svgFun = None
+        obj.X = d.placement_x
+        obj.Y = d.placement_y
+        obj.Scale = d.svgScale
+        obj.Rotation = d.svgRotation
+        self.measureable = True
+        obj.Proxy = self
+
+    def execute( self, obj ):
+        origSvg = obj.ViewResult
+        newTransform = 'transform="rotate(%f,%f,%f) translate(%f,%f) scale(%f,%f)" ' %  (obj.Rotation, obj.X, obj.Y, obj.X,  obj.Y, obj.Scale, obj.Scale)
+        p1 = origSvg.find('transform')
+        p2 = origSvg.find('>')
+        obj.ViewResult = origSvg[:p1] + newTransform +  origSvg[p2:]
+        
+d.ProxyClass = Proxy_unfold
 
 class UnfoldCommand:
     def Activated(self):
@@ -303,6 +325,7 @@ class UnfoldCommand:
         if len(selection) == 1 and all( isinstance(s, Part.Face) for s in selection[0].SubObjects )  :
             V = getDrawingPageGUIVars() #needs to be done before dialog show, else Qt active is dialog and not freecads
             d.activate(V) #to do, implement defaults preferences, ['centerLine_width','centerLine_len_gap','centerLine_len_dash','centerLine_len_dot'], ['centerLine_color'])
+            d.dialogIconPath = ':/dd/icons/unfold.svg' #nessary since dialog is none
             d.projection = unfold( selection[0].SubObjects )
             d.taskPanelDialog =  UnfoldTaskPanel()
             FreeCADGui.Control.showDialog( d.taskPanelDialog )

@@ -6,7 +6,7 @@ from dimensionSvgConstructor import *
 d = DimensioningProcessTracker()
 
 def angularDimensionSVG( line1, line2, x_baseline, y_baseline, x_text=None, y_text=None, 
-                         textFormat_angular='%3.1f°', comma_decimal_place=False, gap_datum_points = 2, dimension_line_overshoot=1, arrowL1=3, arrowL2=1, arrowW=2, strokeWidth=0.5, lineColor='blue',  arrow_scheme='auto',
+                         textFormat_angular='%(value)3.1f°', comma_decimal_place=False, gap_datum_points = 2, dimension_line_overshoot=1, arrowL1=3, arrowL2=1, arrowW=2, strokeWidth=0.5, lineColor='blue',  arrow_scheme='auto',
                          textRenderer=defaultTextRenderer):
     XML = []
     x_int, y_int = lineIntersection(line1, line2)
@@ -68,7 +68,7 @@ def angularDimensionSVG( line1, line2, x_baseline, y_baseline, x_text=None, y_te
         XML.append( textXML )
     return '<g> %s </g>' % '\n'.join(XML)
 
-d.registerPreference( 'textFormat_angular', '%3.1f°', 'format mask')
+d.registerPreference( 'textFormat_angular', '%(value)3.1f°', 'format mask')
 d.registerPreference( 'arrow_scheme')
 d.registerPreference( 'comma_decimal_place' )
 d.registerPreference( 'gap_datum_points') 
@@ -81,54 +81,46 @@ d.registerPreference( 'lineColor' )
 d.registerPreference( 'textRenderer' )
 
 def angularDimension_points_preview(mouseX, mouseY):
-    args = d.args + [ mouseX, mouseY ] if len(d.args) < 6 else d.args
-    return angularDimensionSVG( *args, **d.dimensionConstructorKWs )
+    selections = d.selections + [ PlacementClick( mouseX, mouseY ) ] if len(d.selections) < d.max_selections else d.selections
+    return angularDimensionSVG( *selections_to_svg_fun_args(selections), **d.dimensionConstructorKWs )
 
 def angularDimension_points_clickHandler( x, y ):
-    d.args = d.args + [ x, y ]
-    d.stage = d.stage + 1
-    if d.stage == 4 :
+    d.selections.append( PlacementClick( x, y ) )
+    if len(d.selections) == d.max_selections :
         return 'createDimension:%s' % findUnusedObjectName('dim')
-
-
 
         
 def selectFun( event, referer, elementXML, elementParms, elementViewObject ):
     referer.lockSelection()
+    viewInfo = selectionOverlay.DrawingsViews_info[elementViewObject.Name]
     if isinstance(referer, selectionOverlay.LineSelectionGraphicsItem):
-        x1,y1,x2,y2 = [ elementParms[k] for k in [ 'x1', 'y1', 'x2', 'y2' ] ]
-        debugPrint(2, 'selecting line %i with x1=%3.1f y1=%3.1f, x2=%3.1f y2=%3.1f' % (d.stage, x1,y1,x2,y2) )
-        if d.stage == 0: #then select line1
-            d.args = [ [x1,y1,x2,y2] ]
-            d.stage = 1
+        d.selections.append( LineSelection( elementParms, elementXML, viewInfo) )
+        if len(d.selections) == 1:
             for gi in selectionOverlay.graphicItems:
                 if isinstance(gi,  selectionOverlay.PointSelectionGraphicsItem):
                     gi.hide()
         else: 
-            d.args = d.args + [[x1,y1,x2,y2]]
-            d.stage = 2
+            d.max_selections = 4
             selectionOverlay.hideSelectionGraphicsItems()
             previewDimension.initializePreview( d, angularDimension_points_preview, angularDimension_points_clickHandler )
     else: #user selecting 3 points
-        x, y = elementParms['x'], elementParms['y']
-        debugPrint(2, 'point %i selected at x=%3.1f y=%3.1f' %(d.stage +1,x,y))
-        if d.stage == 0: 
-            d.pointStart = x,y
-            d.stage = 1
+        if len(d.selections) == 0: 
+            d.selections = [ThreePointAngleSelection()]
+            d.max_selections = 3
             for gi in selectionOverlay.graphicItems:
                 if isinstance(gi,  selectionOverlay.LineSelectionGraphicsItem):
                     gi.hide()
-        elif d.stage == 1:
-            d.pointCenter = x,y
-            d.stage = 2
-        else: 
-            x_c, y_c = d.pointCenter
-            x1, y1 = d.pointStart
-            x2, y2 = x,y
-            d.args = [ [x_c, y_c, x1, y1], [x_c, y_c, x2, y2] ]
-            d.stage = 2 #hack to allow intergation with dim from 2 line code
+        d.selections[0].addPoint( elementParms, elementXML, viewInfo )
+        if len(d.selections[0].points) == 3: 
             selectionOverlay.hideSelectionGraphicsItems()
             previewDimension.initializePreview( d,  angularDimension_points_preview, angularDimension_points_clickHandler)
+
+class Proxy_angularDimension( Proxy_DimensionObject_prototype ):
+     def dimensionProcess( self ):
+         return d
+d.ProxyClass = Proxy_angularDimension
+d.proxy_svgFun = angularDimensionSVG
+
 
 #selection variables for angular dimensioning
 line_maskPen =      QtGui.QPen( QtGui.QColor(0,255,0,100) )

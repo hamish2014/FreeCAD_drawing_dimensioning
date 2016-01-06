@@ -31,7 +31,7 @@ def radiusDimensionSVG( center_x, center_y, radius, radialLine_x=None, radialLin
     return '<g> %s </g>' % "\n".join(XML_body)
 
 d.dialogWidgets.append( unitSelectionWidget )
-d.registerPreference( 'textFormat_radial', 'R%3.3f', 'format mask')
+d.registerPreference( 'textFormat_radial', 'R%(value)3.3f', 'format mask')
 d.registerPreference( 'arrow_scheme')
 d.registerPreference( 'autoPlaceText')
 d.registerPreference( 'comma_decimal_place')
@@ -43,28 +43,32 @@ d.registerPreference( 'strokeWidth')
 d.registerPreference( 'lineColor')
 d.registerPreference( 'textRenderer' )
 d.registerPreference( 'autoPlaceOffset')
-
+d.max_selections = 4
 
 def radiusDimensionSVG_preview(mouseX, mouseY):
-    args = d.args + [ mouseX, mouseY ] if len(d.args) < 9 else d.args
-    return radiusDimensionSVG( *args, scale=d.viewScale*d.unitConversionFactor, **d.dimensionConstructorKWs )
+    selections = d.selections + [ PlacementClick( mouseX, mouseY ) ] if len(d.selections) < d.max_selections else d.selections
+    return radiusDimensionSVG(  *selections_to_svg_fun_args(selections), scale=d.viewScale*d.unitConversionFactor, **d.dimensionConstructorKWs )
 
 def radiusDimensionSVG_clickHandler( x, y ):
-    d.args = d.args + [ x, y ]
-    d.stage = d.stage + 1
-    if d.stage == 3 and d.dimensionConstructorKWs['autoPlaceText']:
-        return 'createDimension:%s' % findUnusedObjectName('dim')
-    if d.stage == 4 :
-        return 'createDimension:%s' % findUnusedObjectName('dim')
+    d.selections.append( PlacementClick( x, y ) )
+    if len(d.selections) == d.max_selections - 1 and d.dimensionConstructorKWs['autoPlaceText']:
+        d.selections.append( PlacementClick( x, y ) ) # to avoid crash when auto place turned off
+        return 'createDimension:%s' % findUnusedObjectName('rad')
+    elif len(d.selections) == d.max_selections :
+        return 'createDimension:%s' % findUnusedObjectName('rad')
 
 def selectFun(  event, referer, elementXML, elementParms, elementViewObject ):
-    x,y = elementParms['x'], elementParms['y']
-    debugPrint(2, 'center selected at x=%3.1f y=%3.1f' % (x,y))
-    d.args = [x, y, elementParms['r']]
+    viewInfo = selectionOverlay.DrawingsViews_info[elementViewObject.Name]
     d.viewScale = 1/elementXML.rootNode().scaling()
-    d.stage = 1
+    d.selections.append( CircularArcSelection( elementParms, elementXML, viewInfo ) )
     selectionOverlay.hideSelectionGraphicsItems()
     previewDimension.initializePreview( d, radiusDimensionSVG_preview, radiusDimensionSVG_clickHandler)
+
+class Proxy_RadiusDimension( Proxy_DimensionObject_prototype ):
+     def dimensionProcess( self ):
+         return d
+d.ProxyClass = Proxy_RadiusDimension
+d.proxy_svgFun = radiusDimensionSVG
 
 maskPen =      QtGui.QPen( QtGui.QColor(0,255,0,100) )
 maskPen.setWidth(2.0)
@@ -76,7 +80,7 @@ class RadiusDimension:
         V = getDrawingPageGUIVars()
         d.activate(V, 'Add Radial Dimension', dialogIconPath=':/dd/icons/radiusDimension.svg', endFunction=self.Activated)
         selectionOverlay.generateSelectionGraphicsItems(
-            [obj for obj in V.page.Group  if not obj.Name.startswith('dim')],
+            dimensionableObjects( V.page ),
             selectFun ,
             transform = V.transform,
             sceneToAddTo = V.graphicsScene,

@@ -37,9 +37,15 @@ def remove_tailing_zeros(s):
         return s
 
 def dimensionText( V, formatStr, roundingDigit=6, comma=False):
-    s1 = remove_tailing_zeros(formatStr % V)
+    try:
+        s1 = remove_tailing_zeros(formatStr % {'value':V})
+    except TypeError:
+        s1 = remove_tailing_zeros(formatStr % V)
     Vrounded = numpy.round(V, roundingDigit)
-    s2 = remove_tailing_zeros(formatStr % Vrounded)
+    try:
+        s2 = remove_tailing_zeros(formatStr % {'value':Vrounded})
+    except TypeError:
+        s2 = remove_tailing_zeros(formatStr % Vrounded)
     s =  s2 if len(s2) < len(s1) else s1
     if comma: s = s.replace('.',',')
     return s

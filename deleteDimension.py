@@ -22,7 +22,7 @@ class deleteAllButton:
             debugPrint(2,'Deleting all dimensioning objects')
             #FreeCAD.ActiveDocument.openTransaction("Delete All Dim. Objects")
             for obj in d.drawingVars.page.Group:
-                if any( obj.Name.startswith(prefix) for prefix in ['dim','grabPoint','center','unfold']):
+                if hasattr(obj,'Proxy') and isinstance(obj.Proxy, Proxy_DimensionObject_prototype):
                     FreeCAD.ActiveDocument.removeObject( obj.Name )
             FreeCAD.ActiveDocument.commitTransaction()
             #FreeCAD.ActiveDocument.commitTransaction()# ah undo not working ...
@@ -55,7 +55,9 @@ class DeleteDimension:
     def Activated(self):
         V = getDrawingPageGUIVars()
         d.activate(V, dialogTitle='Delete Dimension', dialogIconPath=':/dd/icons/deleteDimension.svg' , endFunction=self.Activated, grid=False)
-        commonArgs = dict( 
+        selectionOverlay.generateSelectionGraphicsItems( 
+            [obj for obj in V.page.Group  if hasattr(obj,'Proxy') and isinstance(obj.Proxy, Proxy_DimensionObject_prototype)], 
+            doSelectViewObjectPoints = True, 
             onClickFun=deleteDimension,
             sceneToAddTo = V.graphicsScene, 
             transform = V.transform,
@@ -64,15 +66,6 @@ class DeleteDimension:
             maskHoverPen=maskHoverPen, 
             maskBrush = maskBrush
             )
-        selectionOverlay.generateSelectionGraphicsItems( 
-            [obj for obj in V.page.Group  if obj.Name.startswith('dim') or obj.Name.startswith('grabPoint')], 
-            doSelectViewObjectPoints = True, 
-            **commonArgs)
-        selectionOverlay.generateSelectionGraphicsItems( 
-            [obj for obj in V.page.Group  if obj.Name.startswith('center') or  obj.Name.startswith('unfold')], 
-            clearPreviousSelectionItems = False,
-            doSelectViewObjectPoints=True, 
-            **commonArgs)
         selectionOverlay.addProxyRectToRescaleGraphicsSelectionItems( V.graphicsScene, V.graphicsView, V.width, V.height)
         
     def GetResources(self): 

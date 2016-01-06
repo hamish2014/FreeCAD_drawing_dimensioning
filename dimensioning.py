@@ -5,6 +5,7 @@ from PySide import QtGui, QtCore, QtSvg
 from svgLib_dd import SvgTextRenderer, SvgTextParser
 import traceback
 from grid_dd import gridOptionsGroupBox, dimensioningGrid
+from proxies_dd import *
 
 __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Gui','Resources', 'icons' )
@@ -57,7 +58,7 @@ def getDrawingPageGUIVars():
     # To find the page we are on, we get all the pages which have the same label as
     # the current object. In theory there should therefore only be one page in the list
     # returned by getObjectsByLabel, so we'll just take the first in the list
-    pages = App.ActiveDocument.getObjectsByLabel( subWinMW.objectName().encode('utf8'))
+    pages = App.ActiveDocument.getObjectsByLabel( subWinMW.objectName().encode('utf8') )
 
     # raise an error explaining that the page wasn't found if the list is empty
     if len(pages) <> 1:
@@ -110,11 +111,16 @@ def unsignedToRGBText(v):
     return 'rgb(%i,%i,%i)' % unsignedToRGB(v)
 
 class DimensioningProcessTracker:
-    def __init__(self):
+    def __init__(self, proxy_svgFun=None, add_viewScale_KW = False):
+        self.proxy_svgFun = proxy_svgFun
+        self.add_viewScale_KW = add_viewScale_KW  # for Proxy, set to true for centerLines
         self.dialogWidgets = []
         self.preferences = []
+        self.ViewObjectProxyClass = Proxy_DimensionViewObject_prototype
+
     def activate( self, drawingVars, dialogTitle=None, dialogIconPath=None, endFunction=None, grid=True):
         self.drawingVars = drawingVars
+        self.dialogIconPath = dialogIconPath
         self.endFunction = endFunction
         extraWidgets = []
         if self.endFunction <> None:
@@ -122,7 +128,7 @@ class DimensioningProcessTracker:
             extraWidgets.append( RepeatCheckBox(self, endFunction_parm_name) )
             if grid:
                extraWidgets.append( gridOptionsGroupBox )
-        self.stage = 0
+        self.selections = []
         KWs = {}
         for pref in self.preferences:
             KWs[pref.name] = pref.getDefaultValue()
@@ -187,6 +193,7 @@ class DimensioningPreference_prototype:
         self.name = name
         self.defaultValue = defaultValue
         self.label = label if label <> None else name
+        self.category = "Parameters" # for the freecad property category
         self.dd_parms = App.ParamGet("User parameter:BaseApp/Preferences/Mod/Drawing_Dimensioning")
         self.process_extraKWs(**extraKWs)
         self.initExtra()
@@ -196,6 +203,9 @@ class DimensioningPreference_prototype:
         pass
     def valueChanged( self, value ):
         self.dimensioningProcess.dimensionConstructorKWs[ self.name ] = value
+    def get_values_from_dimension_object( self, obj, KWs ):
+        KWs[self.name] = getattr( obj, self.name )
+
 
 class DimensioningPreference_float(DimensioningPreference_prototype):
     def process_extraKWs(self, increment=1.0, min=0.0):
@@ -216,6 +226,12 @@ class DimensioningPreference_float(DimensioningPreference_prototype):
         spinbox.valueChanged.connect( self.valueChanged )
         self.spinbox = spinbox
         return  DimensioningTaskDialog_generate_row_hbox( self.label, spinbox )
+    def add_properties_to_dimension_object( self, obj ):
+        obj.addProperty("App::PropertyFloat", self.name, self.category)
+        KWs = self.dimensioningProcess.dimensionConstructorKWs
+        setattr( obj, self.name, KWs[ self.name ] )
+        
+
 DimensioningPreferenceClasses["<type 'float'>"] = DimensioningPreference_float
 DimensioningPreferenceClasses["<type 'int'>"] = DimensioningPreference_float
 
@@ -235,6 +251,15 @@ class DimensioningPreference_unicode(DimensioningPreference_prototype):
         textbox.textChanged.connect( self.valueChanged )
         self.textbox = textbox
         return  DimensioningTaskDialog_generate_row_hbox( self.label, textbox )
+    def add_properties_to_dimension_object( self, obj ):
+        obj.addProperty("App::PropertyString", self.name, self.category)
+        KWs = self.dimensioningProcess.dimensionConstructorKWs
+        setattr( obj, self.name, KWs[ self.name ].encode('utf8') )
+    def get_values_from_dimension_object( self, obj, KWs ):
+        #KWs[self.name] =  unicode( getattr( obj, self.name ), 'utf8'  )
+        KWs[self.name] =  getattr( obj, self.name )
+        if not type(KWs[self.name]) == unicode:
+            raise ValueError,"type(KWs[%s]) != unicode but == %s" % (self.name, type(KWs[self.name]) ) 
 DimensioningPreferenceClasses["<type 'unicode'>"] = DimensioningPreference_unicode
 
 class DimensioningPreference_choice(DimensioningPreference_unicode):
@@ -260,7 +285,15 @@ class DimensioningPreference_choice(DimensioningPreference_unicode):
         combobox.currentIndexChanged.connect( self.valueChanged )
         self.combobox = combobox
         return  DimensioningTaskDialog_generate_row_hbox( self.label, combobox )
+    def add_properties_to_dimension_object( self, obj ):
+        obj.addProperty("App::PropertyEnumeration", self.name, self.category)
+        setattr( obj, self.name, [ v.encode('utf8') for v in  self.defaultValue ])
+        KWs = self.dimensioningProcess.dimensionConstructorKWs
+        setattr( obj, self.name, KWs[ self.name ].encode('utf8') )
+    def get_values_from_dimension_object( self, obj, KWs ):
+        KWs[self.name] =  unicode( getattr( obj, self.name ), 'utf8'  )
 DimensioningPreferenceClasses["choice"] = DimensioningPreference_choice
+
 
 class DimensioningPreference_boolean(DimensioningPreference_prototype):
     def valueChanged( self, arg1):
@@ -277,6 +310,10 @@ class DimensioningPreference_boolean(DimensioningPreference_prototype):
         self.revertToDefault()
         self.checkbox.stateChanged.connect( self.valueChanged )
         return  self.checkbox
+    def add_properties_to_dimension_object( self, obj ):
+        obj.addProperty("App::PropertyBool", self.name, self.category)
+        KWs = self.dimensioningProcess.dimensionConstructorKWs
+        setattr( obj, self.name, KWs[ self.name ] )
 DimensioningPreferenceClasses["<type 'bool'>"] = DimensioningPreference_boolean
 
 
@@ -320,6 +357,13 @@ class DimensioningPreference_color(DimensioningPreference_prototype):
         colorBox.setHorizontalScrollBarPolicy( QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff )
         colorBox.setVerticalScrollBarPolicy( QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff )
         return  DimensioningTaskDialog_generate_row_hbox( self.label, colorBox )
+    def add_properties_to_dimension_object( self, obj ):
+        obj.addProperty("App::PropertyString", self.name, self.category)
+        KWs = self.dimensioningProcess.dimensionConstructorKWs
+        setattr( obj, self.name, KWs[ self.name ].encode('utf8') )
+    def get_values_from_dimension_object( self, obj, KWs ):
+        KWs[self.name] =  getattr( obj, self.name )
+
 DimensioningPreferenceClasses["color"] = DimensioningPreference_color
 
 
@@ -379,6 +423,22 @@ class DimensioningPreference_font(DimensioningPreference_color):
         self.family_textbox.textChanged.connect( self.update_dimensionConstructorKWs )
         self.size_textbox.textChanged.connect( self.update_dimensionConstructorKWs )
         return groupbox
+    def add_properties_to_dimension_object( self, obj ):
+        obj.addProperty("App::PropertyString", self.name+ '_family', self.category)
+        obj.addProperty("App::PropertyString", self.name+ '_size', self.category)
+        obj.addProperty("App::PropertyString", self.name+ '_color', self.category)
+        textRenderer = self.dimensioningProcess.dimensionConstructorKWs[ self.name ]
+        setattr( obj, self.name + '_family', textRenderer.font_family.encode('utf8') )
+        setattr( obj, self.name + '_size', textRenderer.font_size.encode('utf8') )
+        setattr( obj, self.name + '_color', textRenderer.fill.encode('utf8') )
+        
+    def get_values_from_dimension_object( self, obj, KWs ):
+        family = getattr( obj, self.name + '_family')
+        size =  getattr( obj, self.name + '_size')
+        color =  getattr( obj, self.name + '_color')
+        KWs[self.name] = SvgTextRenderer(family, size, color)
+
+
 DimensioningPreferenceClasses["font"] = DimensioningPreference_font
 
 
@@ -387,9 +447,8 @@ class UnitSelectionWidget:
         self.unitSelected_combobox_index = 0
         self.customScaleValue = 1.0
         self.dd_parms = App.ParamGet("User parameter:BaseApp/Preferences/Mod/Drawing_Dimensioning")
-    def settingsChanged(self, notUsed=False):
-        unit_text = self.unitSelected_combobox.currentText()
-        self.unitSelected_combobox_index = self.unitSelected_combobox.currentIndex()
+
+    def unit_factor( self, unit_text, customScaleValue):
         if unit_text <> 'custom':
             if unit_text == 'Edit->Preference->Unit':
                 #found using App.ParamGet("User parameter:BaseApp/Preferences").Export('/tmp/p3')
@@ -399,13 +458,18 @@ class UnitSelectionWidget:
             if UserSchema == 0: #standard (mm/kg/s/degree
                 v = 1.0
             elif UserSchema == 1: #standard (m/kg/s/degree)
-                v =  1000.0
+                v = 1000.0
             else: #either US customary, or Imperial decimal
-                v =  25.4
+                v = 25.4
         else:
-            v = self.customUnit_spinbox.value()
-            self.customScaleValue = v
-        self.dimensioningProcess.unitConversionFactor = 1.0/v if v <> 0 else 1.0
+            v = customScaleValue
+        return 1.0/v if v <> 0 else 1.0
+
+    def settingsChanged(self, notUsed=False):
+        unit_text = self.unitSelected_combobox.currentText()
+        self.unitSelected_combobox_index = self.unitSelected_combobox.currentIndex()
+        self.customScaleValue = self.customUnit_spinbox.value()
+        self.dimensioningProcess.unitConversionFactor = self.unit_factor( unit_text, self.customScaleValue )
 
     def groupBoxToggled( self, checked):
         self.dd_parms.SetBool("show_unit_options", checked)
@@ -444,6 +508,19 @@ class UnitSelectionWidget:
         groupbox.setLayout(vbox)
         self.settingsChanged()
         return groupbox
+
+    def add_properties_to_dimension_object( self, obj ):
+        KWs = self.dimensioningProcess.dimensionConstructorKWs
+        obj.addProperty("App::PropertyEnumeration", 'unit_scheme', 'Units')
+        obj.unit_scheme = [ v.encode('utf8') for v in ['Edit->Preference->Unit','mm','inch','m','custom'] ]
+        obj.unit_scheme = self.unitSelected_combobox.currentText().encode('utf8')
+        obj.addProperty("App::PropertyFloat", 'unit_custom_scale', 'Units')
+        obj.unit_custom_scale = self.customScaleValue
+
+    def get_values_from_dimension_object( self, obj, KWs ):
+        unit_text =  unicode( obj.unit_scheme, 'utf8'  )
+        KWs['unit_scaling_factor'] = self.unit_factor( unit_text, obj.unit_custom_scale )
+
 unitSelectionWidget = UnitSelectionWidget()
 
 
@@ -613,3 +690,17 @@ class helpCommand:
             } 
 
 FreeCADGui.addCommand('dd_help', helpCommand())
+
+
+def dimensionableObjects ( page ):
+    'commonly used code in Activate, exclude centerlines'
+    from unfold import Proxy_unfold
+    drawingViews = []
+    for obj in page.Group:
+        if hasattr(obj, 'ViewResult'):
+            if hasattr(obj, 'Proxy'):
+                if isinstance( obj.Proxy, Proxy_unfold ):
+                        drawingViews.append( obj )
+            else: #assuming some kind of drawing view ...
+                drawingViews.append( obj )
+    return drawingViews

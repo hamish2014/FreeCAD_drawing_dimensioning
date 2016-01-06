@@ -31,7 +31,7 @@ def initializePreview( dimensioningProcessTracker, dimensionSvgFun, dimensionCli
         debugPrint(3, 'initializePreview: flag indicating preview QtItems not removed from scene,')
         #there are two possible options here
         case_msgs = [
-            'FreeCAD.ActivieDocument.recompute() has been called without clean up, therefore Qt items would have been deleted'
+            'FreeCAD.ActivieDocument.recompute() has been called without clean up, therefore Qt items would have been deleted',
             'dimensioningPreview interrupted by user selecting another dimensioning tool'
         ]
         case = 0 
@@ -128,10 +128,12 @@ class DimensionPreviewRect(QtGui.QGraphicsRectItem):
                     XML = self.dimensionSvgFun( x, y )
                     debugPrint(3, XML)
                     debugPrint(2, 'creating dimension %s' % viewName)
-                    obj = App.ActiveDocument.addObject('Drawing::FeatureView',viewName)
+                    obj = App.ActiveDocument.addObject('Drawing::FeatureViewPython',viewName)
                     obj.ViewResult = XML
-                    for prop in ['Rotation', 'Scale', 'ViewResult', 'X', 'Y']: 
-                        obj.setEditorMode(prop, 2)
+                    d = preview.dimensioningProcessTracker
+                    d.ProxyClass( obj, d.selections, d.proxy_svgFun )
+                    if hasattr( obj.ViewObject, 'Proxy'):
+                        d.ViewObjectProxyClass( obj.ViewObject, d.dialogIconPath )
                     preview.drawingVars.page.addObject( obj ) #App.ActiveDocument.getObject(viewName) )
                     removePreviewGraphicItems( recomputeActiveDocument=True, launchEndFunction=True )
                     FreeCAD.ActiveDocument.commitTransaction()

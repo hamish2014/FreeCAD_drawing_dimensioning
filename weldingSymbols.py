@@ -11,6 +11,16 @@ d.registerPreference( 'strokeWidth' )
 d.registerPreference( 'lineColor' )
 d.registerPreference( 'textRenderer' )
 
+class Proxy_weldingSymbol( Proxy_DimensionObject_prototype ):
+     def dimensionProcess( self ):
+         return d
+d.ProxyClass =  Proxy_weldingSymbol
+class Command_svg_fun_wrapper: #to make instance method pickalble!
+    def __init__(self, command ):
+        self.command = command
+    def __call__(self, *args, **KWS):
+        return self.command.generateSvg( *args, **KWS)
+
 maskBrush  =   QtGui.QBrush( QtGui.QColor(0,160,0,100) )
 maskPen =      QtGui.QPen( QtGui.QColor(0,160,0,100) )
 maskPen.setWidth(0.0)
@@ -22,8 +32,10 @@ class WeldingSymbol_prototype:
     def Activated(self):
         V = getDrawingPageGUIVars()
         d.activate(V, dialogTitle='Add Welding Note', dialogIconPath=self.generateIcon(), endFunction=self.Activated )
+        d.proxy_svgFun = Command_svg_fun_wrapper(self)
+        from grabPointAdd import  Proxy_grabPoint
         selectionOverlay.generateSelectionGraphicsItems( 
-            [obj for obj in V.page.Group  if not obj.Name.startswith('dim') and not obj.Name.startswith('center')], 
+            dimensionableObjects( V.page ) + [obj for obj in V.page.Group if hasattr(obj,'Proxy') and isinstance( obj.Proxy, Proxy_grabPoint) ],
             self.selectFun ,
             transform = V.transform,
             sceneToAddTo = V.graphicsScene, 
@@ -36,28 +48,24 @@ class WeldingSymbol_prototype:
         selectionOverlay.addProxyRectToRescaleGraphicsSelectionItems( V.graphicsScene, V.graphicsView, V.width, V.height)
 
     def selectFun(self, event, referer, elementXML, elementParms, elementViewObject ):
-        x,y = elementParms['x'], elementParms['y']
-        d.dArgs = [x,y]
-        d.stage = 1
-        debugPrint(2, 'welding symbol to point at x=%3.1f y=%3.1f' % (x,y))
+        viewInfo = selectionOverlay.DrawingsViews_info[elementViewObject.Name]
+        d.selections = [ PointSelection( elementParms, elementXML, viewInfo) ]
         selectionOverlay.hideSelectionGraphicsItems()
         previewDimension.initializePreview( 
             d, 
             self.preview_svgRenderer, 
             self.preview_clickHandler )
 
-
-    noOfStages = 4
+    noSelections = 4
     def preview_clickHandler( self, x, y ):
-        d.stage = d.stage + 1
-        if d.stage == self.noOfStages:
-            return 'createDimension:%s' % findUnusedObjectName('dimLine')
-        else:
-            d.dArgs = d.dArgs + [x,y]
+        d.selections.append( PlacementClick( x, y) )
+        if len(d.selections) == self.noSelections:
+            return 'createDimension:%s' % findUnusedObjectName('weld')
 
     def preview_svgRenderer(self,  x, y):
+        s =  d.selections + [ PlacementClick( x, y) ] if len(d.selections) < self.noSelections else d.selections
         return self.generateSvg( 
-            *(d.dArgs + [x, y]), 
+            *selections_to_svg_fun_args(s),  
              **d.dimensionConstructorKWs 
              )
 
@@ -141,7 +149,7 @@ FreeCADGui.addCommand('dd_weldingGroupCommand', WeldingGroupCommand())
 
 class WeldingSymbol0(WeldingSymbol_prototype):
     label='no grove symbol'
-    noOfStages = 3
+    noSelections = 3
     def generateIcon(self):
         return ':/dd/icons/welding/plain.svg'
 addWeldingCommand( WeldingSymbol0 )

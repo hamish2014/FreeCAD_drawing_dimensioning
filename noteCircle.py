@@ -22,6 +22,7 @@ d.registerPreference( 'lineColor' )
 d.registerPreference( 'noteCircle_radius', 4.5, increment=0.5, label='radius')
 d.registerPreference( 'noteCircle_fill', RGBtoUnsigned(255, 255, 255), kind='color', label='fill' )
 d.registerPreference( 'textRenderer_noteCircle', ['inherit','5', 150<<16], 'text properties (Note Circle)', kind='font' )
+d.max_selections = 3
 
 class NoteCircleText_widget:
     def __init__(self):
@@ -36,26 +37,35 @@ class NoteCircleText_widget:
         self.spinbox.valueChanged.connect(self.valueChanged)
         self.counter = self.counter + 1
         return DimensioningTaskDialog_generate_row_hbox('no.', self.spinbox)
+    def add_properties_to_dimension_object( self, obj ):
+        obj.addProperty("App::PropertyString", 'noteText', 'Parameters')
+        obj.noteText = d.noteCircleText.encode('utf8') 
+    def get_values_from_dimension_object( self, obj, KWs ):
+        KWs['noteCircleText'] =  obj.noteText #should be unicode
 d.dialogWidgets.append( NoteCircleText_widget() )
 
 
 
 def noteCircle_preview(mouseX, mouseY):
-    args = d.args + [ mouseX, mouseY ] if len(d.args) < 6 else d.args
-    return noteCircleSVG( *args, noteCircleText=d.noteCircleText, **d.dimensionConstructorKWs )
+    selections = d.selections + [ PlacementClick( mouseX, mouseY) ] if len(d.selections) < d.max_selections else d.selections
+    return noteCircleSVG( *selections_to_svg_fun_args(selections), noteCircleText=d.noteCircleText, **d.dimensionConstructorKWs )
 
 def noteCircle_clickHandler( x, y ):
-    d.args = d.args + [ x, y ]
-    d.stage = d.stage + 1
-    if d.stage == 3 :
-        return 'createDimension:%s' % findUnusedObjectName('dim')
+    d.selections.append( PlacementClick( x, y) )
+    if len(d.selections) == d.max_selections:
+        return 'createDimension:%s' % findUnusedObjectName('noteCircle')
 
 def selectFun( event, referer, elementXML, elementParms, elementViewObject ):
-    x,y = elementParms['x'], elementParms['y']
-    d.args = [x,y]
-    d.stage = 1
+    viewInfo = selectionOverlay.DrawingsViews_info[elementViewObject.Name]
+    d.selections = [ PointSelection( elementParms, elementXML, viewInfo ) ]
     selectionOverlay.hideSelectionGraphicsItems()
     previewDimension.initializePreview( d, noteCircle_preview, noteCircle_clickHandler)
+
+class Proxy_noteCircle( Proxy_DimensionObject_prototype ):
+     def dimensionProcess( self ):
+         return d
+d.ProxyClass = Proxy_noteCircle
+d.proxy_svgFun = noteCircleSVG
 
 maskBrush  =   QtGui.QBrush( QtGui.QColor(0,160,0,100) )
 maskPen =      QtGui.QPen( QtGui.QColor(0,160,0,100) )
@@ -67,9 +77,9 @@ class NoteCircle:
     def Activated(self):
         V = getDrawingPageGUIVars()
         d.activate(V, dialogTitle='Add Note Circle', dialogIconPath=':/dd/icons/noteCircle.svg', endFunction=self.Activated )
-        #d.SVGFun = noteCircleSVG
+        from grabPointAdd import  Proxy_grabPoint
         selectionOverlay.generateSelectionGraphicsItems(
-            [obj for obj in V.page.Group  if not obj.Name.startswith('dim') and not obj.Name.startswith('center')],
+            dimensionableObjects( V.page ) + [obj for obj in V.page.Group if hasattr(obj,'Proxy') and isinstance( obj.Proxy, Proxy_grabPoint) ],
             selectFun,
             transform = V.transform,
             sceneToAddTo = V.graphicsScene,
