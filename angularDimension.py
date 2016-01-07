@@ -139,7 +139,7 @@ class AngularDimension:
         V = getDrawingPageGUIVars()
         d.activate(V, dialogTitle='Add Angular Dimension', dialogIconPath=':/dd/icons/angularDimension.svg', endFunction=self.Activated )
         selectionOverlay.generateSelectionGraphicsItems( 
-            [obj for obj in V.page.Group  if not obj.Name.startswith('dim')], 
+            dimensionableObjects( V.page ), 
             selectFun ,
             transform = V.transform,
             sceneToAddTo = V.graphicsScene, 
@@ -149,7 +149,7 @@ class AngularDimension:
             maskBrush = line_maskBrush
             )
         selectionOverlay.generateSelectionGraphicsItems( 
-            [obj for obj in V.page.Group  if not obj.Name.startswith('dim')], 
+            dimensionableObjects( V.page ),
             selectFun ,
             transform = V.transform,
             sceneToAddTo = V.graphicsScene, 

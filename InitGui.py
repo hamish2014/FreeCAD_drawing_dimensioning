@@ -19,6 +19,7 @@ class DrawingDimensioningWorkbench (Workbench):
         import noteCircle
         import centerView
         import toleranceAdd
+        import recomputeDimensions
         from drawing_wb_shortcuts import newpageShortcuts
         self.appendToolbar('Drawing Workbench shortcuts', newpageShortcuts + [
                     'dd_new_drawing_page_preferences',
@@ -42,11 +43,12 @@ class DrawingDimensioningWorkbench (Workbench):
             'dd_noteCircle', 
             'dd_grabPoint',
             'dd_addText',
- #           'dd_editText',   # no longer available to user, else to complicated! In particular multiple avenues available to user
+ #           'dd_editText',   # no longer available to user, else to complicated! In particular multiple avenues available to user to change text properties
  #           'dd_moveText',   # therefore sticking with the FreeCAD way of doing things
             'dd_addTolerance', 
             'dd_deleteDimension', 
             'dd_escapeDimensioning',
+            'dd_recomputeDimensions',
             ]
         self.appendToolbar('Drawing Dimensioning', commandslist)
         import unfold
