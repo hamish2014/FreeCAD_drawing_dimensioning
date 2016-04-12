@@ -17,6 +17,7 @@ class DrawingDimensioningWorkbench (Workbench):
         import radiusDimension
         import centerLines
         import noteCircle
+        import table_dd
         import centerView
         import toleranceAdd
         import recomputeDimensions
@@ -46,6 +47,7 @@ class DrawingDimensioningWorkbench (Workbench):
  #           'dd_editText',   # no longer available to user, else to complicated! In particular multiple avenues available to user to change text properties
  #           'dd_moveText',   # therefore sticking with the FreeCAD way of doing things
             'dd_addTolerance', 
+            'dd_addTable',
             'dd_deleteDimension', 
             'dd_escapeDimensioning',
             'dd_recomputeDimensions',
@@ -62,7 +64,8 @@ class DrawingDimensioningWorkbench (Workbench):
             ]
         self.appendToolbar( 'Drawing Dimensioning Folding', unfold_cmds )
         import weldingSymbols
-        if int( FreeCAD.Version()[1] > 15 ) and  int( FreeCAD.Version()[2].split()[0] ) > 5165:
+        git_commit_no = int( FreeCAD.Version()[2].split()[0] )
+        if git_commit_no > 5166:
             weldingCommandList = ['dd_weldingGroupCommand']
         else:
             weldingCommandList = weldingSymbols.weldingCmds

@@ -90,7 +90,7 @@ class GridOptionsGroupBox:
         self.spacingSpinbox = spacingSpinbox
 
         displayPeriodSpinbox = QtGui.QSpinBox()
-        displayPeriodSpinbox.setValue( self.dd_parms.GetInt( 'grid_display_period', default_grid_display_period  )  )
+        displayPeriodSpinbox.setValue( min( self.dd_parms.GetInt( 'grid_display_period', default_grid_display_period  ), 200)  )
         displayPeriodSpinbox.setMinimum( 0 )
         displayPeriodSpinbox.valueChanged.connect( self.displayPeriodSpinbox_valueChanged )
         vbox.addLayout( DimensioningTaskDialog_generate_row_hbox('display period', displayPeriodSpinbox) )
