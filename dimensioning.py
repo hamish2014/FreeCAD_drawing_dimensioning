@@ -478,7 +478,6 @@ class DimensioningPreference_float_list(DimensioningPreference_string_list):
     def FreeCAD_parm_to_val( self, FreeCAD_parm ):
         return map(float, FreeCAD_parm.split('\n'))
     def textChanged( self, arg1=None):
-        debugPrint(1, 'textChanged')
         try:
             self.dimensioningProcess.dimensionConstructorKWs[ self.name ] = map(float, [v for v in self.textbox.toPlainText().split('\n') if len(v.strip())>0])
             #debugPrint(1, str(self.dimensioningProcess.dimensionConstructorKWs[ self.name ]))

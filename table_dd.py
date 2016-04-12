@@ -23,7 +23,7 @@ def tableSVG( top_left_x, top_left_y, column_widths, contents, row_heights,
         y_offset += row_heights[ i % len(row_heights) ]
         row_y.append( y_offset )
         addLine( 0, y_offset, width, y_offset )
-    debugPrint(1, 'row y : ' + str(row_y))
+    #debugPrint(1, 'row y : ' + str(row_y))
     x_offset = 0
     column_x = []
     addLine( 0, 0, 0, y_offset )
