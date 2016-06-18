@@ -500,14 +500,15 @@ class UnitSelectionWidget:
             if unit_text == 'Edit->Preference->Unit':
                 #found using App.ParamGet("User parameter:BaseApp/Preferences").Export('/tmp/p3')
                 UserSchema = App.ParamGet("User parameter:BaseApp/Preferences/Units").GetInt("UserSchema")
+                v = App.Units.Quantity(1,App.Units.Length).getUserPreferred()[1]
             else:
                 UserSchema = ['mm','m','inch'].index( unit_text )
-            if UserSchema == 0: #standard (mm/kg/s/degree
-                v = 1.0
-            elif UserSchema == 1: #standard (m/kg/s/degree)
-                v = 1000.0
-            else: #either US customary, or Imperial decimal
-                v = 25.4
+                if UserSchema == 0: #standard (mm/kg/s/degree
+                    v = 1.0
+                elif UserSchema == 1: #standard (m/kg/s/degree)
+                    v = 1000.0
+                else: #either US customary, or Imperial decimal
+                    v = 25.4
         else:
             v = customScaleValue
         return 1.0/v if v <> 0 else 1.0
@@ -744,10 +745,11 @@ def dimensionableObjects ( page ):
     from unfold import Proxy_unfold
     drawingViews = []
     for obj in page.Group:
-        if hasattr(obj, 'ViewResult'):
+        if obj.isDerivedFrom("Drawing::FeatureView"):
             if hasattr(obj, 'Proxy'):
-                if isinstance( obj.Proxy, Proxy_unfold ):
-                        drawingViews.append( obj )
-            else: #assuming some kind of drawing view ...
-                drawingViews.append( obj )
+                # skipping all drawing_dimensioning objects except unfolds
+                if hasattr( obj.Proxy, "dimensionProcess"):
+                    if not isinstance( obj.Proxy, Proxy_unfold ):
+                        continue
+            drawingViews.append( obj )
     return drawingViews
