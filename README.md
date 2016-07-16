@@ -1,8 +1,9 @@
 FreeCAD_drawing_dimensioning
 ============================
 
-Drawing dimensioning workbench for FreeCAD v0.15 or later.
-Take note that this workbench is experimental and still contains bugs.
+Drawing dimensioning workbench for FreeCAD v0.15 and v0.16.
+
+Take note that hamish2014/FreeCAD_drawing_dimensioning is no longer maintained.
 
 Intended work-flow:
   * create a drawing page and a drawing of the part using the drawing workbench
@@ -76,9 +77,4 @@ To set up your desired dimensioning style
   2. switch to the Drawing dimensioning workbench
   3. edit -> preferences -> drawing dimensioning
 
-
-Bugs
-----
-
-Please report bugs at https://github.com/hamish2014/FreeCAD_drawing_dimensioning/issues
 
