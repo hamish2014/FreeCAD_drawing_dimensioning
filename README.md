@@ -3,20 +3,18 @@ FreeCAD_drawing_dimensioning
 
 Drawing dimensioning workbench for FreeCAD v0.15.4576 and newer.
 
-Although the original programmer of the workbench (hamish) is no longer active
-this workbench is still maintained as good as possible.
-Feel free to post issues and pull requests.
+Although the original programmer of the workbench (hamish) is no longer active, this workbench is still actively maintained.  Feel free to post issues and pull requests.
 
 
 Linux Installation Instructions
 -------------------------------
 
-For Ubuntu (Linux Mint) we recommend to add the community ppa to your systems software
-resources and install via the sysnaptic package manager the addon of your liking.
-Refer to here for more information:
+For Ubuntu (Linux Mint) we recommend adding the community ppa to your systems software resources and install, via the sysnaptic package manager, the desired addon.
+
+Refer here for more information:
 https://launchpad.net/~freecad-community/+archive/ubuntu/ppa
 
-On other Linux distros you may try to install manually via BASH and git:
+On other Linux distros try to install manually via Terminal and git, replacing **apt-get** if not installed, with your distro's package manager:
 
 ```bash
 $ sudo apt-get install git python-numpy python-pyside
