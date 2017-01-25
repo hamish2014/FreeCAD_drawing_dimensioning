@@ -72,6 +72,9 @@ def export_via_dxfwrite(  dxf_fn, V):
     
     pageSvg = open(V.page.PageResult).read()
     XML_tree =  SvgXMLTreeNode( pageSvg,0)
+    defaultHeight = 0
+    defaultFont = 'Verdana'
+    defaultAnchor = 'left'
     def yT(y): #y transform
         return 210-y
     warningsShown = []
@@ -84,6 +87,12 @@ def export_via_dxfwrite(  dxf_fn, V):
             for part in element.parms['style'].split(';'):
                 if part.startswith('stroke:rgb('):
                     clr_text = part[ len('stroke:'):]
+                elif part.startswith('font-size'):
+                    defaultHeight = part[len('font-size:')]
+                elif part.startswith('font-family'):
+                    defaultFont = part[len('font-family:'):]
+                elif part.startswith('text-anchor'):
+                    defaultAnchor = part[len('text-anchor:'):]
         if clr_text == None or clr_text =='none' or not clr_text.startswith('rgb(') :
             color_code = 0
         else:
@@ -100,11 +109,20 @@ def export_via_dxfwrite(  dxf_fn, V):
             drawing.add( dxf.line( (x1, yT(y1)), (x2, yT(y2)), color=color_code ) )
         elif element.tag == 'text' and element.parms.has_key('x'):
             x,y = element.applyTransforms( float( element.parms['x'] ), float( element.parms['y'] ) )
+            t = SvgTextParser(element.XML[element.pStart: element.pEnd ] )
             try:
-                t = SvgTextParser(element.XML[element.pStart: element.pEnd ] )
                 drawing.add(dxf.text( t.text, insert=(x, yT(y)), height=t.height()*0.8, rotation=t.rotation, layer='TEXTLAYER', color=color_code) )
             except ValueError, msg:
-                FreeCAD.Console.PrintWarning('dxf_export: unable to convert text element "%s": %s, ignoring...\n' % (element.XML[element.pStart: element.pEnd ], str(msg) ) )
+                temp = t.text.replace('<tspan>','')
+                temp = temp.replace('</tspan>','')
+                t.text = temp
+                t.font_size = defaultHeight
+                t.font_family = defaultFont          
+                if defaultAnchor == 'middle':
+                    shift = t.width()/2.0   
+                    x,y = element.applyTransforms( float( element.parms['x'] )-shift, float( element.parms['y'] ) )
+                drawing.add(dxf.text( temp, insert=(x, yT(y)), height=t.height()*0.8, rotation=t.rotation, layer='TEXTLAYER', color=color_code) )
+                #FreeCAD.Console.PrintWarning('dxf_export: unable to convert text element "%s": %s, ignoring...\n' % (element.XML[element.pStart: element.pEnd ], str(msg) ) )
         elif element.tag == 'path': 
             #FreeCAD.Console.PrintMessage(element.parms['d']+'\n')
             path = SvgPath( element )
@@ -130,6 +148,11 @@ def export_via_dxfwrite(  dxf_fn, V):
             p = SvgPolygon( element )
             for line in p.lines:
                 drawing.add( dxf.line( (line.x1, yT(line.y1)), (line.x2,yT(line.y2)), color=color_code) ) 
+        elif element.tag == 'rect':
+            x, y = element.applyTransforms( float( element.parms['x'] ), float( element.parms['y'] ) )
+            width =  float( element.parms['width'] )* element.scaling2()
+            height =  float( element.parms['height'] )* element.scaling2()
+            drawing.add(dxf.rectangle((x, yT(y)), width, -height, color = color_code) )
         elif not element.tag in warningsShown:
             FreeCAD.Console.PrintWarning('dxf_export: Warning export of %s elements not supported, ignoring...\n' % element.tag )
             warningsShown.append(element.tag)
