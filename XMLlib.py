@@ -96,7 +96,7 @@ class SvgXMLTreeNode:
         #print(self.parms)
 
     def rootNode(self):
-        if self.parent==None:
+        if self.parent is None:
             return self
         else:
             return self.parent.rootNode()
@@ -148,7 +148,7 @@ class SvgXMLTreeNode:
 
     def Transforms( self, cumalative=True, T=None, c=None):
         'y = dot(T,x) + c'
-        if T==None:
+        if T is None:
             T = numpy.eye(2)
             c = numpy.zeros(2)
         R = numpy.eye(2)
