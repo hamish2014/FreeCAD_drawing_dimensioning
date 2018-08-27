@@ -523,7 +523,6 @@ class SvgPathBezierCurve:
     def dxfwrite_arc_parms(self, x_c, y_c, r):
         x1, y1 = self.P[0]
         x2, y2 = self.P[-1]
-        x_c, y_c = self.c_x, self.c_y
         startangle = arctan2( y1 - y_c, x1 - x_c) / pi * 180
         endangle = arctan2( y2 - y_c, x2 - x_c) / pi * 180
         return r, (x_c, y_c), startangle, endangle

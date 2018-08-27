@@ -120,8 +120,7 @@ def export_via_dxfwrite(  dxf_fn, V):
             for bezierCurve in path.bezierCurves:
                 x, y, r, r_error = bezierCurve.fitCircle()
                 if r_error < 10**-4:
-                    raise NotImplementedError
-                    drawing.add( dxf.arc( *bezierCurve.dxfwrite_arc_parms(x, y, r) ) )
+                    drawing.add( dxf.arc( *bezierCurve.dxfwrite_arc_parms(x, y, r), color=color_code ) )
                 else:
                     X,Y = bezierCurve.points_along_curve()
                     for i in range(len(X) -1):
