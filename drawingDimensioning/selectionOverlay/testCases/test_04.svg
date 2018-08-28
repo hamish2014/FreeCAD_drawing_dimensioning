@@ -1,0 +1,24 @@
+<svg>
+  <g id="Ortho_0_-1"
+     transform="rotate(90,75.6667,132) translate(300,100) scale(30,30)" >
+    <g   stroke="rgb(0, 0, 0)" 
+	 stroke-width="0.0875"
+	 stroke-linecap="butt"
+	 stroke-linejoin="miter"   
+	 fill="none"   
+	 transform="scale(1,-1)" >
+      <path id= "1" d=" M 1.11022e-16 1 L 1.11022e-16 9 " />
+      <path d="M1.11022e-16 1 A1 1 0 0 0 -1 -2.22045e-16" />
+      <path id= "3" d=" M -1 -2.22045e-16 L -9 -2.22045e-16 " />
+      <path d="M1.11022e-16 9 A1 1 0 0 1 -1 10" />
+      <path id= "5" d=" M -1 10 L -9 10 " />
+      <path id= "6" d=" M -1 10 L -9 10 " />
+      <path id= "7" d=" M -10 1 L -10 9 " />
+      <path id= "8" d=" M -10 1 L -10 9 " />
+      <path d="M-10 1 A1 1 0 0 1 -9 -2.22045e-16" />
+      <path d="M-10 1 A1 1 0 0 1 -9 -2.22045e-16" />
+      <path d="M-10 9 A1 1 0 0 0 -9 10" />
+      <path d="M-9 10 A1 1 0 0 1 -10 9" />
+      </g>
+  </g>
+</svg>

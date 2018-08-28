@@ -1,0 +1,27 @@
+<svg>
+<g id="Ortho_0_0"
+   transform="rotate(180,44,35.6) translate(44,35.6) scale(4.0,4.0)"
+  >
+<g   stroke="rgb(0, 0, 0)"
+   stroke-width="0.583333"
+   stroke-linecap="butt"
+   stroke-linejoin="miter"
+   fill="none"
+   transform="scale(1,-1)"
+  >
+<path id= "1" d=" M 0 0 L -120 0 " />
+<path id= "2" d=" M 0 35 L 0 0 " />
+<path id= "3" d=" M -120 0 L -120 35 " />
+<path id= "4" d=" M -120 35 L -106 35 " />
+<path d="M-105.916 36 A6 6 0 1 0 -106 35" />
+<path id= "6" d=" M -105.916 36 L -120 36 " />
+<path id= "7" d=" M -120 36 L -120 48 " />
+<path id= "8" d=" M -120 48 L 0 48 " />
+<path id= "9" d=" M 0 48 L 0 36 " />
+<path id= "10" d=" M -14.0839 36 L 0 36 " />
+<path d="M-26 35 A6 6 0 0 0 -14.0839 36" />
+<path d="M-14 35 A6 6 0 1 0 -26 35" />
+<path id= "13" d=" M 0 35 L -14 35 " />
+<circle cx ="-60" cy ="35" r ="3" /></g>
+</g>
+</svg>

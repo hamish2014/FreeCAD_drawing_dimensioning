@@ -77,8 +77,10 @@ To set up your desired dimensioning style
   3. edit -> preferences -> drawing dimensioning
 
 
-Bugs
-----
+Testing
+-------
 
-Please report bugs at https://github.com/hamish2014/FreeCAD_drawing_dimensioning/issues
-
+```bash
+$ cd ~/.FreeCAD/Mod/FreeCAD_drawing_dimensioning
+$ python test
+```

@@ -1,0 +1,6 @@
+<svg>
+  <g transform="scale(8,8) translate(600,-400)"> 
+    <g transform = "rotate(180,-118,78)"> <ellipse cx ="-118" cy ="78" rx ="2.5"  ry ="2.5"/> </g>
+    <g transform = "rotate(180,-131,78)"> <ellipse cx ="-131" cy ="78" rx ="2.5"  ry ="2.5"/> </g>
+  </g>
+</svg>
