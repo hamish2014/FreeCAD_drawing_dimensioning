@@ -357,16 +357,22 @@ class UnitSelectionWidget:
     def unit_factor( self, unit_text, customScaleValue):
         if unit_text <> 'custom':
             if unit_text == 'Edit->Preference->Unit':
+<<<<<<< HEAD:drawingDimensioning/command/preferences.py
                 #found using FreeCAD.ParamGet("User parameter:BaseApp/Preferences").Export('/tmp/p3')
                 UserSchema = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Units").GetInt("UserSchema")
+=======
+                #found using App.ParamGet("User parameter:BaseApp/Preferences").Export('/tmp/p3')
+                UserSchema = App.ParamGet("User parameter:BaseApp/Preferences/Units").GetInt("UserSchema")
+                v = App.Units.Quantity(1,App.Units.Length).getUserPreferred()[1]
+>>>>>>> d73728a75b595e3a40e749ca1d939e218d14b11d:dimensioning.py
             else:
                 UserSchema = ['mm','m','inch'].index( unit_text )
-            if UserSchema == 0: #standard (mm/kg/s/degree
-                v = 1.0
-            elif UserSchema == 1: #standard (m/kg/s/degree)
-                v = 1000.0
-            else: #either US customary, or Imperial decimal
-                v = 25.4
+                if UserSchema == 0: #standard (mm/kg/s/degree
+                    v = 1.0
+                elif UserSchema == 1: #standard (m/kg/s/degree)
+                    v = 1000.0
+                else: #either US customary, or Imperial decimal
+                    v = 25.4
         else:
             v = customScaleValue
         return 1.0/v if v <> 0 else 1.0
@@ -431,3 +437,181 @@ unitSelectionWidget = UnitSelectionWidget()
 
 
 
+<<<<<<< HEAD:drawingDimensioning/command/preferences.py
+=======
+    def createForm(self):
+        title, iconPath, dialogWidgets, preferences = self.initArgs
+        self.form = DimensioningTaskDialogForm( self.dimensiongProcess, dialogWidgets, preferences )
+        self.form.setWindowTitle( title )    
+        if iconPath <> None:
+            self.form.setWindowIcon( QtGui.QIcon( iconPath ) )
+
+    def reject(self): #close button
+        import previewDimension
+        if hasattr(previewDimension.preview, 'drawingVars'):
+            previewDimension.removePreviewGraphicItems( recomputeActiveDocument = True )
+        else:
+            recomputeWithOutViewReset(self.dimensiongProcess.drawingVars )
+            FreeCADGui.Control.closeDialog()
+    def getStandardButtons(self): #http://forum.freecadweb.org/viewtopic.php?f=10&t=11801
+        return 0x00200000 #close button
+
+
+class DimensioningTaskDialogForm(QtGui.QWidget):
+    
+    def __init__(self, dimensiongProcess, parameters, preferences ):
+        super(DimensioningTaskDialogForm, self).__init__()
+        self.dd_dimensiongProcess = dimensiongProcess
+        self.dd_parameters = parameters
+        self.dd_preferences = preferences#dd prefix added to avoid possible name collision
+        self.initUI()
+        
+    def initUI(self):
+        vbox = QtGui.QVBoxLayout()
+        for parm in self.dd_parameters:
+            w = parm.generateWidget(self.dd_dimensiongProcess )
+            if isinstance(w, QtGui.QLayout):
+                vbox.addLayout( w )
+            else:
+                vbox.addWidget( w )
+        if len( self.dd_preferences ) > 0:
+            preferenceGroupbox = QtGui.QGroupBox("Preferences")
+            vbox_pref = QtGui.QVBoxLayout()
+            for pref in self.dd_preferences:
+                row =  pref.generateWidget(self.dd_dimensiongProcess )
+                if isinstance(row, QtGui.QLayout):
+                    vbox_pref.addLayout( row )
+                else:
+                    vbox_pref.addWidget( row )
+            preferenceGroupbox.setLayout(vbox_pref)
+            vbox.addWidget(preferenceGroupbox)
+
+            #buttonRevert = QtGui.QPushButton("Revert to default")
+            #buttonRevert.clicked.connect( self.revertToDefaults )
+            #vbox.addWidget( buttonRevert )
+
+            buttonSave = QtGui.QPushButton("Set as default")
+            buttonSave.clicked.connect( self.updateDefaults )
+            vbox.addWidget( buttonSave )
+        self.setLayout(vbox)            
+
+    def updateDefaults(self):
+        debugPrint(4,'updateDefaults clicked')
+        for parm in self.dd_parameters:
+            if hasattr(parm , 'updateDefault'):
+                parm.updateDefault()
+        for pref in self.dd_preferences:
+            pref.updateDefault()
+        debugPrint(3,'updateDefaults successfully completed')
+    def revertToDefaults( self ):
+        debugPrint(4,'revertToDefault clicked')
+        for parm in self.dd_parameters:
+            if hasattr(parm , 'revertToDefault'):
+                parm.revertToDefault()
+        for pref in self.dd_preferences:
+            pref.revertToDefault()
+        debugPrint(3,'revertToDefault successfully completed')
+
+
+
+def recomputeWithOutViewReset( drawingVars ):
+    '''
+    By default app.recompute() resets the drawing view, which can be rather frustrating...
+    '''
+    printGraphicsViewInfo( drawingVars )
+    gV =  drawingVars.graphicsView
+    T = gV.transform()
+    scale = T.m11()
+    ##attempting to find centre of view
+    #dx = gV.mapToScene( 0,0).x()
+    #dy = gV.mapToScene( 0,0).y()
+    ## now scene_x = view_x/scale + dx; so
+    #centerView = [
+    #    0.5*gV.width(),
+    #    0.5*gV.height(),
+    #    ]
+    #centerScene = gV.mapToScene( *centerView )
+    #centerOn approach did not work rather using scroll bars.
+    h_scrollValue = gV.horizontalScrollBar().value()
+    v_scrollValue = gV.verticalScrollBar().value()
+    import selectionOverlay
+    selectionOverlay.hideSelectionGraphicsItems()    
+    drawingVars.page.touch()
+    App.ActiveDocument.recompute()
+    gV.scale( scale , scale )
+    #scale correction
+    for i in range(3):
+        scale_actual = gV.transform().m11()
+        debugPrint(4, 'scale_desired %1.3f scale_actual %1.3f' % (scale, scale_actual))
+        s_correction = scale / scale_actual
+        gV.scale( s_correction, s_correction )
+
+    gV.horizontalScrollBar().setValue( h_scrollValue )
+    gV.verticalScrollBar().setValue( v_scrollValue )
+    printGraphicsViewInfo( drawingVars )
+
+
+def printGraphicsViewInfo( drawingVars ):
+    '''
+    A PySide.QtGui.QTransform object contains a 3 x 3 matrix. The m31 (dx ) and m32 (dy ) elements specify horizontal and vertical translation.
+    The m11 and m22 elements specify horizontal and vertical scaling.
+    The m21 and m12 elements specify horizontal and vertical shearing .
+    And finally, the m13 and m23 elements specify horizontal and vertical projection, with m33 as an additional projection factor.
+
+    This function was written help restore the view transform after App.ActiveDocument.recompute();
+    example of how to get T, T= preview.drawingVars.graphicsView.transform()
+
+    DrawingView.cpp: line134: s->setSceneRect(m_outlineItem->boundingRect().adjusted(-10, -10, 10, 10)); # s is QGraphicsScene  used for scroll bars!
+    '''
+    T = drawingVars.graphicsView.transform()
+    sx, sy, dx, dy = T.m11(), T.m22(), T.m31(), T.m32()
+    debugPrint(4,'graphicsView transform info: sx %1.2f, sy %1.2f, dx %1.2f, dy %1.2f' % (sx, sy, dx, dy) )
+    debugPrint(4,'    [ %1.2f  %1.2f  %1.2f ]' % (T.m11(), T.m12(), T.m13() ))
+    debugPrint(4,'M = [ %1.2f  %1.2f  %1.2f ]' % (T.m21(), T.m22(), T.m23() ))
+    debugPrint(4,'    [ %1.2f  %1.2f  %1.2f ]' % (T.m31(), T.m32(), T.m33() ))
+
+    #r = preview.drawingVars.graphicsView.sceneRect() #seems to be used for scroll bars, not for anything else
+    #debugPrint(2,'graphicsView.sceneRect info: topLeft.x %3.2f, topLeft.y %3.2f, bottomRight.x %3.2f, bottomRight.y %3.2f' \
+    #               % (r.topLeft().x(), r.topLeft().y(), r.bottomRight().x(), r.bottomRight().y() ) )
+
+    #T = drawingVars.graphicsView.viewportTransform()
+    #sx, sy, dx, dy = T.m11(), T.m22(), T.m31(), T.m32()
+    #debugPrint(2,'viewPort transform info: sx %1.2f, sy %1.2f, dx %1.2f, dy %1.2f' % (sx, sy, dx, dy) )
+    #debugPrint(4,'    [ %1.2f  %1.2f  %1.2f ]' % (T.m11(), T.m12(), T.m13() ))
+    #debugPrint(4,'M = [ %1.2f  %1.2f  %1.2f ]' % (T.m21(), T.m22(), T.m23() ))
+    #debugPrint(4,'    [ %1.2f  %1.2f  %1.2f ]' % (T.m31(), T.m32(), T.m33() ))
+
+
+class helpCommand:
+    def Activated(self):
+        QtGui.QMessageBox.information( 
+            QtGui.qApp.activeWindow(), 
+            'Drawing Dimensioning Help', 
+            '''For help getting started, please refer to the following YouTube video tutorials:
+
+- https://www.youtube.com/watch?v=CTEPu50bG4U
+- https://www.youtube.com/watch?v=ztMTLp4wZx4 '''  )
+    def GetResources(self): 
+        return {
+            'Pixmap' : ':/dd/icons/help.svg', 
+            'MenuText': 'Help', 
+            'ToolTip': 'Help'
+            } 
+
+FreeCADGui.addCommand('dd_help', helpCommand())
+
+
+def dimensionableObjects ( page ):
+    'commonly used code in Activate, exclude centerlines'
+    from unfold import Proxy_unfold
+    drawingViews = []
+    for obj in page.Group:
+        if obj.isDerivedFrom("Drawing::FeatureView"):
+            if hasattr(obj, 'Proxy'):
+                # skipping all drawing_dimensioning objects except unfolds
+                if hasattr( obj.Proxy, "dimensionProcess"):
+                    if not isinstance( obj.Proxy, Proxy_unfold ):
+                        continue
+            drawingViews.append( obj )
+    return drawingViews
+>>>>>>> d73728a75b595e3a40e749ca1d939e218d14b11d:dimensioning.py

@@ -96,7 +96,7 @@ class SvgXMLTreeNode:
         #print(self.parms)
 
     def rootNode(self):
-        if self.parent==None:
+        if self.parent is None:
             return self
         else:
             return self.parent.rootNode()
