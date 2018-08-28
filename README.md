@@ -2,8 +2,7 @@ FreeCAD_drawing_dimensioning
 ============================
 
 Drawing dimensioning workbench for FreeCAD v0.15.4576 and newer.
-
-Although the original programmer of the workbench (hamish) is no longer active, this workbench is still actively maintained.  Feel free to post issues and pull requests.
+This workbench in not maintained.
 
 
 Linux Installation Instructions
@@ -49,12 +48,6 @@ where *FreeCAD.app* is the folder where FreeCAD is installed. (thanks PLChris)
 For more in-depth information refer to the corresponding tutorial on the FreeCAD-Homepage:
 http://www.freecadweb.org/wiki/index.php?title=How_to_install_additional_workbenches
 
-<<<<<<< HEAD
-To set up your desired dimensioning style
-  1. open FreeCAD
-  2. switch to the Drawing dimensioning workbench
-  3. edit -> preferences -> drawing dimensioning
-
 
 Testing
 -------
@@ -63,10 +56,14 @@ Testing
 $ cd ~/.FreeCAD/Mod/FreeCAD_drawing_dimensioning
 $ python test
 ```
-=======
+
+Acknowledgements
+----------------
+
+My thanks to BRLRFE and the other users who also contributed to this workbench.
+
 Wiki
 ----
 
 For instructions on usage of the workbench refer to the wiki (link on top of the page)
 [https://github.com/hamish2014/FreeCAD_drawing_dimensioning/wiki]
->>>>>>> d73728a75b595e3a40e749ca1d939e218d14b11d

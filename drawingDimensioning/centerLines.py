@@ -27,13 +27,18 @@ def _centerLinesSVG( center, topLeft, bottomRight, viewScale, centerLine_len_dot
     XML_body = []
     center = numpy.array( center ) / viewScale
     topLeft = numpy.array( topLeft ) / viewScale
-    if bottomRight <> None: bottomRight =  numpy.array( bottomRight ) / viewScale
+    if not bottomRight is None:
+        bottomRight =  numpy.array( bottomRight ) / viewScale
     commonArgs =  centerLine_len_dot / viewScale,  centerLine_len_dash / viewScale,  centerLine_len_gap / viewScale
-    if doVertical: XML_body.append( _centerLineSVG(center[0], center[1], center[0], topLeft[1], *commonArgs ) )
-    if doHorizontal: XML_body.append( _centerLineSVG(center[0], center[1], topLeft[0], center[1], *commonArgs ) )
-    if bottomRight <> None:
-        if doVertical: XML_body.append( _centerLineSVG(center[0], center[1], center[0], bottomRight[1], *commonArgs ) )
-        if doHorizontal: XML_body.append( _centerLineSVG(center[0], center[1], bottomRight[0], center[1], *commonArgs ) )
+    if doVertical:
+        XML_body.append( _centerLineSVG(center[0], center[1], center[0], topLeft[1], *commonArgs ) )
+    if doHorizontal:
+        XML_body.append( _centerLineSVG(center[0], center[1], topLeft[0], center[1], *commonArgs ) )
+    if not bottomRight is None:
+        if doVertical:
+            XML_body.append( _centerLineSVG(center[0], center[1], center[0], bottomRight[1], *commonArgs ) )
+        if doHorizontal:
+            XML_body.append( _centerLineSVG(center[0], center[1], bottomRight[0], center[1], *commonArgs ) )
     return '<g transform="scale(%f,%f)" stroke="%s"  stroke-width="%f" > %s </g> ''' % ( viewScale, viewScale, lineColor, strokeWidth/ viewScale, "\n".join(XML_body) )
 
 

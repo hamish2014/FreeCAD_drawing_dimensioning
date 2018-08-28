@@ -43,21 +43,14 @@ class DrawingDimensioningWorkbench (Workbench):
             'dd_exportToDxf'
         ]
         self.appendToolbar( 'Drawing Dimensioning Folding', unfold_cmds )
-<<<<<<< HEAD
-        git_commit_no = int( FreeCAD.Version()[2].split()[0] )
-        if git_commit_no > 5166:
-=======
-        import weldingSymbols
-        
+        from drawingDimensioning import weldingSymbols        
         freecad_version = int( FreeCAD.Version()[1] )
         try:
            git_commit_no = int( FreeCAD.Version()[2].split()[0] )
         except:
            git_commit_no = -1
            freecad_version = int( FreeCAD.Version()[1] )
-
         if git_commit_no > 5166 or freecad_version > 15:
->>>>>>> d73728a75b595e3a40e749ca1d939e218d14b11d
             weldingCommandList = ['dd_weldingGroupCommand']
         else:
             weldingCommandList = weldingSymbols.weldingCmds
