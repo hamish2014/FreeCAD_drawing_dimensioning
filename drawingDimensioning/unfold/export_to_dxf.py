@@ -1,5 +1,6 @@
 # This Python file uses the following encoding: utf-8
 from drawingDimensioning.command import *
+from drawingDimensioning.py3_helpers import map
 import subprocess
 
 class ExportToDxfCommand:

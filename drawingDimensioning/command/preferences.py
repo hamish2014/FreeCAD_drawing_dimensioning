@@ -1,6 +1,6 @@
 import sys
 
-from drawingDimensioning.py3_helpers import unicode, encode_if_py2
+from drawingDimensioning.py3_helpers import unicode, unicode_type, map, encode_if_py2
 from PySide import QtGui, QtCore, QtSvg
 import FreeCAD
 from drawingDimensioning.svgConstructor import SvgTextRenderer
@@ -125,7 +125,7 @@ class DimensioningPreference_unicode(DimensioningPreference_prototype):
     def get_values_from_dimension_object( self, obj, KWs ):
         #KWs[self.name] =  unicode( getattr( obj, self.name ), 'utf8'  )
         KWs[self.name] =  getattr( obj, self.name )
-        if not type(KWs[self.name]) == unicode:
+        if not type(KWs[self.name]) == unicode_type:
             raise ValueError("type(KWs[%s]) != unicode but == %s" % (self.name, type(KWs[self.name]) ))
 if sys.version_info.major < 3:
     DimensioningPreferenceClasses["<type 'unicode'>"] = DimensioningPreference_unicode

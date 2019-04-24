@@ -118,7 +118,7 @@ def recomputeWithOutViewReset( drawingVars ):
     #centerOn approach did not work rather using scroll bars.
     h_scrollValue = gV.horizontalScrollBar().value()
     v_scrollValue = gV.verticalScrollBar().value()
-    import selectionOverlay
+    from . import selectionOverlay
     selectionOverlay.hideSelectionGraphicsItems()    
     drawingVars.page.touch()
     App.ActiveDocument.recompute()
@@ -187,7 +187,7 @@ FreeCADGui.addCommand('dd_help', helpCommand())
 
 def dimensionableObjects ( page ):
     'commonly used code in Activate, exclude centerlines'
-    from unfold import Proxy_unfold
+    from .unfold import Proxy_unfold
     drawingViews = []
     for obj in page.Group:
         if hasattr(obj, 'ViewResult'):

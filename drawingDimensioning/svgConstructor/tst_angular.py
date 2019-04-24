@@ -4,7 +4,7 @@ library for constructing dimension SVGs
 
 assert __name__ == "__main__"
 import sys
-from tst_setup import dummyViewObject, XML_SVG_Wrapper
+from .tst_setup import dummyViewObject, XML_SVG_Wrapper
 from PySide import QtGui, QtCore, QtSvg
 
 app = QtGui.QApplication(sys.argv) #need to be defined before drawingDimensioning ... :(

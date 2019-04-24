@@ -1,7 +1,8 @@
-from drawingDimensioning.py3_helpers import unicode
 from .core import *
 from .core import  __dir__ # not imported with * directive
 from .grid import *
+from drawingDimensioning.py3_helpers import unicode_type
+
 
 class PreviewVars:
     def __init__(self):
@@ -149,7 +150,7 @@ class DimensionPreviewRect(QtGui.QGraphicsRectItem):
             debugPrint(4, 'hoverMoveEvent: x %f, y %f' % (x, y) )
             x, y= applyGridRounding( x, y)
             XML = '<svg width="%i" height="%i"> %s </svg>' % (preview.drawingVars.width, preview.drawingVars.height, self.dimensionSvgFun( x, y ))
-            if isinstance(XML, unicode): 
+            if isinstance(XML, unicode_type): 
                 XML = XML.encode('utf8')
             debugPrint(5, XML)
             preview.SVGRenderer.load( QtCore.QByteArray( XML ) )

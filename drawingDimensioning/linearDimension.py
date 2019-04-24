@@ -258,7 +258,7 @@ class LinearDimensionCommand:
             doPoints=True, 
             **commonArgs
             )
-        from centerLines import Proxy_CenterLines
+        from .centerLines import Proxy_CenterLines
         selectionOverlay.generateSelectionGraphicsItems( 
             [ obj for obj in V.page.Group if hasattr(obj, 'Proxy') and isinstance( obj.Proxy, Proxy_CenterLines )], 
             clearPreviousSelectionItems = False,

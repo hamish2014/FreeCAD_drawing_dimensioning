@@ -4,9 +4,10 @@ from PySide import QtGui
 if sys.version_info.major >= 3:
     def unicode(*args):
         return str(args[0])
+    unicode_type = str
 else:
     unicode = unicode
-
+    unicode_type = unicode
 
 def translate(*args):
     if len(args) < 3:
@@ -22,3 +23,8 @@ def encode_if_py2(unicode_object):
 		return unicode_object.decode("utf8")
 	else:
 		return unicode_object
+
+_map = map
+
+def map(function, arg):
+    return list(_map(function, arg))

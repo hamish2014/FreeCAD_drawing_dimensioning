@@ -1,5 +1,5 @@
 # This Python file uses the following encoding: utf-8
-from drawingDimensioning.py3_helpers import unicode
+from drawingDimensioning.py3_helpers import unicode, map
 import sys, numpy, copy
 from PySide import QtGui, QtSvg, QtCore
 from numpy import arctan2, pi, linspace, dot, sin, cos, array, cross
@@ -204,7 +204,7 @@ class SvgPath:
             elif parms[j] == 'A' or parms[j] == 'a':
                 # The arc command begins with the x and y radius and ends with the ending point of the arc. 
                 # Between these are three other values: x axis rotation, large arc flag and sweep flag.
-                rX, rY, xRotation, largeArc, sweep, _end_x, _end_y = map( float, parms[j+1:j+1 + 7] )
+                rX, rY, xRotation, largeArc, sweep, _end_x, _end_y = list(map( float, parms[j+1:j+1 + 7] ))
                 #print(_end_x, _end_y)
                 if parms[j] == 'a':
                     _end_x = _pen_x + _end_x
@@ -227,7 +227,7 @@ class SvgPath:
                     #cubic Bézier curve from the current point to (x,y) using 
                     # (x1,y1) as the control point at the beginning of the curve and (x2,y2) as the control point at the end of the curve.
                     if parms[j] == 'C':
-                        _x1, _y1, _x2, _y2, _end_x, _end_y = map( float, parms[j+1:j+1 + 6] ) 
+                        _x1, _y1, _x2, _y2, _end_x, _end_y = list(map( float, parms[j+1:j+1 + 6] ))
                     else: #parms[j] == 'c':
                         _x1, _y1, _x2, _y2, _end_x, _end_y = numpy.array(map( float, parms[j+1:j+1 + 6] )) + numpy.array([_pen_x,_pen_y]*3)
                     P = [ [pen_x, pen_y], element.applyTransforms(_x1, _y1), element.applyTransforms(_x2, _y2), element.applyTransforms(_end_x, _end_y) ]
@@ -237,7 +237,7 @@ class SvgPath:
                     # q (lowercase) indicates that relative coordinates will follow. 
                     # Multiple sets of coordinates may be specified to draw a polybézier. 
                     # At the end of the command, the new current point becomes the final (x,y) coordinate pair used in the polybézier.
-                    _x1, _y1, _end_x, _end_y = map( float, parms[j+1:j+1 + 4] ) 
+                    _x1, _y1, _end_x, _end_y = list(map( float, parms[j+1:j+1 + 4] ))
                     j = j + 5
                     P = [ [pen_x, pen_y], element.applyTransforms(_x1, _y1), element.applyTransforms(_end_x, _end_y) ]
                 self.bezierCurves.append( SvgPathBezierCurve(P) )
@@ -534,7 +534,7 @@ class SvgPolygon:
         assert isinstance(element, SvgXMLTreeNode)
         self.points = []
         self.lines = []
-        points_raw = map( float, element.parms['points'].replace(',',' ').split() )
+        points_raw = list(map( float, element.parms['points'].replace(',',' ').split() ))
         X = []
         Y = []
         for i in range(len(points_raw)/2):

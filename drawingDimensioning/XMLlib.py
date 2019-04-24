@@ -11,6 +11,7 @@ Library to parse XML codes such as those used for the FreeCAD view result, as to
 
 import numpy
 from numpy import sin, cos, dot
+from drawingDimensioning.py3_helpers import map
 
 def findOffset( text, subtext, p_start ):
     p = text.find(subtext, p_start)
