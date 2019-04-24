@@ -7,8 +7,8 @@ Once completed
 '''
 
 from drawingDimensioning.command import *
-import toleranceDialog
-from textEdit import maskBrush, maskPen, maskHoverPen
+from . import toleranceDialog
+from .textEdit import maskBrush, maskPen, maskHoverPen
 
 d = DimensioningCommand()
 

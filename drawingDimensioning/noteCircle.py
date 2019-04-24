@@ -6,9 +6,9 @@ def noteCircleSVG( start_x, start_y, radialLine_x=None, radialLine_y=None, tail_
                    noteCircleText= '0', strokeWidth=0.5, lineColor='blue', noteCircle_radius=4.5, noteCircle_fill='white',
                    textRenderer_noteCircle=defaultTextRenderer):
     XML_body = [ ]
-    if radialLine_x <> None and radialLine_y <> None:
+    if radialLine_x != None and radialLine_y != None:
         XML_body.append( svgLine(radialLine_x, radialLine_y, start_x, start_y, lineColor, strokeWidth) )
-        if tail_x <> None and tail_y <> None:
+        if tail_x != None and tail_y != None:
             XML_body.append( svgLine(radialLine_x, radialLine_y, tail_x, radialLine_y, lineColor, strokeWidth) )
             XML_body.append(' <circle cx ="%f" cy ="%f" r="%f" stroke="%s" fill="%s" /> ' % (tail_x, radialLine_y, noteCircle_radius, lineColor, noteCircle_fill) )
             XML_body.append( textRenderer_noteCircle( tail_x - 1.5, radialLine_y + 1.5, noteCircleText ) )

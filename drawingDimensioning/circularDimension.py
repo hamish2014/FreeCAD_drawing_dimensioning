@@ -9,13 +9,13 @@ def circularDimensionSVG( center_x, center_y, radius, radialLine_x=None, radialL
                           textRenderer=defaultTextRenderer):
     XML_body = [ ' <circle cx ="%f" cy ="%f" r="%f" stroke="none" fill="%s" /> ' % (center_x, center_y, centerPointDia*0.5, lineColor) ]
     #XML_body.append( '<circle cx="%f" cy="%f" r="%f" stroke="rgb(0,0,255)" stroke-width="%1.2f" fill="none" />' % (center_x, center_y, radius, strokeWidth) )
-    if radialLine_x <> None and radialLine_y <> None:
+    if radialLine_x != None and radialLine_y != None:
         theta = numpy.arctan2( radialLine_y - center_y, radialLine_x - center_x )
         A = numpy.array([ center_x + radius*numpy.cos(theta) , center_y + radius*numpy.sin(theta) ])
         B = numpy.array([ center_x - radius*numpy.cos(theta) , center_y - radius*numpy.sin(theta) ])
         XML_body.append( svgLine(radialLine_x, radialLine_y, B[0], B[1], lineColor, strokeWidth) )
         if radius > 0:
-            if arrow_scheme <> 'off':
+            if arrow_scheme != 'off':
                 if arrow_scheme == 'auto':
                     s = 1 if radius > arrowL1 + arrowL2 + 0.5*centerPointDia else -1
                 elif arrow_scheme == 'in':
@@ -24,7 +24,7 @@ def circularDimensionSVG( center_x, center_y, radius, radialLine_x=None, radialL
                     s = -1
                 XML_body.append( arrowHeadSVG( A, s*directionVector(A,B), arrowL1, arrowL2, arrowW, lineColor ) )
                 XML_body.append( arrowHeadSVG( B, s*directionVector(B,A), arrowL1, arrowL2, arrowW, lineColor ) )
-        if tail_x <> None and tail_y <> None:
+        if tail_x != None and tail_y != None:
             XML_body.append( svgLine( radialLine_x, radialLine_y, tail_x, radialLine_y, lineColor, strokeWidth ) )
             text = dimensionText(2*radius*scale,textFormat_circular, comma=comma_decimal_place)
             XML_body.append( textPlacement_common_procedure(numpy.array([radialLine_x, radialLine_y]), numpy.array([tail_x, radialLine_y]), text, text_x, text_y, 0, textRenderer, autoPlaceText, autoPlaceOffset) )

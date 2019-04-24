@@ -1,4 +1,5 @@
 # This Python file uses the following encoding: utf-8
+from drawingDimensioning.py3_helpers import unicode
 from drawingDimensioning.command import *
 from drawingDimensioning.svgConstructor import arrowHeadSVG, numpy, directionVector
 
@@ -81,14 +82,14 @@ class BendingNoteCommand:
         self.svg_lineColor = lineColor
         self.svg_strokeWidth = strokeWidth
         XML_body = []
-        if radialLine_x <> None and radialLine_y <> None:
+        if radialLine_x != None and radialLine_y != None:
             XML_body.append( self.svgLine(radialLine_x, radialLine_y, c_x, c_y) )
             d = directionVector(
                 numpy.array([      c_x, c_y]),
                 numpy.array([radialLine_x, radialLine_y]),
                 )
             XML_body.append( arrowHeadSVG( numpy.array([c_x, c_y]), d, arrowL1, arrowL2, arrowW, lineColor ) )
-            if tail_x <> None and tail_y <> None:
+            if tail_x != None and tail_y != None:
                 XML_body.append(  self.svgLine( radialLine_x, radialLine_y, tail_x, radialLine_y) )
                 #getting scale factor
                 svgText = SvgTextParser( textRenderer(0,0,"0") )

@@ -1,4 +1,5 @@
 # This Python file uses the following encoding: utf-8
+from drawingDimensioning.py3_helpers import unicode
 from drawingDimensioning.command import *
 
 d = DimensioningCommand()

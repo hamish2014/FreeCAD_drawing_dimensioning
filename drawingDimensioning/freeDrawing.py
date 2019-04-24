@@ -1,6 +1,6 @@
-from dimensioning import *
-import previewDimension
-import textAddDialog
+from .dimensioning import *
+from . import previewDimension
+from . import textAddDialog
 
 dimensioning = DimensioningProcessTracker()
 
@@ -49,14 +49,14 @@ from dimensionSvgConstructor import arrowHeadSVG, numpy, directionVector
 
 def ArrowWithTail_SVG( c_x, c_y, radialLine_x=None, radialLine_y=None, tail_x=None, tail_y=None, arrowL1=3,arrowL2=1,arrowW=2, svgTag='g', svgParms='', strokeWidth=0.5,  lineColor='blue'):
     XML_body = []
-    if radialLine_x <> None and radialLine_y <> None:
+    if radialLine_x != None and radialLine_y != None:
         XML_body.append( '<line x1="%f" y1="%f" x2="%f" y2="%f" style="stroke:%s;stroke-width:%1.2f" />' % (radialLine_x, radialLine_y, c_x, c_y, lineColor, strokeWidth) )
         d = directionVector(
             numpy.array([      c_x, c_y]),
             numpy.array([radialLine_x, radialLine_y]),
             )
         XML_body.append( arrowHeadSVG( numpy.array([c_x, c_y]), d, arrowL1, arrowL2, arrowW, lineColor ) )
-    if tail_x <> None and tail_y <> None:
+    if tail_x != None and tail_y != None:
         XML_body.append( '<line x1="%f" y1="%f" x2="%f" y2="%f" style="stroke:%s;stroke-width:%1.2f" />' % (radialLine_x, radialLine_y, tail_x, radialLine_y, lineColor, strokeWidth) )
     return '''<%s  %s >
 %s

@@ -1,8 +1,9 @@
 import pickle
-from core import debugPrint
-from drawingDimensioning.svgLib import SvgTextParser
 from numpy.linalg import norm
 from numpy import log
+from .core import debugPrint
+from .svgLib import SvgTextParser
+
 
 class Proxy_DimensionObject_prototype:
     def __init__(self, obj, selections, svgFun):
@@ -31,7 +32,7 @@ class Proxy_DimensionObject_prototype:
         self.svgFun =  pickle.loads( D['svgFun_dumps'] )
 
     def dimensionProcess( self ):
-        raise ValueError,"override  dimensionProcess to return the dimensionProcessTracker"
+        raise(ValueError("override  dimensionProcess to return the dimensionProcessTracker"))
 
     def execute( self, obj ):
         KWs = {}
@@ -39,7 +40,7 @@ class Proxy_DimensionObject_prototype:
         for w in d.dialogWidgets + d.preferences + self.selections:
             if hasattr(w, 'get_values_from_dimension_object'):
                 w.get_values_from_dimension_object( obj, KWs )
-        if KWs.has_key('unit_scaling_factor'):
+        if 'unit_scaling_factor' in KWs:
             KWs['scale'] = 1.0/self.selections[0].viewInfo.scale*KWs['unit_scaling_factor']
             del KWs['unit_scaling_factor']
         if d.add_viewScale_KW: #for centerLines
@@ -63,9 +64,9 @@ class Dimensioning_Selection_prototype:
         self.svg_element_tag = svg_element.tag
         self.viewInfo = viewInfo #view bounds etc ...
     def init_for_svg_KWs( self, svg_KWs, svg_element ):
-        raise NotImplementedError,'needs to overwritten depending upon the selection type'
+        raise(NotImplementedError,'needs to overwritten depending upon the selection type')
     def svg_fun_args( self, args ):
-        raise NotImplementedError,'needs to overwritten depending upon the selection type'
+        raise(NotImplementedError,'needs to overwritten depending upon the selection type')
 
 
 class PointSelection( Dimensioning_Selection_prototype ):
@@ -153,7 +154,7 @@ class CircularArcSelection(  Dimensioning_Selection_prototype ):
         elif self.output_mode == 'xy':
             args.append( [self.x, self.y] )
         else:
-            raise NotImplementedError, "output_mode %s not implemented" % self.output_mode
+            raise(NotImplementedError, "output_mode %s not implemented" % self.output_mode)
     def updateValues( self, doc ):
         if not self.viewInfo.changed( doc ):
             return False
@@ -249,7 +250,7 @@ class TwoLineSelection( Dimensioning_Selection_prototype ):
             x3, y3, x4, y4 = self.lines[1].drawing_coordinates()
             args.append( [0.25*(x1 + x2 + x3 + x4), 0.25*(y1 + y2 + y3 + y4)] )
         else:
-            raise NotImplementedError, "output_mode %s not implemented" % self.output_mode
+            raise(NotImplementedError, "output_mode %s not implemented" % self.output_mode)
     def updateValues( self, doc ):
         changed = any([ line.updateValues( doc ) for line in self.lines ])
         self.viewInfo = self.lines[0].viewInfo

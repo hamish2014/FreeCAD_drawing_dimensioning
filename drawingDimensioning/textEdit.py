@@ -11,9 +11,10 @@ dialogUi.setupUi(dialog)
 dialog.show()
 
 '''
+from drawingDimensioning.py3_helpers import unicode
 from drawingDimensioning.command import *
 from drawingDimensioning.svgLib import SvgTextParser
-import textAddDialog
+from . import textAddDialog
 
 d = DimensioningCommand()
 
@@ -60,9 +61,9 @@ class EditTextDialogWidget( QtGui.QWidget ):
         debugPrint(3,newXML)
         d.dimToEdit.ViewResult = newXML
         recomputeWithOutViewReset(d.drawingVars)
-        if d.taskDialog <> None: #unessary check
+        if d.taskDialog != None: #unessary check
             FreeCADGui.Control.closeDialog()
-        if d.endFunction <> None:
+        if d.endFunction != None:
             previewDimension.preview.dimensioningProcessTracker = d
             previewDimension.timer.start( 100 ) # 100 ms, need some time for dialog to close
         

@@ -66,7 +66,7 @@ class DimensioningRect(QtGui.QGraphicsRectItem):
                                           self.point2[0], self.point2[1], 
                                           self.point3[0], self.point3[1], 
                                           x, y, **self.dim_svg_KWs )
-                if XML <> None:
+                if XML != None:
                     print(XML)
                     newSvg = QtSvg.QGraphicsSvgItem(  )
                     svgRenderer = QtSvg.QSvgRenderer()
@@ -90,7 +90,7 @@ class DimensioningRect(QtGui.QGraphicsRectItem):
                                       self.point2[0], self.point2[1], 
                                       self.point3[0], self.point3[1], 
                                       x, y, **self.dim_svg_KWs )
-        if XML <> None:
+        if XML != None:
             self.dimSVGRenderer.load( QtCore.QByteArray( self.svg_wrap(XML) ) )
             self.dimPreview.update()
             self.dimPreview.show()

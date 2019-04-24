@@ -9,7 +9,7 @@ def deleteDimension( event, referer, elementXML, elementParms, elementViewObject
     FreeCAD.ActiveDocument.commitTransaction()
     recomputeWithOutViewReset(d.drawingVars)
     FreeCADGui.Control.closeDialog()
-    if d.endFunction <> None:
+    if d.endFunction != None:
         previewDimension.preview.dimensioningProcessTracker = d
         previewDimension.timer.start( 1 )
 

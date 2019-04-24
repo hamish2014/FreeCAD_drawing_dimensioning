@@ -1,10 +1,11 @@
 # This Python file uses the following encoding: utf-8
+from drawingDimensioning.py3_helpers import unicode
 import sys, numpy, copy
 from PySide import QtGui, QtSvg, QtCore
-from XMLlib import SvgXMLTreeNode
-from circleLib import fitCircle_to_path, findCircularArcCentrePoint, pointsAlongCircularArc, fitCircle, arccos2
 from numpy import arctan2, pi, linspace, dot, sin, cos, array, cross
 from numpy.linalg import norm
+from .XMLlib import SvgXMLTreeNode
+from .circleLib import fitCircle_to_path, findCircularArcCentrePoint, pointsAlongCircularArc, fitCircle, arccos2
 
 try:
     import FreeCAD
@@ -29,10 +30,10 @@ class SvgTextRenderer:
         rotation is in degress, and is done about x,y
         '''
         try:
-            XML = '''<text x="%f" y="%f" font-family="%s" font-size="%s" fill="%s" text-anchor="%s" %s >%s</text>'''  % (  x, y, self.font_family, self.font_size,  self.fill, text_anchor, 'transform="rotate(%f %f,%f)"' % (rotation,x,y) if rotation <> None else '', text )
+            XML = '''<text x="%f" y="%f" font-family="%s" font-size="%s" fill="%s" text-anchor="%s" %s >%s</text>'''  % (  x, y, self.font_family, self.font_size,  self.fill, text_anchor, 'transform="rotate(%f %f,%f)"' % (rotation,x,y) if rotation != None else '', text )
         except UnicodeDecodeError:
             text_utf8 = unicode( text, 'utf8' )
-            XML = '''<text x="%f" y="%f" font-family="%s" font-size="%s" fill="%s" text-anchor="%s" %s >%s</text>'''  % (  x, y, self.font_family, self.font_size,  self.fill, text_anchor, 'transform="rotate(%f %f,%f)"' % (rotation,x,y) if rotation <> None else '', text_utf8 )
+            XML = '''<text x="%f" y="%f" font-family="%s" font-size="%s" fill="%s" text-anchor="%s" %s >%s</text>'''  % (  x, y, self.font_family, self.font_size,  self.fill, text_anchor, 'transform="rotate(%f %f,%f)"' % (rotation,x,y) if rotation != None else '', text_utf8 )
         return XML
     def __repr__(self):
         return '<svgLib_dd.SvgTextRenderer family="%s" font_size="%s" fill="%s">' % (self.font_family, self.font_size, self.fill )
@@ -53,8 +54,8 @@ class SvgTextParser:
         while p > -1:
             i = p-1
             key = ''
-            while key == '' or h[i] <> ' ':
-                if h[i] <> ' ':
+            while key == '' or h[i] != ' ':
+                if h[i] != ' ':
                     key = h[i] + key
                 i = i - 1
             p1 = h.find('"', p)
@@ -65,11 +66,11 @@ class SvgTextParser:
         self.y = float(self.parms['y'])
         self.font_family = self.parms.get('font-family', 'inherit')
         self.font_size = self.parms.get('font-size','inherit')
-        if self.parms.has_key('style'): #for backwards compadiability
+        if 'style' in self.parms: #for backwards compadiability
             self.font_size = self.parms['style'][len('font-size:'):]
         self.fill = self.parms.get('fill','rgb(0,0,0)')
         self.transform = self.parms.get('transform')
-        if self.transform <> None:
+        if self.transform != None:
             t = self.transform
             if 'rotate(' in t:
                 self.rotation = float(t[t.find('rotate(')+len('rotate('):].split()[0])
@@ -79,7 +80,7 @@ class SvgTextParser:
             self.rotation = 0
         self.text_anchor = self.parms.get('text-anchor','inherit')
     def toXML(self):
-        XML = '''<text x="%f" y="%f" font-family="%s" font-size="%s" fill="%s" text-anchor="%s" %s >%s</text>'''  % (  self.x, self.y, self.font_family, self.font_size,  self.fill, self.text_anchor, 'transform="rotate(%f %f,%f)"' % (self.rotation,self.x,self.y) if self.rotation <> 0 else '', self.text )
+        XML = '''<text x="%f" y="%f" font-family="%s" font-size="%s" fill="%s" text-anchor="%s" %s >%s</text>'''  % (  self.x, self.y, self.font_family, self.font_size,  self.fill, self.text_anchor, 'transform="rotate(%f %f,%f)"' % (self.rotation,self.x,self.y) if self.rotation != 0 else '', self.text )
         return XML
     def convertUnits(self,value):
         '''http://www.w3.org/TR/SVG/coords.html#Units
@@ -128,16 +129,16 @@ class SvgPath:
         dParmsXML = ''
         for a,b in zip(dParmsXML_org[:-1], dParmsXML_org[1:]):
             if a in 'MmLlAaCcQZzHhVv':
-                if len(dParmsXML) > 0 and dParmsXML[-1] <> ' ':
+                if len(dParmsXML) > 0 and dParmsXML[-1] != ' ':
                     dParmsXML = dParmsXML + ' '
                 dParmsXML = dParmsXML + a
-                if b <> ' ':
+                if b != ' ':
                     dParmsXML = dParmsXML + ' '
-            elif a <> ' ' and a <> 'e' and b == '-':
+            elif a != ' ' and a != 'e' and b == '-':
                 dParmsXML = dParmsXML + a + ' '
             else:
                 dParmsXML = dParmsXML + a
-        if b in 'MmLlAaCcQZzHhVv' and dParmsXML[-1] <> ' ':
+        if b in 'MmLlAaCcQZzHhVv' and dParmsXML[-1] != ' ':
             dParmsXML = dParmsXML + ' '
         dParmsXML = dParmsXML + b
         #<spacing corrections>
@@ -152,7 +153,7 @@ class SvgPath:
                 pathDescriptor = parms[j]
             else: #using previous pathDescriptor
                 if pathDescriptor == None:
-                    raise RuntimeError, 'pathDescriptor == None! unable to parse path "%s" with d parms %s' % (element.XML[element.pStart: element.pEnd], parms)
+                    raise RuntimeError('pathDescriptor == None! unable to parse path "%s" with d parms %s' % (element.XML[element.pStart: element.pEnd], parms))
                 parms.insert(j, pathDescriptor.replace('m','l').replace('M','L'))
                 
             if parms[j] == 'M' or parms[j] == 'm':
@@ -210,13 +211,13 @@ class SvgPath:
                     _end_y = _pen_y + _end_y
                     #print(_end_x, _end_y)
                 end_x, end_y = element.applyTransforms( _end_x, _end_y )
-                if not ( _pen_x == _end_x and _pen_y == _end_y ) and rX <> 0 and rY <> 0:
+                if not ( _pen_x == _end_x and _pen_y == _end_y ) and rX != 0 and rY != 0:
                     self.points.append( SvgPathPoint(_end_x, _end_y, end_x, end_y) )
                     try:
                         self.arcs.append( SvgPathArc( element, _pen_x, _pen_y,  rX, rY, xRotation, largeArc, sweep, _end_x, _end_y ) )
                         self.elements.append(self.arcs[-1])
-                    except SvgParseError, msg:
-                        printWarning( 2, 'failed to parse arc: msg %s' % msg )
+                    except SvgParseError as e:
+                        printWarning( 2, 'failed to parse arc: msg %s' % str(e) )
                 _pen_x, _pen_y = _end_x, _end_y
                 pen_x, pen_y = end_x, end_y
                 j = j + 8
@@ -245,7 +246,7 @@ class SvgPath:
                 self.points.append(  SvgPathPoint(_end_x, _end_y, end_x, end_y) )
                 
             else:
-                raise RuntimeError, 'unable to parse path "%s" with d parms %s' % (element.XML[element.pStart: element.pEnd], parms)
+                raise RuntimeError('unable to parse path "%s" with d parms %s' % (element.XML[element.pStart: element.pEnd], parms))
 
 
 class SvgPathPoint:
@@ -296,8 +297,8 @@ class SvgPathArc:
           global coordinates - elements coordinates * upper element transformations
         """
         assert not ( _pen_x == _end_x and _pen_y == _end_y )
-        assert rX <> 0
-        assert rY <> 0
+        assert rX != 0
+        assert rY != 0
         self._pen_x = _pen_x
         self._pen_y = _pen_y
         self._end_x = _end_x
@@ -329,7 +330,7 @@ class SvgPathArc:
         #print(x2,x1,y2,y1,c)
         #print(dtheta)
         if not dtheta >= 0:
-            raise SvgParseError, "dtheta not >=  0, dtheta %e. locals %s" % (dtheta, locals())
+            raise SvgParseError("dtheta not >=  0, dtheta %e. locals %s" % (dtheta, locals()))
         if largeArc:
             dtheta = 2*pi - dtheta
         if not sweep: # If sweep-flag is '1', then the arc will be drawn in a "positive-angle" direction
@@ -364,7 +365,7 @@ class SvgPathArc:
         if self.circular:
             return abs(self.dtheta) * self.rX * self.scaling
         else:
-            raise NotImplementedError, "arc.length for ellipsoidal arcs not implemented"
+            raise NotImplementedError("arc.length for ellipsoidal arcs not implemented")
 
     def tangentAt( self, t):
         offset = pi/2 if self.dtheta >= 0 else -pi/2

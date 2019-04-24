@@ -1,7 +1,7 @@
-
-from core import *
-from core import  __dir__ # not imported with * directive
-from grid import *
+from drawingDimensioning.py3_helpers import unicode
+from .core import *
+from .core import  __dir__ # not imported with * directive
+from .grid import *
 
 class PreviewVars:
     def __init__(self):
@@ -45,7 +45,7 @@ def initializePreview( dimensioningProcessTracker, dimensionSvgFun, dimensionCli
             createQtItems = False
     else:
         createQtItems = False
-    if preview.SVG_initialization_width <> drawingVars.width or preview.SVG_initialization_height <> drawingVars.height:
+    if preview.SVG_initialization_width != drawingVars.width or preview.SVG_initialization_height != drawingVars.height:
         debugPrint(3, 'initializePreview: change in page rect size dected, recreating SVG graphics item')
         createQtItems = True
     if createQtItems:
@@ -89,10 +89,10 @@ def removePreviewGraphicItems( recomputeActiveDocument = True, launchEndFunction
     if recomputeActiveDocument:
         debugPrint(3,'removePreviewGraphicItems: recomputing')
         recomputeWithOutViewReset( preview.drawingVars )
-    if closeDialog and preview.dimensioningProcessTracker.taskDialog <> None:
+    if closeDialog and preview.dimensioningProcessTracker.taskDialog != None:
         FreeCADGui.Control.closeDialog()
     del preview.drawingVars
-    if launchEndFunction and preview.dimensioningProcessTracker.endFunction <> None:
+    if launchEndFunction and preview.dimensioningProcessTracker.endFunction != None:
         timer.start( 1 ) # 1 ms (in theory)
 
 

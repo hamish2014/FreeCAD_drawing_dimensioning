@@ -91,16 +91,16 @@ class WeldingSymbol_prototype:
         self.svg_lineColor = lineColor
         self.svg_strokeWidth = strokeWidth
         XML_body = []
-        if radialLine_x <> None and radialLine_y <> None:
+        if radialLine_x != None and radialLine_y != None:
             XML_body.append( self.svgLine(radialLine_x, radialLine_y, c_x, c_y) )
             d = directionVector(
                 numpy.array([      c_x, c_y]),
                 numpy.array([radialLine_x, radialLine_y]),
                 )
             XML_body.append( arrowHeadSVG( numpy.array([c_x, c_y]), d, arrowL1, arrowL2, arrowW, lineColor ) )
-            if tail_x <> None and tail_y <> None:
+            if tail_x != None and tail_y != None:
                 XML_body.append(  self.svgLine( radialLine_x, radialLine_y, tail_x, radialLine_y) )
-                if weldingMarker_x <> None:
+                if weldingMarker_x != None:
                     self.radialLine_x = radialLine_x #storing values incase self.weldingMarkerSvg needs them
                     self.radialLine_y = radialLine_y 
                     self.tail_x = tail_x 

@@ -6,7 +6,7 @@ class ExportToDxfCommand:
     def Activated(self):
         V = getDrawingPageGUIVars()
         dialog = QtGui.QFileDialog(
-            QtGui.qApp.activeWindow(),
+            QtGui.QApplication.activeWindow(),
             "Enter the dxf file name"
             )
         dialog.setAcceptMode(QtGui.QFileDialog.AcceptSave)
@@ -34,17 +34,17 @@ def shellCmd(cmd, callDirectory=None):
     debugPrint(3,'$' + cmd)
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=callDirectory)
     stdout, stderr = p.communicate()
-    if stdout <> '':
+    if stdout != '':
         debugPrint(3,'stdout:%s' % stdout )
-    if p.returncode <> 0:
-        raise RuntimeError, '$ %s \n STDERR:%s' % (cmd, stderr)
+    if p.returncode != 0:
+        raise RuntimeError('$ %s \n STDERR:%s' % (cmd, stderr))
     return stdout
 
 
 def export_via_pstoedit( dxf_fn, V):
     eps_fn = dxf_fn[:-4] + '.eps'
     if os.path.exists(eps_fn):
-        raise RuntimeError,"eps file (%s) exists, aborting operation" % eps_fn
+        raise RuntimeError("eps file (%s) exists, aborting operation" % eps_fn)
     V.page.PageResult
     shellCmd('inkscape -f %s -E %s' % (V.page.PageResult, eps_fn)) #circle maintained after this step
     try:
@@ -53,9 +53,9 @@ def export_via_pstoedit( dxf_fn, V):
         # -dt: Draw text - Text is drawn as polygons
         # -f "format[:options]" target output format recognized by pstoedit.
         # -flat [flatness factor] If the output format does not support curves in the way PostScript does or if the -nc option is specified, all curves are approximated by lines. Using the -flat option  one  can  control  this approximation. This parameter is directly converted to a PostScript setflat command. Higher numbers, e.g. 10 give rougher, lower numbers, e.g. 0.1 finer approximations. #I the default is 1
-        QtGui.QMessageBox.information(  QtGui.qApp.activeWindow(), "Success", "%s successfully created" % dxf_fn )
-    except RuntimeError, msg:
-        QtGui.QMessageBox.critical( QtGui.qApp.activeWindow(), "pstoedit failed.", "%s\n\n suggestion: relaunch FreeCAD from BASH and try again." % msg )
+        QtGui.QMessageBox.information(  QtGui.QApplication.activeWindow(), "Success", "%s successfully created" % dxf_fn )
+    except RuntimeError as e:
+        QtGui.QMessageBox.critical( QtGui.QApplication.activeWindow(), "pstoedit failed.", "%s\n\n suggestion: relaunch FreeCAD from BASH and try again." % str(e) )
         #only works if FreeCAD is launched from bash shell?
         #work around for this?
         shellCmd('rm %s' % eps_fn)
@@ -80,9 +80,9 @@ def export_via_dxfwrite(  dxf_fn, V):
     SelectViewObjectPoint_loc = None
     for element in XML_tree.getAllElements():
         clr_text = None        
-        if element.parms.has_key('fill'):
+        if 'fill' in element.parms:
             clr_text =  element.parms['fill']
-        elif element.parms.has_key('style'):
+        elif 'style' in element.parms:
             for part in element.parms['style'].split(';'):
                 if part.startswith('stroke:rgb('):
                     clr_text = part[ len('stroke:'):]
@@ -106,12 +106,12 @@ def export_via_dxfwrite(  dxf_fn, V):
             x1, y1 = element.applyTransforms( float( element.parms['x1'] ), float( element.parms['y1'] ) )
             x2, y2 = element.applyTransforms( float( element.parms['x2'] ), float( element.parms['y2'] ) )
             drawing.add( dxf.line( (x1, yT(y1)), (x2, yT(y2)), color=color_code ) )
-        elif element.tag == 'text' and element.parms.has_key('x'):
+        elif element.tag == 'text' and 'x' in element.parms:
             x,y = element.applyTransforms( float( element.parms['x'] ), float( element.parms['y'] ) )
             t = SvgTextParser(element.XML[element.pStart: element.pEnd ] )
             try:
                 drawing.add(dxf.text( t.text, insert=(x, yT(y)), height=t.height()*0.8, rotation=t.rotation, layer='TEXTLAYER', color=color_code) )
-            except ValueError, msg:
+            except ValueError as e:
                 temp = t.text.replace('<tspan>','')
                 temp = temp.replace('</tspan>','')
                 t.text = temp
@@ -121,7 +121,7 @@ def export_via_dxfwrite(  dxf_fn, V):
                     shift = t.width()/2.0   
                     x,y = element.applyTransforms( float( element.parms['x'] )-shift, float( element.parms['y'] ) )
                 drawing.add(dxf.text( temp, insert=(x, yT(y)), height=t.height()*0.8, rotation=t.rotation, layer='TEXTLAYER', color=color_code) )
-                #FreeCAD.Console.PrintWarning('dxf_export: unable to convert text element "%s": %s, ignoring...\n' % (element.XML[element.pStart: element.pEnd ], str(msg) ) )
+                #FreeCAD.Console.PrintWarning('dxf_export: unable to convert text element "%s": %s, ignoring...\n' % (element.XML[element.pStart: element.pEnd ], str(e) ) )
         elif element.tag == 'path': 
             #FreeCAD.Console.PrintMessage(element.parms['d']+'\n')
             path = SvgPath( element )
