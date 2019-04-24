@@ -22,7 +22,7 @@ class angleText_widget:
         return DimensioningTaskDialog_generate_row_hbox('angle text:', self.lineEdit)
     def add_properties_to_dimension_object( self, obj ):
         obj.addProperty("App::PropertyString", 'angleText', 'Parameters')
-        obj.angleText = d.angleText.encode('utf8') 
+        obj.angleText = encode_if_py2(d.angleText) 
     def get_values_from_dimension_object( self, obj, KWs ):
         KWs['angleText'] = obj.angleText #should be unicode
 d.dialogWidgets.append( angleText_widget() )
@@ -38,7 +38,7 @@ class BendingNoteCommand:
     def Activated(self):
         V = getDrawingPageGUIVars()
         d.activate(V, dialogTitle='Add Bend Note', dialogIconPath=':/dd/icons/bendingNote.svg', endFunction=self.Activated )
-        from grabPointAdd import  Proxy_grabPoint
+        from ..grabPointAdd import  Proxy_grabPoint
         selectionOverlay.generateSelectionGraphicsItems( 
             dimensionableObjects( V.page ) + [obj for obj in V.page.Group if hasattr(obj,'Proxy') and isinstance( obj.Proxy, Proxy_grabPoint) ], 
             self.selectFun ,

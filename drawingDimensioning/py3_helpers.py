@@ -12,9 +12,9 @@ else:
 def translate(*args):
     if len(args) < 3:
         args.append(None)
-    if sys.version_info.major < 3:
+    try:
         return QtGui.QApplication.translate(args[0], args[1], args[2], QtGui.QApplication.UnicodeUTF8)
-    else:
+    except AttributeError:
         return QtGui.QApplication.translate(args[0], args[1], args[2])
 
 def encode_if_py2(unicode_object):

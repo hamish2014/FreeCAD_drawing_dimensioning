@@ -45,7 +45,7 @@ class lineFreeDrawing:
 FreeCADGui.addCommand('DrawingDimensioning_drawLine', lineFreeDrawing())
 
 
-from dimensionSvgConstructor import arrowHeadSVG, numpy, directionVector
+from .dimensionSvgConstructor import arrowHeadSVG, numpy, directionVector
 
 def ArrowWithTail_SVG( c_x, c_y, radialLine_x=None, radialLine_y=None, tail_x=None, tail_y=None, arrowL1=3,arrowL2=1,arrowW=2, svgTag='g', svgParms='', strokeWidth=0.5,  lineColor='blue'):
     XML_body = []

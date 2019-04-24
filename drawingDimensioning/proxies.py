@@ -1,4 +1,5 @@
 import pickle
+import base64
 from numpy.linalg import norm
 from numpy import log
 from .core import debugPrint
@@ -20,16 +21,20 @@ class Proxy_DimensionObject_prototype:
 
     def __getstate__(self):
         D = self.__dict__.copy() 
-        D['selections_dumps'] = pickle.dumps( self.selections )
+        raw = pickle.dumps( self.selections )
+        raw = base64.encodestring(raw).decode()
+        D['selections_dumps'] = raw
         del D['selections']
-        D['svgFun_dumps'] = pickle.dumps( self.svgFun )
+        raw = pickle.dumps( self.svgFun )
+        raw = base64.encodestring(raw).decode()
+        D['svgFun_dumps'] =  raw 
         del D['svgFun']
         return D
 
     def __setstate__(self, D):
         self.__dict__.update(D) 
-        self.selections = pickle.loads( D['selections_dumps'] )
-        self.svgFun =  pickle.loads( D['svgFun_dumps'] )
+        self.selections = pickle.loads( base64.b64decode(D['selections_dumps'] ))
+        self.svgFun =  pickle.loads( base64.b64decode(D['svgFun_dumps']) )
 
     def dimensionProcess( self ):
         raise(ValueError("override  dimensionProcess to return the dimensionProcessTracker"))
@@ -84,7 +89,7 @@ class PointSelection( Dimensioning_Selection_prototype ):
     def updateValues( self, doc ):
         if not self.viewInfo.changed( doc ):
             return False
-        from recomputeDimensions import SvgElements
+        from .recomputeDimensions import SvgElements
         debugPrint(3,'PointSelection: drawing %s has changed, updating values' % self.viewInfo.name )
         new_vi = self.viewInfo.get_up_to_date_version( doc )
         old_vi = self.viewInfo
@@ -116,7 +121,7 @@ class LineSelection(  Dimensioning_Selection_prototype ):
     def updateValues( self, doc ):
         if not self.viewInfo.changed( doc ):
             return False
-        from recomputeDimensions import SvgElements
+        from .recomputeDimensions import SvgElements
         debugPrint(3,'LineSelection: drawing %s has changed, updating values' % self.viewInfo.name )
         new_vi = self.viewInfo.get_up_to_date_version( doc )
         old_vi = self.viewInfo
@@ -158,7 +163,7 @@ class CircularArcSelection(  Dimensioning_Selection_prototype ):
     def updateValues( self, doc ):
         if not self.viewInfo.changed( doc ):
             return False
-        from recomputeDimensions import SvgElements
+        from .recomputeDimensions import SvgElements
         debugPrint(3,'CircularArcSelection: drawing %s has changed, updating values' % self.viewInfo.name )
         new_vi = self.viewInfo.get_up_to_date_version( doc )
         old_vi = self.viewInfo
@@ -186,7 +191,7 @@ class TextSelection( Dimensioning_Selection_prototype ):
     def updateValues( self, doc ):
         if not self.viewInfo.changed( doc ):
             return False
-        from recomputeDimensions import SvgElements
+        from .recomputeDimensions import SvgElements
         debugPrint(3,'textSelection: drawing %s has changed, updating values' % self.viewInfo.name )
         new_vi = self.viewInfo.get_up_to_date_version( doc )
         old_vi = self.viewInfo

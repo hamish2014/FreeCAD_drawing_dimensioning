@@ -1,4 +1,5 @@
 from drawingDimensioning.command import *
+from drawingDimensioning.py3_helpers import encode_if_py2
 
 d = DimensioningCommand()
 
@@ -36,7 +37,7 @@ class NoteCircleText_widget:
         return DimensioningTaskDialog_generate_row_hbox('no.', self.spinbox)
     def add_properties_to_dimension_object( self, obj ):
         obj.addProperty("App::PropertyString", 'noteText', 'Parameters')
-        obj.noteText = d.noteCircleText.encode('utf8') 
+        obj.noteText = encode_if_py2(d.noteCircleText) 
     def get_values_from_dimension_object( self, obj, KWs ):
         KWs['noteCircleText'] =  obj.noteText #should be unicode
 d.dialogWidgets.append( NoteCircleText_widget() )
@@ -74,7 +75,7 @@ class NoteCircle:
     def Activated(self):
         V = getDrawingPageGUIVars()
         d.activate(V, dialogTitle='Add Note Circle', dialogIconPath=':/dd/icons/noteCircle.svg', endFunction=self.Activated )
-        from grabPointAdd import  Proxy_grabPoint
+        from .grabPointAdd import  Proxy_grabPoint
         selectionOverlay.generateSelectionGraphicsItems(
             dimensionableObjects( V.page ) + [obj for obj in V.page.Group if hasattr(obj,'Proxy') and isinstance( obj.Proxy, Proxy_grabPoint) ],
             selectFun,

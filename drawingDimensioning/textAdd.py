@@ -1,5 +1,5 @@
 # This Python file uses the following encoding: utf-8
-from drawingDimensioning.py3_helpers import unicode
+from drawingDimensioning.py3_helpers import unicode, encode_if_py2
 from drawingDimensioning.command import *
 
 d = DimensioningCommand()
@@ -20,7 +20,7 @@ class text_widget:
         return self.lineEdit
     def add_properties_to_dimension_object( self, obj ):
         obj.addProperty("App::PropertyString", 'text', 'Parameters')
-        obj.text = d.text.encode('utf8') 
+        obj.text = encode_if_py2(d.text)
     def get_values_from_dimension_object( self, obj, KWs ):
         KWs['text'] =  obj.text #should be unicode
 d.dialogWidgets.append( text_widget() )
