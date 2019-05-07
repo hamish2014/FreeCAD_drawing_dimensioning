@@ -49,7 +49,7 @@ def angularDimensionSVG( line1, line2, x_baseline, y_baseline, x_text=None, y_te
     #rX, rY, xRotation, largeArc, sweep, _end_x, _end_y =
     XML.append('<path d = "M %f %f A %f %f 0 %i %i %f %f" style="stroke:%s;stroke-width:%1.2f;fill:none" />' % (p_arrow1[0],p_arrow1[1], r_P5, r_P5, largeArc, sweep, p_arrow2[0],p_arrow2[1],lineColor, strokeWidth))
 
-    if arrow_scheme <> 'off': #then draw arrows
+    if arrow_scheme != 'off': #then draw arrows
         if arrow_scheme == 'auto':
             s = 1 if  angle_2 > angle_1 else -1
         elif arrow_scheme == 'in':
@@ -59,7 +59,7 @@ def angularDimensionSVG( line1, line2, x_baseline, y_baseline, x_text=None, y_te
         XML.append( arrowHeadSVG( p_arrow1, rotate2D(d1, s*pi/2), arrowL1, arrowL2, arrowW, lineColor ) )
         XML.append( arrowHeadSVG( p_arrow2, rotate2D(d2,-s*pi/2), arrowL1, arrowL2, arrowW, lineColor ) )
 
-    if x_text <> None and y_text <> None:
+    if x_text != None and y_text != None:
         v = arccos( numpy.dot(d1, d2) )/ pi * 180
         textRotation = numpy.arctan2( y_text - y_int, x_text - x_int)
         textXML = textRenderer( x_text, y_text, dimensionText(v,textFormat_angular, comma=comma_decimal_place), textRotation)

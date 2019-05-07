@@ -1,5 +1,5 @@
 from drawingDimensioning.command import *
-from linearDimension import linearDimension_parallels_hide_non_parallel
+from .linearDimension import linearDimension_parallels_hide_non_parallel
 
 d = DimensioningCommand( add_viewScale_KW = True )
 
@@ -18,7 +18,7 @@ def _centerLineSVG( x1, y1, x2, y2, len_dot, len_dash, len_gap, start_with_half_
         dCode = dCode + ' L %f,%f ' % (pos[0], pos[1])
         pos = pos + d*len_gap
         step = len_dash if step < len_dash else len_dot
-    if dCode <> '':
+    if dCode != '':
         return '<path d="%s"/>' % dCode
     else:
         return ''

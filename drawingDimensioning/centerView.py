@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import FreeCAD,FreeCADGui,os,re
-from XMLlib import SvgXMLTreeNode
-from svgLib import SvgPath
-from core import debugPrint
+from .XMLlib import SvgXMLTreeNode
+from .svgLib import SvgPath
+from .core import debugPrint
 
 
 def getPoints(svg):
@@ -20,7 +20,7 @@ def getPoints(svg):
         elif element.tag == 'ellipse':
             x, y = element.applyTransforms( float( element.parms['cx'] ), float( element.parms['cy'] ) )
             points.append((x,y))
-        elif element.tag == 'text' and element.parms.has_key('x'):
+        elif element.tag == 'text' and 'x' in element.parms:
             x, y = element.applyTransforms( float( element.parms['x'] ), float( element.parms['y'] ) )
             points.append((x,y))
         elif element.tag == 'path': 

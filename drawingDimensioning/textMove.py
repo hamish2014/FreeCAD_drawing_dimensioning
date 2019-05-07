@@ -1,5 +1,5 @@
 from drawingDimensioning.command import *
-import XMLlib
+from . import XMLlib
 
 d = DimensioningCommand()
 
@@ -8,7 +8,7 @@ def moveTextSvg( x, y):
     xml = e.XML[e.pStart:e.pEnd]
     xml = XMLlib.replaceParm(xml, 'x', '%f' % x )
     xml = XMLlib.replaceParm(xml, 'y', '%f' % y )
-    if e.parms.has_key('transform'):
+    if 'transform' in e.parms:
         xml = XMLlib.replaceParm(xml, 'transform', "rotate(%s %f,%f)" % (d.textRotation,x,y) )
     return e.XML[:e.pStart] + xml + e.XML[e.pEnd:]
 
@@ -22,7 +22,7 @@ def MoveDimensionText( event, referer, elementXML, elementParms, elementViewObje
     d.dimToEdit = elementViewObject    
     d.elementXML = elementXML
     debugPrint(2, 'moving %s' % elementViewObject.Name)
-    if elementXML.parms.has_key('transform'):
+    if 'transform' in elementXML.parms:
         transform = elementXML.parms['transform']
         t = transform[ XMLlib.findOffset(transform,'rotate(',0): ]
         d.textRotation =  XMLlib.splitMultiSep(t, ', ')[0]

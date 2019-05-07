@@ -1,4 +1,4 @@
-from crudeDebugger import crudeDebuggerPrint
+from drawingDimensioning.crudeDebugger import crudeDebuggerPrint
 
 crudeDebuggerPrint('''linearDimension.py:1  	from dimensioning import * ''')
 from dimensioning import *

@@ -46,7 +46,7 @@ def printingDebugging( pythonFile, debugExt='_crudeDebugging.py'  ):
             pass
         elif any( line.lstrip().startswith(s) for s in ['elif','def','class','else','except','"',"'"] ):
             pass
-        elif prev_bB2 <> 0:
+        elif prev_bB2 != 0:
             pass
         elif prev_bracketBalance == 0: #and bracketBalance == 0:
             lineCleaned = line.rstrip().replace("'''", "''' +" + '"' + "'''" + '"' + " +'''")

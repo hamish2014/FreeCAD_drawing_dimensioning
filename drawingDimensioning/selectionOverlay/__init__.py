@@ -79,7 +79,7 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                                     doPoints=False, doTextItems=False, doLines=False, doCircles=False, doFittedCircles=False, doPathEndPoints=False, doMidPoints=False, doSelectViewObjectPoints=False, doEllipses=False, doArcCenters=True,
                                     pointWid=1.0 , maskPen=defaultMaskPen , maskBrush=defaultMaskBrush, maskHoverPen=defaultMaskHoverPen ):
     if clearPreviousSelectionItems:         
-        if sceneToAddTo <> None:
+        if sceneToAddTo != None:
             for gi in sceneToAddTo.items():
                 if isinstance(gi, CircleSelectionGraphicsItem):
                     sceneToAddTo.removeItem(gi)
@@ -96,9 +96,9 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
         gi.setAcceptHoverEvents(True)
         gi.setCursor( QtCore.Qt.CrossCursor ) # http://qt-project.org/doc/qt-5/qt.html#CursorShape-enum ; may not work for lines ...
         gi.setZValue(zValue)
-        if transform <> None:
+        if transform != None:
             gi.setTransform( transform )
-        if sceneToAddTo <> None:
+        if sceneToAddTo != None:
             sceneToAddTo.addItem(gi)
         graphicItems.append(gi)
     pointsAlreadyAdded = []
@@ -152,7 +152,7 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                     circlePoints( cx, cy, rx, ry)
                 viewInfo.updateBounds_ellipse( cx, cy, rx, ry )
                 
-            if element.tag == 'text' and element.parms.has_key('x'):
+            if element.tag == 'text' and 'x' in element.parms:
                 if doTextItems:
                     addSelectionPoint( *element.applyTransforms( float( element.parms['x'] ), float( element.parms['y'] ) ) )
                 elif doSelectViewObjectPoints:
@@ -214,7 +214,7 @@ def generateSelectionGraphicsItems( viewObjects, onClickFun, transform=None, sce
                 if doSelectViewObjectPoints and SelectViewObjectPoint_loc == None: #second check to textElementes preference
                     SelectViewObjectPoint_loc = x2, y2
 
-        if doSelectViewObjectPoints and SelectViewObjectPoint_loc <> None:
+        if doSelectViewObjectPoints and SelectViewObjectPoint_loc != None:
             addSelectionPoint( *SelectViewObjectPoint_loc )
                 #if len(fitData) > 0: 
                 #    x, y, r, r_error = fitCircle_to_path(fitData)
@@ -233,9 +233,9 @@ def hideSelectionGraphicsItems( hideFunction=None, deleteFromGraphicItemsList = 
         if hideFunction == None or hideFunction(gi):
             try:
                 gi.hide()
-            except RuntimeError, msg:
+            except RuntimeError as e:
                 import FreeCAD
-                FreeCAD.Console.PrintError('hideSelectionGraphicsItems unable to hide graphicItem, RuntimeError msg %s\n' % str(msg))
+                FreeCAD.Console.PrintError('hideSelectionGraphicsItems unable to hide graphicItem, RuntimeError msg %s\n' % str(e))
             if deleteFromGraphicItemsList:
                 delList.append( ind )
     for delInd in reversed(delList):
@@ -258,7 +258,7 @@ class ResizeGraphicItemsRect(QtGui.QGraphicsRectItem):
     def hoverMoveEvent(self, event):
         #FreeCAD.Console.PrintMessage('1\n')
         currentScale = self._graphicsView.transform().m11() #since no rotation...
-        if currentScale <> self._previousScale :
+        if currentScale != self._previousScale :
             #FreeCAD.Console.PrintMessage('adjusting Scale of graphics items\n')
             for gi in graphicItems:
                 gi.adjustScale( 1 / currentScale  )

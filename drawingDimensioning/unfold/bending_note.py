@@ -1,4 +1,5 @@
 # This Python file uses the following encoding: utf-8
+from drawingDimensioning.py3_helpers import unicode
 from drawingDimensioning.command import *
 from drawingDimensioning.svgConstructor import arrowHeadSVG, numpy, directionVector
 
@@ -21,7 +22,7 @@ class angleText_widget:
         return DimensioningTaskDialog_generate_row_hbox('angle text:', self.lineEdit)
     def add_properties_to_dimension_object( self, obj ):
         obj.addProperty("App::PropertyString", 'angleText', 'Parameters')
-        obj.angleText = d.angleText.encode('utf8') 
+        obj.angleText = encode_if_py2(d.angleText) 
     def get_values_from_dimension_object( self, obj, KWs ):
         KWs['angleText'] = obj.angleText #should be unicode
 d.dialogWidgets.append( angleText_widget() )
@@ -37,7 +38,7 @@ class BendingNoteCommand:
     def Activated(self):
         V = getDrawingPageGUIVars()
         d.activate(V, dialogTitle='Add Bend Note', dialogIconPath=':/dd/icons/bendingNote.svg', endFunction=self.Activated )
-        from grabPointAdd import  Proxy_grabPoint
+        from ..grabPointAdd import  Proxy_grabPoint
         selectionOverlay.generateSelectionGraphicsItems( 
             dimensionableObjects( V.page ) + [obj for obj in V.page.Group if hasattr(obj,'Proxy') and isinstance( obj.Proxy, Proxy_grabPoint) ], 
             self.selectFun ,
@@ -81,14 +82,14 @@ class BendingNoteCommand:
         self.svg_lineColor = lineColor
         self.svg_strokeWidth = strokeWidth
         XML_body = []
-        if radialLine_x <> None and radialLine_y <> None:
+        if radialLine_x != None and radialLine_y != None:
             XML_body.append( self.svgLine(radialLine_x, radialLine_y, c_x, c_y) )
             d = directionVector(
                 numpy.array([      c_x, c_y]),
                 numpy.array([radialLine_x, radialLine_y]),
                 )
             XML_body.append( arrowHeadSVG( numpy.array([c_x, c_y]), d, arrowL1, arrowL2, arrowW, lineColor ) )
-            if tail_x <> None and tail_y <> None:
+            if tail_x != None and tail_y != None:
                 XML_body.append(  self.svgLine( radialLine_x, radialLine_y, tail_x, radialLine_y) )
                 #getting scale factor
                 svgText = SvgTextParser( textRenderer(0,0,"0") )

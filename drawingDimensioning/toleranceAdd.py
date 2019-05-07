@@ -5,10 +5,10 @@ Use Qt Designer to edit the toleranceDialog.ui
 Once completed 
     $ pyside-uic toleranceDialog.ui > toleranceDialog.py
 '''
-
+from drawingDimensioning.py3_helpers import encode_if_py2
 from drawingDimensioning.command import *
-import toleranceDialog
-from textEdit import maskBrush, maskPen, maskHoverPen
+from . import toleranceDialog
+from .textEdit import maskBrush, maskPen, maskHoverPen
 
 d = DimensioningCommand()
 
@@ -53,7 +53,7 @@ class boundText_widget:
         return DimensioningTaskDialog_generate_row_hbox(self.name, self.lineEdit)
     def add_properties_to_dimension_object( self, obj ):
         obj.addProperty("App::PropertyString",  self.name+'_text', 'Parameters')
-        setattr( obj, self.name+'_text', getattr( d, self.name ).encode('utf8') )
+        setattr( obj, self.name+'_text', encode_if_py2(getattr( d, self.name )) )
     def get_values_from_dimension_object( self, obj, KWs ):
         KWs['text_'+self.name] =  getattr( obj, self.name+'_text')  #should be unicode
 

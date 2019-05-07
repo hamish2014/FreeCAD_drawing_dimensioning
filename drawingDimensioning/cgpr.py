@@ -2,7 +2,7 @@
 from numpy import array, zeros, nan, dot, inf
 from numpy.linalg import norm
 from numpy.random import rand
-from lineSearches import quadraticLineSearch
+from .lineSearches import quadraticLineSearch
 
 
 def toStdOut(txt):

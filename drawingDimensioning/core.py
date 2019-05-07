@@ -1,9 +1,10 @@
 import numpy
+import traceback
 import FreeCAD as App
 import FreeCAD, FreeCADGui, Part, os
 from PySide import QtGui, QtCore, QtSvg
-from svgLib import SvgTextRenderer, SvgTextParser
-import traceback
+from .svgLib import SvgTextRenderer, SvgTextParser
+from .py3_helpers import encode_if_py2
 
 
 __dir__ = os.path.dirname(os.path.dirname(__file__))
@@ -29,7 +30,7 @@ def errorMessagebox_with_traceback(title='Error'):
     'for also those PySide linked codes where the Python debugger does not work...'
     App.Console.PrintError(traceback.format_exc())
     QtGui.QMessageBox.critical( 
-        QtGui.qApp.activeWindow(), 
+        QtGui.QApplication.activeWindow(), 
         title,
         traceback.format_exc(),
         )
@@ -42,14 +43,14 @@ def getDrawingPageGUIVars():
     Get the FreeCAD window, graphicsScene, drawing page object, ...
     '''
     # get the active window
-    mw = QtGui.qApp.activeWindow()
+    mw = QtGui.QApplication.activeWindow()
     MdiArea = [c for c in mw.children() if isinstance(c,QtGui.QMdiArea)][0]
 
     try:
         subWinMW = MdiArea.activeSubWindow().children()[3]
     except AttributeError:
-        QtGui.QMessageBox.information( QtGui.qApp.activeWindow(), notDrawingPage_title, notDrawingPage_msg  )
-        raise ValueError, notDrawingPage_title
+        QtGui.QMessageBox.information( QtGui.QApplication.activeWindow(), notDrawingPage_title, notDrawingPage_msg  )
+        raise ValueError(notDrawingPage_title)
 
     # The drawing 'page' is really a group in the model tree
     # The objectName for the group object is not the same as the name shown in
@@ -57,12 +58,12 @@ def getDrawingPageGUIVars():
     # To find the page we are on, we get all the pages which have the same label as
     # the current object. In theory there should therefore only be one page in the list
     # returned by getObjectsByLabel, so we'll just take the first in the list
-    pages = App.ActiveDocument.getObjectsByLabel( subWinMW.objectName().encode('utf8') )
+    pages = App.ActiveDocument.getObjectsByLabel( encode_if_py2(subWinMW.objectName()) )
 
     # raise an error explaining that the page wasn't found if the list is empty
-    if len(pages) <> 1:
-        QtGui.QMessageBox.information( QtGui.qApp.activeWindow(), notDrawingPage_title, notDrawingPage_msg  )
-        raise ValueError, notDrawingPage_title
+    if len(pages) != 1:
+        QtGui.QMessageBox.information( QtGui.QApplication.activeWindow(), notDrawingPage_title, notDrawingPage_msg  )
+        raise ValueError(notDrawingPage_title)
 
     # get the page from the list
     page = pages[0]
@@ -70,8 +71,8 @@ def getDrawingPageGUIVars():
     try:
         graphicsView = [ c for c in subWinMW.children() if isinstance(c,QtGui.QGraphicsView)][0]
     except IndexError:
-        QtGui.QMessageBox.information( QtGui.qApp.activeWindow(), notDrawingPage_title, notDrawingPage_msg  )
-        raise ValueError, notDrawingPage_title
+        QtGui.QMessageBox.information( QtGui.QApplication.activeWindow(), notDrawingPage_title, notDrawingPage_msg  )
+        raise ValueError(notDrawingPage_title)
     graphicsScene = graphicsView.scene()
     pageRect = graphicsScene.items()[0] #hope this index does not change!
     width = pageRect.rect().width()
@@ -117,7 +118,7 @@ def recomputeWithOutViewReset( drawingVars ):
     #centerOn approach did not work rather using scroll bars.
     h_scrollValue = gV.horizontalScrollBar().value()
     v_scrollValue = gV.verticalScrollBar().value()
-    import selectionOverlay
+    from . import selectionOverlay
     selectionOverlay.hideSelectionGraphicsItems()    
     drawingVars.page.touch()
     App.ActiveDocument.recompute()
@@ -168,7 +169,7 @@ def printGraphicsViewInfo( drawingVars ):
 class helpCommand:
     def Activated(self):
         QtGui.QMessageBox.information( 
-            QtGui.qApp.activeWindow(), 
+            QtGui.QApplication.activeWindow(), 
             'Drawing Dimensioning Help', 
             '''For help getting started, please refer to the following YouTube video tutorials:
 
@@ -186,7 +187,7 @@ FreeCADGui.addCommand('dd_help', helpCommand())
 
 def dimensionableObjects ( page ):
     'commonly used code in Activate, exclude centerlines'
-    from unfold import Proxy_unfold
+    from .unfold import Proxy_unfold
     drawingViews = []
     for obj in page.Group:
         if hasattr(obj, 'ViewResult'):

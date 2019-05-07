@@ -1,8 +1,10 @@
 import pickle
-from core import debugPrint
-from drawingDimensioning.svgLib import SvgTextParser
+import base64
 from numpy.linalg import norm
 from numpy import log
+from .core import debugPrint
+from .svgLib import SvgTextParser
+
 
 class Proxy_DimensionObject_prototype:
     def __init__(self, obj, selections, svgFun):
@@ -19,19 +21,23 @@ class Proxy_DimensionObject_prototype:
 
     def __getstate__(self):
         D = self.__dict__.copy() 
-        D['selections_dumps'] = pickle.dumps( self.selections )
+        raw = pickle.dumps( self.selections )
+        raw = base64.encodestring(raw).decode()
+        D['selections_dumps'] = raw
         del D['selections']
-        D['svgFun_dumps'] = pickle.dumps( self.svgFun )
+        raw = pickle.dumps( self.svgFun )
+        raw = base64.encodestring(raw).decode()
+        D['svgFun_dumps'] =  raw 
         del D['svgFun']
         return D
 
     def __setstate__(self, D):
         self.__dict__.update(D) 
-        self.selections = pickle.loads( D['selections_dumps'] )
-        self.svgFun =  pickle.loads( D['svgFun_dumps'] )
+        self.selections = pickle.loads( base64.b64decode(D['selections_dumps'] ))
+        self.svgFun =  pickle.loads( base64.b64decode(D['svgFun_dumps']) )
 
     def dimensionProcess( self ):
-        raise ValueError,"override  dimensionProcess to return the dimensionProcessTracker"
+        raise(ValueError("override  dimensionProcess to return the dimensionProcessTracker"))
 
     def execute( self, obj ):
         KWs = {}
@@ -39,7 +45,7 @@ class Proxy_DimensionObject_prototype:
         for w in d.dialogWidgets + d.preferences + self.selections:
             if hasattr(w, 'get_values_from_dimension_object'):
                 w.get_values_from_dimension_object( obj, KWs )
-        if KWs.has_key('unit_scaling_factor'):
+        if 'unit_scaling_factor' in KWs:
             KWs['scale'] = 1.0/self.selections[0].viewInfo.scale*KWs['unit_scaling_factor']
             del KWs['unit_scaling_factor']
         if d.add_viewScale_KW: #for centerLines
@@ -63,9 +69,9 @@ class Dimensioning_Selection_prototype:
         self.svg_element_tag = svg_element.tag
         self.viewInfo = viewInfo #view bounds etc ...
     def init_for_svg_KWs( self, svg_KWs, svg_element ):
-        raise NotImplementedError,'needs to overwritten depending upon the selection type'
+        raise(NotImplementedError,'needs to overwritten depending upon the selection type')
     def svg_fun_args( self, args ):
-        raise NotImplementedError,'needs to overwritten depending upon the selection type'
+        raise(NotImplementedError,'needs to overwritten depending upon the selection type')
 
 
 class PointSelection( Dimensioning_Selection_prototype ):
@@ -83,7 +89,7 @@ class PointSelection( Dimensioning_Selection_prototype ):
     def updateValues( self, doc ):
         if not self.viewInfo.changed( doc ):
             return False
-        from recomputeDimensions import SvgElements
+        from .recomputeDimensions import SvgElements
         debugPrint(3,'PointSelection: drawing %s has changed, updating values' % self.viewInfo.name )
         new_vi = self.viewInfo.get_up_to_date_version( doc )
         old_vi = self.viewInfo
@@ -115,7 +121,7 @@ class LineSelection(  Dimensioning_Selection_prototype ):
     def updateValues( self, doc ):
         if not self.viewInfo.changed( doc ):
             return False
-        from recomputeDimensions import SvgElements
+        from .recomputeDimensions import SvgElements
         debugPrint(3,'LineSelection: drawing %s has changed, updating values' % self.viewInfo.name )
         new_vi = self.viewInfo.get_up_to_date_version( doc )
         old_vi = self.viewInfo
@@ -153,11 +159,11 @@ class CircularArcSelection(  Dimensioning_Selection_prototype ):
         elif self.output_mode == 'xy':
             args.append( [self.x, self.y] )
         else:
-            raise NotImplementedError, "output_mode %s not implemented" % self.output_mode
+            raise(NotImplementedError, "output_mode %s not implemented" % self.output_mode)
     def updateValues( self, doc ):
         if not self.viewInfo.changed( doc ):
             return False
-        from recomputeDimensions import SvgElements
+        from .recomputeDimensions import SvgElements
         debugPrint(3,'CircularArcSelection: drawing %s has changed, updating values' % self.viewInfo.name )
         new_vi = self.viewInfo.get_up_to_date_version( doc )
         old_vi = self.viewInfo
@@ -185,7 +191,7 @@ class TextSelection( Dimensioning_Selection_prototype ):
     def updateValues( self, doc ):
         if not self.viewInfo.changed( doc ):
             return False
-        from recomputeDimensions import SvgElements
+        from .recomputeDimensions import SvgElements
         debugPrint(3,'textSelection: drawing %s has changed, updating values' % self.viewInfo.name )
         new_vi = self.viewInfo.get_up_to_date_version( doc )
         old_vi = self.viewInfo
@@ -249,7 +255,7 @@ class TwoLineSelection( Dimensioning_Selection_prototype ):
             x3, y3, x4, y4 = self.lines[1].drawing_coordinates()
             args.append( [0.25*(x1 + x2 + x3 + x4), 0.25*(y1 + y2 + y3 + y4)] )
         else:
-            raise NotImplementedError, "output_mode %s not implemented" % self.output_mode
+            raise(NotImplementedError, "output_mode %s not implemented" % self.output_mode)
     def updateValues( self, doc ):
         changed = any([ line.updateValues( doc ) for line in self.lines ])
         self.viewInfo = self.lines[0].viewInfo

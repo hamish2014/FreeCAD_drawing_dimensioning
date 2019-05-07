@@ -6,7 +6,7 @@
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
-
+from drawingDimensioning.py3_helpers import unicode, translate
 from PySide import QtCore, QtGui
 
 class Ui_Dialog(object):
@@ -92,15 +92,15 @@ class Ui_Dialog(object):
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
-        Dialog.setWindowTitle(QtGui.QApplication.translate("Dialog", "Add Text", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("Dialog", "Text", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("Dialog", "Font-size", None, QtGui.QApplication.UnicodeUTF8))
-        self.sizeLineEdit.setText(QtGui.QApplication.translate("Dialog", "4pt", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_5.setText(QtGui.QApplication.translate("Dialog", "Rotation", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_6.setText(QtGui.QApplication.translate("Dialog", "°", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_3.setText(QtGui.QApplication.translate("Dialog", "Color", None, QtGui.QApplication.UnicodeUTF8))
-        self.colorLineEdit.setText(QtGui.QApplication.translate("Dialog", "rgb(255,0,0)", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_4.setText(QtGui.QApplication.translate("Dialog", "Family", None, QtGui.QApplication.UnicodeUTF8))
-        self.familyLineEdit.setText(QtGui.QApplication.translate("Dialog", "Verdana", None, QtGui.QApplication.UnicodeUTF8))
-        self.placeButton.setText(QtGui.QApplication.translate("Dialog", "Place Text", None, QtGui.QApplication.UnicodeUTF8))
+        Dialog.setWindowTitle(translate("Dialog", "Add Text", None))
+        self.label.setText(translate("Dialog", "Text", None))
+        self.label_2.setText(translate("Dialog", "Font-size", None))
+        self.sizeLineEdit.setText(translate("Dialog", "4pt", None))
+        self.label_5.setText(translate("Dialog", "Rotation", None))
+        self.label_6.setText(translate("Dialog", "°", None))
+        self.label_3.setText(translate("Dialog", "Color", None))
+        self.colorLineEdit.setText(translate("Dialog", "rgb(255,0,0)", None))
+        self.label_4.setText(translate("Dialog", "Family", None))
+        self.familyLineEdit.setText(translate("Dialog", "Verdana", None))
+        self.placeButton.setText(translate("Dialog", "Place Text", None))
 

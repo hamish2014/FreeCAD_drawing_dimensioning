@@ -1,3 +1,6 @@
+import sys
+
+from drawingDimensioning.py3_helpers import unicode, unicode_type, map, encode_if_py2
 from PySide import QtGui, QtCore, QtSvg
 import FreeCAD
 from drawingDimensioning.svgConstructor import SvgTextRenderer
@@ -22,7 +25,7 @@ def DimensioningTaskDialog_generate_row_hbox( label, inputWidget ):
     hbox = QtGui.QHBoxLayout()
     hbox.addWidget( QtGui.QLabel(label) )
     hbox.addStretch(1)
-    if inputWidget <> None:
+    if inputWidget != None:
         hbox.addWidget(inputWidget)
     return hbox
 
@@ -51,7 +54,7 @@ class DimensioningPreference_prototype:
     def __init__(self, name, defaultValue, label, **extraKWs):
         self.name = name
         self.defaultValue = defaultValue
-        self.label = label if label <> None else name
+        self.label = label if label != None else name
         self.category = "Parameters" # for the freecad property category
         self.dd_parms = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Drawing_Dimensioning")
         self.process_extraKWs(**extraKWs)
@@ -91,16 +94,20 @@ class DimensioningPreference_float(DimensioningPreference_prototype):
         obj.addProperty("App::PropertyFloat", self.name, self.category)
         KWs = self.dimensioningProcess.dimensionConstructorKWs
         setattr( obj, self.name, KWs[ self.name ] )
-DimensioningPreferenceClasses["<type 'float'>"] = DimensioningPreference_float
-DimensioningPreferenceClasses["<type 'int'>"] = DimensioningPreference_float
 
+if sys.version_info.major < 3:
+    DimensioningPreferenceClasses["<type 'float'>"] = DimensioningPreference_float
+    DimensioningPreferenceClasses["<type 'int'>"] = DimensioningPreference_float
+else:
+    DimensioningPreferenceClasses["<class 'float'>"] = DimensioningPreference_float
+    DimensioningPreferenceClasses["<class 'int'>"] = DimensioningPreference_float
 
 class DimensioningPreference_unicode(DimensioningPreference_prototype):
     def getDefaultValue(self):
-        encoded_value = self.dd_parms.GetString( self.name, self.defaultValue.encode('utf8') ) 
+        encoded_value = self.dd_parms.GetString( self.name, encode_if_py2(self.defaultValue) ) 
         return unicode( encoded_value, 'utf8' )
     def updateDefault(self):
-        self.dd_parms.SetString( self.name,  self.dimensioningProcess.dimensionConstructorKWs[ self.name ].encode('utf8') )
+        self.dd_parms.SetString( self.name,  encode_if_py2(self.dimensioningProcess.dimensionConstructorKWs[ self.name ]) )
     def revertToDefault( self ):
         self.textbox.setText( self.getDefaultValue() )
     def generateWidget( self, dimensioningProcess ):
@@ -114,19 +121,23 @@ class DimensioningPreference_unicode(DimensioningPreference_prototype):
     def add_properties_to_dimension_object( self, obj ):
         obj.addProperty("App::PropertyString", self.name, self.category)
         KWs = self.dimensioningProcess.dimensionConstructorKWs
-        setattr( obj, self.name, KWs[ self.name ].encode('utf8') )
+        setattr( obj, self.name, encode_if_py2(KWs[ self.name ]) )
     def get_values_from_dimension_object( self, obj, KWs ):
         #KWs[self.name] =  unicode( getattr( obj, self.name ), 'utf8'  )
         KWs[self.name] =  getattr( obj, self.name )
-        if not type(KWs[self.name]) == unicode:
-            raise ValueError,"type(KWs[%s]) != unicode but == %s" % (self.name, type(KWs[self.name]) ) 
-DimensioningPreferenceClasses["<type 'unicode'>"] = DimensioningPreference_unicode
+        if not type(KWs[self.name]) == unicode_type:
+            raise ValueError("type(KWs[%s]) != unicode but == %s" % (self.name, type(KWs[self.name]) ))
+if sys.version_info.major < 3:
+    DimensioningPreferenceClasses["<type 'unicode'>"] = DimensioningPreference_unicode
+else:
+    DimensioningPreferenceClasses["<class 'str'>"] = DimensioningPreference_unicode
+
 
 class DimensioningPreference_choice(DimensioningPreference_unicode):
     def valueChanged( self, value ):
         self.dimensioningProcess.dimensionConstructorKWs[ self.name ] = self.combobox.currentText()
     def getDefaultValue(self):
-        encoded_value = self.dd_parms.GetString( self.name, self.defaultValue[0].encode('utf8') ) 
+        encoded_value = self.dd_parms.GetString( self.name, encode_if_py2(self.defaultValue[0]) )  
         return unicode( encoded_value, 'utf8' )
     def revertToDefault( self ):
         try:
@@ -147,9 +158,9 @@ class DimensioningPreference_choice(DimensioningPreference_unicode):
         return  DimensioningTaskDialog_generate_row_hbox( self.label, combobox )
     def add_properties_to_dimension_object( self, obj ):
         obj.addProperty("App::PropertyEnumeration", self.name, self.category)
-        setattr( obj, self.name, [ v.encode('utf8') for v in  self.defaultValue ])
+        setattr( obj, self.name, [ encode_if_py2(v) for v in  self.defaultValue ])
         KWs = self.dimensioningProcess.dimensionConstructorKWs
-        setattr( obj, self.name, KWs[ self.name ].encode('utf8') )
+        setattr( obj, self.name, encode_if_py2(KWs[ self.name ]) )
     def get_values_from_dimension_object( self, obj, KWs ):
         KWs[self.name] =  unicode( getattr( obj, self.name ), 'utf8'  )
 DimensioningPreferenceClasses["choice"] = DimensioningPreference_choice
@@ -174,7 +185,10 @@ class DimensioningPreference_boolean(DimensioningPreference_prototype):
         obj.addProperty("App::PropertyBool", self.name, self.category)
         KWs = self.dimensioningProcess.dimensionConstructorKWs
         setattr( obj, self.name, KWs[ self.name ] )
-DimensioningPreferenceClasses["<type 'bool'>"] = DimensioningPreference_boolean
+if sys.version_info.major < 3:
+    DimensioningPreferenceClasses["<type 'bool'>"] = DimensioningPreference_boolean
+else:
+    DimensioningPreferenceClasses["<class 'bool'>"] = DimensioningPreference_boolean
 
 
 
@@ -220,7 +234,7 @@ class DimensioningPreference_color(DimensioningPreference_prototype):
     def add_properties_to_dimension_object( self, obj ):
         obj.addProperty("App::PropertyString", self.name, self.category)
         KWs = self.dimensioningProcess.dimensionConstructorKWs
-        setattr( obj, self.name, KWs[ self.name ].encode('utf8') )
+        setattr( obj, self.name, encode_if_py2(KWs[ self.name ]) )
     def get_values_from_dimension_object( self, obj, KWs ):
         KWs[self.name] =  getattr( obj, self.name )
 
@@ -288,9 +302,9 @@ class DimensioningPreference_font(DimensioningPreference_color):
         obj.addProperty("App::PropertyString", self.name+ '_size', self.category)
         obj.addProperty("App::PropertyString", self.name+ '_color', self.category)
         textRenderer = self.dimensioningProcess.dimensionConstructorKWs[ self.name ]
-        setattr( obj, self.name + '_family', textRenderer.font_family.encode('utf8') )
-        setattr( obj, self.name + '_size', textRenderer.font_size.encode('utf8') )
-        setattr( obj, self.name + '_color', textRenderer.fill.encode('utf8') )
+        setattr( obj, self.name + '_family', encode_if_py2(textRenderer.font_family) )
+        setattr( obj, self.name + '_size', encode_if_py2(textRenderer.font_size) )
+        setattr( obj, self.name + '_color', encode_if_py2(textRenderer.fill) )
         
     def get_values_from_dimension_object( self, obj, KWs ):
         family = getattr( obj, self.name + '_family')
@@ -302,7 +316,7 @@ DimensioningPreferenceClasses["font"] = DimensioningPreference_font
 
 class DimensioningPreference_string_list(DimensioningPreference_prototype):
     def val_to_FreeCAD_parm( self, val ):
-        return '\n'.join(text.encode('utf8') for text in val )
+        return '\n'.join(encode_if_py2(text) for text in val )
     def FreeCAD_parm_to_val( self, FreeCAD_parm ):
         return [ unicode( line, 'utf8' ) for line in FreeCAD_parm.split('\n') ]
     def getDefaultValue(self):
@@ -326,7 +340,7 @@ class DimensioningPreference_string_list(DimensioningPreference_prototype):
     def add_properties_to_dimension_object( self, obj ):
         obj.addProperty("App::PropertyStringList", self.name, self.category)
         KWs = self.dimensioningProcess.dimensionConstructorKWs
-        setattr( obj, self.name, [ v.encode('utf8') for v in KWs[ self.name ] ] )
+        setattr( obj, self.name, [ encode_if_py2(v) for v in KWs[ self.name ] ] )
     def get_values_from_dimension_object( self, obj, KWs ):
         KWs[self.name] = getattr( obj, self.name )
 DimensioningPreferenceClasses['string_list'] = DimensioningPreference_string_list
@@ -355,7 +369,7 @@ class UnitSelectionWidget:
         self.dd_parms = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Drawing_Dimensioning")
 
     def unit_factor( self, unit_text, customScaleValue):
-        if unit_text <> 'custom':
+        if unit_text != 'custom':
             if unit_text == 'Edit->Preference->Unit':
                 #found using FreeCAD.ParamGet("User parameter:BaseApp/Preferences").Export('/tmp/p3')
                 UserSchema = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Units").GetInt("UserSchema")
@@ -370,7 +384,7 @@ class UnitSelectionWidget:
                     v = 25.4
         else:
             v = customScaleValue
-        return 1.0/v if v <> 0 else 1.0
+        return 1.0/v if v != 0 else 1.0
 
     def settingsChanged(self, notUsed=False):
         unit_text = self.unitSelected_combobox.currentText()
@@ -419,8 +433,8 @@ class UnitSelectionWidget:
     def add_properties_to_dimension_object( self, obj ):
         KWs = self.dimensioningProcess.dimensionConstructorKWs
         obj.addProperty("App::PropertyEnumeration", 'unit_scheme', 'Units')
-        obj.unit_scheme = [ v.encode('utf8') for v in ['Edit->Preference->Unit','mm','inch','m','custom'] ]
-        obj.unit_scheme = self.unitSelected_combobox.currentText().encode('utf8')
+        obj.unit_scheme = [ encode_if_py2(v) for v in ['Edit->Preference->Unit','mm','inch','m','custom'] ]
+        obj.unit_scheme = encode_if_py2(self.unitSelected_combobox.currentText())
         obj.addProperty("App::PropertyFloat", 'unit_custom_scale', 'Units')
         obj.unit_custom_scale = self.customScaleValue
 

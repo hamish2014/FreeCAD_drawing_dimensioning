@@ -1,7 +1,8 @@
+from .core import *
+from .core import  __dir__ # not imported with * directive
+from .grid import *
+from drawingDimensioning.py3_helpers import unicode_type, encode_if_py2
 
-from core import *
-from core import  __dir__ # not imported with * directive
-from grid import *
 
 class PreviewVars:
     def __init__(self):
@@ -45,7 +46,7 @@ def initializePreview( dimensioningProcessTracker, dimensionSvgFun, dimensionCli
             createQtItems = False
     else:
         createQtItems = False
-    if preview.SVG_initialization_width <> drawingVars.width or preview.SVG_initialization_height <> drawingVars.height:
+    if preview.SVG_initialization_width != drawingVars.width or preview.SVG_initialization_height != drawingVars.height:
         debugPrint(3, 'initializePreview: change in page rect size dected, recreating SVG graphics item')
         createQtItems = True
     if createQtItems:
@@ -89,10 +90,10 @@ def removePreviewGraphicItems( recomputeActiveDocument = True, launchEndFunction
     if recomputeActiveDocument:
         debugPrint(3,'removePreviewGraphicItems: recomputing')
         recomputeWithOutViewReset( preview.drawingVars )
-    if closeDialog and preview.dimensioningProcessTracker.taskDialog <> None:
+    if closeDialog and preview.dimensioningProcessTracker.taskDialog != None:
         FreeCADGui.Control.closeDialog()
     del preview.drawingVars
-    if launchEndFunction and preview.dimensioningProcessTracker.endFunction <> None:
+    if launchEndFunction and preview.dimensioningProcessTracker.endFunction != None:
         timer.start( 1 ) # 1 ms (in theory)
 
 
@@ -149,8 +150,8 @@ class DimensionPreviewRect(QtGui.QGraphicsRectItem):
             debugPrint(4, 'hoverMoveEvent: x %f, y %f' % (x, y) )
             x, y= applyGridRounding( x, y)
             XML = '<svg width="%i" height="%i"> %s </svg>' % (preview.drawingVars.width, preview.drawingVars.height, self.dimensionSvgFun( x, y ))
-            if isinstance(XML, unicode): 
-                XML = XML.encode('utf8')
+            if isinstance(XML, unicode_type): 
+                XML = encode_if_py2(XML)
             debugPrint(5, XML)
             preview.SVGRenderer.load( QtCore.QByteArray( XML ) )
             preview.SVG.update()

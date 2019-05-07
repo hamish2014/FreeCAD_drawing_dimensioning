@@ -4,7 +4,7 @@ library for constructing dimension SVGs
 
 assert __name__ == "__main__"
 import sys
-from tst_setup import dummyViewObject, XML_SVG_Wrapper
+from .tst_setup import dummyViewObject, XML_SVG_Wrapper
 from PySide import QtGui, QtCore, QtSvg
 
 app = QtGui.QApplication(sys.argv) #need to be defined before drawingDimensioning ... :(
@@ -44,7 +44,7 @@ class DimensioningRect(QtGui.QGraphicsRectItem):
         self.svg_wrap = XML_SVG_Wrapper( args )
 
     def selectCircle( self, event, referer, elementXML, elementParms, elementViewObject ):
-        if self.action_ind <> 0:
+        if self.action_ind != 0:
             return
         self.point1 = elementParms['x'], elementParms['y']
         print('point1 set to x=%3.1f y=%3.1f' % self.point1)
@@ -74,7 +74,7 @@ class DimensioningRect(QtGui.QGraphicsRectItem):
                                             x, y, **self.dim_svg_KWs )
                 self.action_ind = 0
                 self.radius = self.radius * 2
-                if XML <> None:
+                if XML != None:
                     print(XML)
                     newSvg = QtSvg.QGraphicsSvgItem(  )
                     svgRenderer = QtSvg.QSvgRenderer()
@@ -100,7 +100,7 @@ class DimensioningRect(QtGui.QGraphicsRectItem):
                                         self.point2[0], self.point2[1], 
                                         self.point3[0], self.point3[1], 
                                         x, y, **self.dim_svg_KWs )
-        if XML <> None:
+        if XML != None:
             self.dimSVGRenderer.load( QtCore.QByteArray( self.svg_wrap(XML) ) )
             self.dimPreview.update()
             self.dimPreview.show()

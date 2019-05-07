@@ -1,9 +1,10 @@
+from drawingDimensioning.py3_helpers import unicode
 from drawingDimensioning.core import *
 from drawingDimensioning import selectionOverlay, previewDimension
 from drawingDimensioning.svgConstructor import *
 from drawingDimensioning.proxies import *
 from drawingDimensioning.grid import gridOptionsGroupBox, dimensioningGrid
-from preferences import *
+from .preferences import *
 
 class DimensioningCommand:
     def __init__(self, proxy_svgFun=None, add_viewScale_KW = False):
@@ -18,7 +19,7 @@ class DimensioningCommand:
         self.dialogIconPath = dialogIconPath
         self.endFunction = endFunction
         extraWidgets = []
-        if self.endFunction <> None:
+        if self.endFunction != None:
             endFunction_parm_name = 'repeat_' + str(endFunction).split()[2]
             extraWidgets.append( RepeatCheckBox(self, endFunction_parm_name) )
             if grid:
@@ -28,7 +29,7 @@ class DimensioningCommand:
         for pref in self.preferences:
             KWs[pref.name] = pref.getDefaultValue()
         self.dimensionConstructorKWs = KWs
-        if dialogTitle <> None:
+        if dialogTitle != None:
             self.taskDialog = DimensioningTaskDialog( self, dialogTitle, dialogIconPath, extraWidgets + self.dialogWidgets, self.preferences)
             FreeCADGui.Control.showDialog( self.taskDialog )
         else:
@@ -37,19 +38,19 @@ class DimensioningCommand:
             dimensioningGrid.initialize( drawingVars )
 
     def registerPreference( self, name, defaultValue=None, label=None, kind='guess', **extraKWs):
-        if not dimensioningPreferences.has_key(name):
+        if not name in dimensioningPreferences:
             if defaultValue == None:
-                raise ValueError, "registerPreferenceError: %s default required in first definition" % name 
+                raise ValueError("registerPreferenceError: %s default required in first definition" % name)
             if type(defaultValue) == str:
                 defaultValue = unicode(defaultValue, 'utf8')
-            class_key = kind if kind <> 'guess' else str(type(defaultValue))
-            if DimensioningPreferenceClasses.has_key(class_key):
+            class_key = kind if kind != 'guess' else str(type(defaultValue))
+            if class_key in DimensioningPreferenceClasses:
                 dimensioningPreferences[name] = DimensioningPreferenceClasses[class_key](name, defaultValue, label, **extraKWs)
             else:
                 App.Console.PrintError("registerPreferenceError: %s : defaultValue %s, kind %s [class_key %s] not understood, ignoring!\n" % (name, defaultValue, kind, class_key) )
                 return 
-        elif defaultValue <> None:
-            raise ValueError, "registerPreferenceError: default for %s redeclared" % name
+        elif defaultValue != None:
+            raise ValueError("registerPreferenceError: default for %s redeclared" % name)
         self.preferences.append( dimensioningPreferences[name] )
 
 
@@ -63,7 +64,7 @@ class DimensioningTaskDialog:
         title, iconPath, dialogWidgets, preferences = self.initArgs
         self.form = DimensioningTaskDialogForm( self.dimensioningCommand, dialogWidgets, preferences )
         self.form.setWindowTitle( title )    
-        if iconPath <> None:
+        if iconPath != None:
             self.form.setWindowIcon( QtGui.QIcon( iconPath ) )
 
     def reject(self): #close button

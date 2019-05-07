@@ -1,4 +1,5 @@
 from drawingDimensioning.command import *
+from drawingDimensioning.py3_helpers import encode_if_py2
 
 d = DimensioningCommand()
 
@@ -6,9 +7,9 @@ def noteCircleSVG( start_x, start_y, radialLine_x=None, radialLine_y=None, tail_
                    noteCircleText= '0', strokeWidth=0.5, lineColor='blue', noteCircle_radius=4.5, noteCircle_fill='white',
                    textRenderer_noteCircle=defaultTextRenderer):
     XML_body = [ ]
-    if radialLine_x <> None and radialLine_y <> None:
+    if radialLine_x != None and radialLine_y != None:
         XML_body.append( svgLine(radialLine_x, radialLine_y, start_x, start_y, lineColor, strokeWidth) )
-        if tail_x <> None and tail_y <> None:
+        if tail_x != None and tail_y != None:
             XML_body.append( svgLine(radialLine_x, radialLine_y, tail_x, radialLine_y, lineColor, strokeWidth) )
             XML_body.append(' <circle cx ="%f" cy ="%f" r="%f" stroke="%s" fill="%s" /> ' % (tail_x, radialLine_y, noteCircle_radius, lineColor, noteCircle_fill) )
             XML_body.append( textRenderer_noteCircle( tail_x - 1.5, radialLine_y + 1.5, noteCircleText ) )
@@ -36,7 +37,7 @@ class NoteCircleText_widget:
         return DimensioningTaskDialog_generate_row_hbox('no.', self.spinbox)
     def add_properties_to_dimension_object( self, obj ):
         obj.addProperty("App::PropertyString", 'noteText', 'Parameters')
-        obj.noteText = d.noteCircleText.encode('utf8') 
+        obj.noteText = encode_if_py2(d.noteCircleText) 
     def get_values_from_dimension_object( self, obj, KWs ):
         KWs['noteCircleText'] =  obj.noteText #should be unicode
 d.dialogWidgets.append( NoteCircleText_widget() )
@@ -74,7 +75,7 @@ class NoteCircle:
     def Activated(self):
         V = getDrawingPageGUIVars()
         d.activate(V, dialogTitle='Add Note Circle', dialogIconPath=':/dd/icons/noteCircle.svg', endFunction=self.Activated )
-        from grabPointAdd import  Proxy_grabPoint
+        from .grabPointAdd import  Proxy_grabPoint
         selectionOverlay.generateSelectionGraphicsItems(
             dimensionableObjects( V.page ) + [obj for obj in V.page.Group if hasattr(obj,'Proxy') and isinstance( obj.Proxy, Proxy_grabPoint) ],
             selectFun,

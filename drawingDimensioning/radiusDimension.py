@@ -7,13 +7,13 @@ def radiusDimensionSVG( center_x, center_y, radius, radialLine_x=None, radialLin
                         centerPointDia = 1, arrowL1=3, arrowL2=1, arrowW=2, strokeWidth=0.5, scale=1.0, lineColor='blue', arrow_scheme='auto',
                         textRenderer=defaultTextRenderer):
     XML_body = [ ' <circle cx ="%f" cy ="%f" r="%f" stroke="none" fill="%s" /> ' % (center_x, center_y, centerPointDia*0.5, lineColor) ]
-    if radialLine_x <> None and radialLine_y <> None:
+    if radialLine_x != None and radialLine_y != None:
         theta = numpy.arctan2( radialLine_y - center_y, radialLine_x - center_x )
         A = numpy.array([ center_x + radius*numpy.cos(theta) , center_y + radius*numpy.sin(theta) ])
         B = numpy.array([ center_x - radius*numpy.cos(theta) , center_y - radius*numpy.sin(theta) ])
         XML_body.append( svgLine(radialLine_x, radialLine_y, center_x, center_y, lineColor, strokeWidth) )
         if radius > 0:
-            if arrow_scheme <> 'off':
+            if arrow_scheme != 'off':
                 if arrow_scheme == 'auto':
                     s = 1 if radius > arrowL1 + arrowL2 + 0.5*centerPointDia else -1
                 elif arrow_scheme == 'in':
@@ -21,7 +21,7 @@ def radiusDimensionSVG( center_x, center_y, radius, radialLine_x=None, radialLin
                 elif arrow_scheme == 'out':
                     s = -1
                 XML_body.append( arrowHeadSVG( A, s*directionVector(A,B), arrowL1, arrowL2, arrowW, lineColor ) )
-        if tail_x <> None and tail_y <> None:
+        if tail_x != None and tail_y != None:
             XML_body.append( svgLine(radialLine_x, radialLine_y, tail_x, radialLine_y, lineColor, strokeWidth) )
             text = dimensionText( radius*scale,textFormat_radial, comma=comma_decimal_place)
             XML_body.append( textPlacement_common_procedure(numpy.array([radialLine_x, radialLine_y]), numpy.array([tail_x, radialLine_y]), text, text_x, text_y, 0, textRenderer, autoPlaceText, autoPlaceOffset) )

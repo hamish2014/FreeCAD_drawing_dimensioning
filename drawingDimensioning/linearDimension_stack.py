@@ -37,7 +37,7 @@ def linearDimension_stack_SVG( selections, mouse_x, mouse_y, KWs ):
         else: #another line selected
             SVG_args = [ line1, s]
         base_point = line1[0:2] if numpy.dot(offset_d, line1[0:2]) > numpy.dot(offset_d, line1[2:4]) else line1[2:4]
-        if KWs['stack_offset0'] <> 0:
+        if KWs['stack_offset0'] != 0:
             offset = KWs['stack_offset0'] + i*KWs['stack_offset']
         else:
             mouse_diff = [mouse_x - base_point[0], mouse_y - base_point[1]]
@@ -49,7 +49,7 @@ def linearDimension_stack_SVG( selections, mouse_x, mouse_y, KWs ):
         SVG_KWs['autoPlaceText'] = True
         del SVG_KWs['stack_offset0'], SVG_KWs['stack_offset']
         svg_code =  linearDimensionSVG_parallels( *SVG_args, **SVG_KWs) 
-        if svg_code <> None:
+        if svg_code != None:
             svg_codes.append( svg_code )
     if len(svg_codes) > 0:
         return '\n'.join(svg_codes)

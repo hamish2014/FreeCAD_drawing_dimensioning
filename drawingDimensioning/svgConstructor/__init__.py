@@ -85,7 +85,7 @@ def textPlacement_common_procedure( A, B, text, x_text, y_text, textRotation, te
     elif textRotation < -92:
         textRotation = textRotation + 90
     if not autoPlaceText:
-        if x_text <> None and y_text <> None:
+        if x_text != None and y_text != None:
             return textRenderer( x_text, y_text, text, rotation=textRotation )
         else :
             return ''

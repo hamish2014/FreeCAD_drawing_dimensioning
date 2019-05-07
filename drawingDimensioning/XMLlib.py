@@ -11,6 +11,7 @@ Library to parse XML codes such as those used for the FreeCAD view result, as to
 
 import numpy
 from numpy import sin, cos, dot
+from drawingDimensioning.py3_helpers import map
 
 def findOffset( text, subtext, p_start ):
     p = text.find(subtext, p_start)
@@ -42,7 +43,7 @@ def extractParms( text, p_start, startText, sep, endText ):
 
 def findClose_sub(text, subText, pStart):
     p = text.find(subText, pStart)
-    return p if p <> -1 else len(text)-1 #if p == -1 then broken XML
+    return p if p != -1 else len(text)-1 #if p == -1 then broken XML
 
 def findClose(text, closingOptions, pStart):
     return min( [ findClose_sub(text, subText, pStart) for subText in closingOptions ] )
@@ -85,8 +86,8 @@ class SvgXMLTreeNode:
         while p > -1:
             i = p-1
             key = ''
-            while key == '' or h[i] <> ' ':
-                if h[i] <> ' ':
+            while key == '' or h[i] != ' ':
+                if h[i] != ' ':
                     key = h[i] + key
                 i = i - 1
             p1 = h.find('"', p)
@@ -138,10 +139,10 @@ class SvgXMLTreeNode:
             if 'matrix(' in self.header: #"matrix(1.25,0,0,-1.25,-348.3393,383.537)"
                 sx, shear_1, shear_2, sy, tx, ty = map(float, extractParms(self.header, 0, 'matrix(', ', ', ')'))
                 if not shear_1 == 0 and shear_2 == 0:
-                    raise NotImplementedError, " not shear_1 == 0 and shear_2 == 0! header %s" % self.header 
+                    raise NotImplementedError(" not shear_1 == 0 and shear_2 == 0! header %s" % self.header)
         p = numpy.array( [sx*x + tx, sy*y + ty] )
         point = dot(R, p-r_o) +r_o
-        if self.parent <> None:
+        if self.parent != None:
             return self.parent.applyTransforms(*point)
         else:
             return point[0], point[1]
@@ -190,7 +191,7 @@ class SvgXMLTreeNode:
         # z = dot(R, dot(T,x) + c - r_o) + r_o
         T = dot(R,T)
         c = dot(R,c) - dot(R,r_o) + r_o
-        if self.parent <> None and cumalative:
+        if self.parent != None and cumalative:
             return self.parent.Transforms(T=T, c=c)
         else:
             return T, c
@@ -219,7 +220,7 @@ class SvgXMLTreeNode:
                 sx, shear_1, shear_2, sy, tx, ty = map(float, extractParms(self.header, 0, 'matrix(', ', ', ')'))
                 assert shear_1 == 0 and shear_2 == 0
                 s = s *sx
-        if self.parent <> None:
+        if self.parent != None:
             return self.parent.scaling2(s)
         else:
             return s

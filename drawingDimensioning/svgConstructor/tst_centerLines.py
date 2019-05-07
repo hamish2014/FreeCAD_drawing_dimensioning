@@ -2,7 +2,7 @@ print('Testing dimensionSvgConstructor.py centerLines')
 
 assert __name__ == "__main__"
 import sys
-from tst_setup import dummyViewObject, XML_SVG_Wrapper
+from .tst_setup import dummyViewObject, XML_SVG_Wrapper
 from PySide import QtGui, QtCore, QtSvg
 
 app = QtGui.QApplication(sys.argv) #need to be defined before drawingDimensioning , else Qt crashes
@@ -54,7 +54,7 @@ class DimensioningRect(QtGui.QGraphicsRectItem):
                 self.action_ind = 0
                 XML = centerLinesSVG( self.center, self.topLeft, self.bottomRight,
                                    **self.dim_svg_KWs )
-                if XML <> None:
+                if XML != None:
                     print(XML)
                     newSvg = QtSvg.QGraphicsSvgItem(  )
                     svgRenderer = QtSvg.QSvgRenderer()
@@ -74,7 +74,7 @@ class DimensioningRect(QtGui.QGraphicsRectItem):
                                       **self.dim_svg_KWs )
         elif self.action_ind == 2: # then placeDimensionText
             XML = centerLinesSVG( self.center, self.topLeft, [ x, y ], **self.dim_svg_KWs )
-        if XML <> None:
+        if XML != None:
             self.dimSVGRenderer.load( QtCore.QByteArray( self.svg_wrap(XML) ) )
             self.dimPreview.update()
             self.dimPreview.show()

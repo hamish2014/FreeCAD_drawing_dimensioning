@@ -268,7 +268,7 @@ def toStdOut(txt):
     print(txt)
 
 def fitCircleNumerically( X, Y, printF=toStdOut ):
-    from cgpr import CGPR, GradientApproximatorForwardDifference
+    from .cgpr import CGPR, GradientApproximatorForwardDifference
     X = array(X)
     Y = array(Y)
     def f(x):

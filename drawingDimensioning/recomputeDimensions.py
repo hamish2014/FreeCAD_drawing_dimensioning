@@ -1,7 +1,7 @@
-from core import *
-from proxies import *
-from XMLlib import SvgXMLTreeNode
-from svgLib import SvgPath
+from .core import *
+from .proxies import *
+from .XMLlib import SvgXMLTreeNode
+from .svgLib import SvgPath
 
 class DrawingViewInfo:
     def __init__(self, drawingView, calculateBounds=False ):
@@ -84,7 +84,7 @@ class DrawingViewInfo:
 
     def get_up_to_date_version( self, doc ):
         drawingView = doc.getObject( self.name )
-        if DrawingInfo_cache.has_key( self.name ):
+        if self.name in DrawingInfo_cache:
             v = DrawingInfo_cache[ self.name ]
             recalculate = not ( v.viewResult_length == len(drawingView.ViewResult) and v.viewResult_hash == hash(drawingView.ViewResult) )
         else:
@@ -118,7 +118,7 @@ class SvgElements:
                 rx, ry = float( element.parms['rx'] )* scaling, float( element.parms['ry'] )* scaling
                 self.ellipses.append( [ cx, cy, rx, ry] )
                 self.ellipse_points( cx, cy, rx, ry )
-            if element.tag == 'text' and element.parms.has_key('x'):
+            if element.tag == 'text' and 'x' in element.parms:
                 x, y = element.applyTransforms( float( element.parms['x'] ), float( element.parms['y'] ) )
                 self.texts.append( [x, y, element] )
             if element.tag == 'path': 

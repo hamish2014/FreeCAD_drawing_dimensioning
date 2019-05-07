@@ -41,7 +41,7 @@ def linearDimensionSVG_points( x1, y1, x2, y2, x3, y3, x4=None, y4=None, autoPla
     text = dimensionText( v, textFormat_linear, comma=comma_decimal_place)
     textXML = textPlacement_common_procedure(A, B, text, x4, y4, textRotation, textRenderer, autoPlaceText, autoPlaceOffset)
     distAB = numpy.linalg.norm(A-B)
-    if distAB > 0 and arrow_scheme <> 'off': #then draw arrows
+    if distAB > 0 and arrow_scheme != 'off': #then draw arrows
         if arrow_scheme == 'auto':
             s = 1 if distAB > 2.5*(arrowL1 + arrowL2) else -1
         elif arrow_scheme == 'in':
@@ -124,7 +124,7 @@ def linearDimensionSVG_parallels( line1, line2, x_baseline, y_baseline, x_text=N
     line_to_arrow_point( p3, p4, p_arrow2)
     XML.append( svgLine( p_arrow1[0], p_arrow1[1], p_arrow2[0], p_arrow2[1], lineColor, strokeWidth) )
     dist = norm(p_arrow1 - p_arrow2)
-    if dist > 0 and arrow_scheme <> 'off': #then draw arrows
+    if dist > 0 and arrow_scheme != 'off': #then draw arrows
         if arrow_scheme == 'auto':
             s = -1 if dist > 2.5*(arrowL1 + arrowL2) else 1
         elif arrow_scheme == 'in':
@@ -164,7 +164,7 @@ def linearDimension_parallels_hide_non_parallel(elementParms, elementViewObject)
     p = numpy.array([ x1, y1] )
     def hideFun( gi ):
         if isinstance(gi,selectionOverlay.LineSelectionGraphicsItem):
-            if gi.elementParms <> elementParms:
+            if gi.elementParms != elementParms:
                 x1,y1,x2,y2 = [ gi.elementParms[k] for k in [ 'x1', 'y1', 'x2', 'y2' ] ]
                 d = numpy.array([ x2 - x1, y2 - y1] )
                 d = d / numpy.linalg.norm(d)
@@ -258,7 +258,7 @@ class LinearDimensionCommand:
             doPoints=True, 
             **commonArgs
             )
-        from centerLines import Proxy_CenterLines
+        from .centerLines import Proxy_CenterLines
         selectionOverlay.generateSelectionGraphicsItems( 
             [ obj for obj in V.page.Group if hasattr(obj, 'Proxy') and isinstance( obj.Proxy, Proxy_CenterLines )], 
             clearPreviousSelectionItems = False,

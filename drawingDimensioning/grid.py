@@ -6,7 +6,7 @@ def DimensioningTaskDialog_generate_row_hbox( label, inputWidget ):
     hbox = QtGui.QHBoxLayout()
     hbox.addWidget( QtGui.QLabel(label) )
     hbox.addStretch(1)
-    if inputWidget <> None:
+    if inputWidget != None:
         hbox.addWidget(inputWidget)
     return hbox
 
