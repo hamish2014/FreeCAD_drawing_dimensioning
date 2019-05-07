@@ -18,11 +18,11 @@ def translate(*args):
         return QtGui.QApplication.translate(args[0], args[1], args[2])
 
 def encode_if_py2(unicode_object):
-	'''return unicode for py3 and bytes for py2'''
-	if sys.version_info.major < 3:
-		return unicode_object.decode("utf8")
-	else:
-		return unicode_object
+    '''return unicode for py3 and bytes for py2'''
+    if sys.version_info.major < 3:
+	return unicode_object.encode("utf8")
+    else:
+	return unicode_object
 
 _map = map
 

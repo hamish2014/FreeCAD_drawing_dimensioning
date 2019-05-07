@@ -8,13 +8,20 @@ class DrawingDimensioningWorkbench (Workbench):
         self.appendToolbar('Drawing Workbench shortcuts', newpageShortcuts + [
                     'dd_new_drawing_page_preferences',
                     'dd_Drawing_OrthoViews',                    
-                    ] )
+        ] )
         # copy the Drawing toolbar
         import DrawingGui
-        self.appendToolbar('Drawing Workbench Commands',["Drawing_NewPage",
-                    "Drawing_NewView","Drawing_OrthoViews","Drawing_OpenBrowserView",
-                    "Drawing_Annotation","Drawing_Clip","Drawing_Symbol",
-                    "Drawing_DraftView","Drawing_ExportPage"])
+        self.appendToolbar('Drawing Workbench Commands',[
+            "Drawing_NewPage",
+            "Drawing_NewView",
+            "Drawing_OrthoViews",
+            "Drawing_OpenBrowserView",
+            "Drawing_Annotation",
+            "Drawing_Clip",
+            "Drawing_Symbol",
+            "Drawing_DraftView",
+            "Drawing_ExportPage"
+        ])
 
         commandslist = [
             'dd_linearDimension', #where dd is short-hand for drawing dimensioning
@@ -44,12 +51,12 @@ class DrawingDimensioningWorkbench (Workbench):
         ]
         self.appendToolbar( 'Drawing Dimensioning Folding', unfold_cmds )
         from drawingDimensioning import weldingSymbols        
-        freecad_version = int( FreeCAD.Version()[1] )
+        freecad_version = float( FreeCAD.Version()[1] )
         try:
            git_commit_no = int( FreeCAD.Version()[2].split()[0] )
         except:
            git_commit_no = -1
-           freecad_version = int( FreeCAD.Version()[1] )
+        #   freecad_version = int( FreeCAD.Version()[1] )
         if git_commit_no > 5166 or freecad_version > 15:
             weldingCommandList = ['dd_weldingGroupCommand']
         else:
