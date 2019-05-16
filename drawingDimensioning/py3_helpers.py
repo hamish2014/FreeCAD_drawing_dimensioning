@@ -20,9 +20,9 @@ def translate(*args):
 def encode_if_py2(unicode_object):
     '''return unicode for py3 and bytes for py2'''
     if sys.version_info.major < 3:
-	return unicode_object.encode("utf8")
+        return unicode_object.encode("utf8")
     else:
-	return unicode_object
+        return unicode_object
 
 _map = map
 
